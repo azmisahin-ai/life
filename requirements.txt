@@ -4,3 +4,6 @@ flask
 flask-restx
 gevent
 flask-socketio
+flask-cors
+pyOpenSSL
+gevent-websocket

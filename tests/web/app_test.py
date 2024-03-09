@@ -3,7 +3,7 @@ import unittest
 from src.web.app import create_app
 
 # Ensure that create_app returns the app instance directly
-app, _ = create_app()
+app, _, _, _ = create_app()
 
 
 class AppTest(unittest.TestCase):

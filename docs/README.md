@@ -89,3 +89,13 @@ Run the web service using the provided console script:
 ```bash
 web-service-life run
 ```
+
+## SSL/TLS certificate
+If you have not yet created an SSL/TLS certificate and do not have an existing certificate file, you can create a temporary certificate in a few steps. The following commands will create a temporary certificate containing its own private key and certificate:
+
+```bash
+openssl req -x509 -newkey rsa:4096 -nodes -keyout private-key.pem -out public-cert.pem -days 365
+```
+This command creates the private key (private-key.pem) and certificate (public-cert.pem) files. The -days parameter determines the validity period of the certificate; In the example above it is set to 365 days.
+
+If you are going to use it in a real project, it is recommended that you obtain a valid SSL/TLS certificate from a certificate authority (CA). These certificates are usually provided for a fee or free of charge. You can also get free SSL/TLS certificates from a service like Let's Encrypt.

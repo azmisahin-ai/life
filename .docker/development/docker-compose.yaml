@@ -63,7 +63,7 @@ services:
       - FLASK_DEBUG=$SWICH_TRACKING_DEBUG
       - FLASK_APP=src.web.app
       - FLASK_RUN_HOST=$HOST_IP
-      - FLASK_RUN_PORT=$TCP_PORT
+      - FLASK_RUN_PORT=$HTTP_PORT
 
     volumes:
       # cached : Especially during development, mounting files into the Docker container can be faster thanks to this option.

@@ -6,8 +6,7 @@ from datetime import datetime
 from src.web.app import create_app
 
 # Ensure that create_app returns the app instance directly
-app, _ = create_app()
-client = app.test_client()
+app, _, _, _ = create_app()
 
 # Let's create the TimeService object
 time_service = TimeService()

@@ -12,7 +12,7 @@ setup(
     long_description_content_type="text/markdown",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: CC0 1.0 Universal",
         "Operating System :: OS Independent",
     ],
     url="https://github.com/azmisahin-ai/life",
@@ -25,7 +25,16 @@ setup(
             "web-service-life = web.app:app.run",
         ],
     },
-    install_requires=["gunicorn", "flask", "flask-restx", "gevent", "flask-socketio"],
+    install_requires=[
+        "gunicorn",
+        "flask",
+        "flask-restx",
+        "gevent",
+        "flask-socketio",
+        "flask-cors",
+        "pyOpenSSL",
+        "gevent-websocket",
+    ],
     extras_require={
         "development": [
             "gunicorn"
