@@ -88,13 +88,31 @@ else
   echo "✅ Behavior-driven development was successful."
 fi
 
-$DATA_FOLDER/.venv/bin/gunicorn --bind $HOST_IP:$HTTP_PORT "src.web.app:app"
+# This command tells
+# Gunicorn to use the gevent worker class (-k gevent),
+# bind the server to the specified host and port (-b $HOST_IP:$HTTP_PORT),
+# and run 4 worker processes (-w 4).
+# Adjust the number of workers based on your server's resources.
+
+# This command starts Gunicorn and runs the HTTP server on $HOST_IP:$HTTP_PORT
+$DATA_FOLDER/.venv/bin/gunicorn -c gunicorn_config.py src.web.app:app
 if [ $? -ne 0 ]; then
-  echo "✖️ Package failed."
+  echo "✖️ HTTP failed."
   exit 1
 else
-  echo "✅ Package was successful."
+  echo "✅ HTTP was successful."
 fi
+
+# This command will start the WebSocket server.  $HOST_IP:$SOCKET_PORT
+# Gunicorn will only process HTTP requests.
+# This way both servers will run on different ports.
+# $DATA_FOLDER/.venv/bin/python src/web/app.py
+# if [ $? -ne 0 ]; then
+#   echo "✖️ SOCKET failed."
+#   exit 1
+# else
+#   echo "✅ SOCKET was successful."
+# fi
 
 echo ==========
 

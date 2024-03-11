@@ -34,6 +34,8 @@ setup(
         "flask-cors",
         "pyOpenSSL",
         "gevent-websocket",
+        "websocket-client",
+        "python-dotenv",
     ],
     extras_require={
         "development": [

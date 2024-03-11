@@ -1,13 +1,15 @@
 # src/web/app.py
+import logging
 import os
-import ssl
 from flask import Flask
 from flask_cors import CORS
 
+from .api import blueprint as api_blueprint
 from .socket import initialize
-from .api import blueprint as api_blueprint, api
-from gevent.pywsgi import WSGIServer  # Import the WSGIServer from gevent
-from geventwebsocket.handler import WebSocketHandler  # Yeni eklenen import
+
+from dotenv import load_dotenv
+
+load_dotenv()  # take environment variables from .env.
 
 # Get environment variables
 APP_ENV = os.environ.get("APP_ENV")
@@ -17,15 +19,16 @@ HTTP_PORT = os.environ.get("HTTP_PORT")
 HTTPS_PORT = os.environ.get("HTTPS_PORT")
 TCP_PORT = os.environ.get("TCP_PORT")
 SOCKET_PORT = os.environ.get("SOCKET_PORT")
+DEBUG = os.environ.get("SWICH_TRACKING_DEBUG")
 
 httpPortNumber = int(HTTP_PORT)
 httpsPortNumber = int(HTTPS_PORT)
 tcpPortNumber = int(TCP_PORT)
 socketPortNumber = int(SOCKET_PORT)
 
-# Install SSL/TLS certificate
-context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-context.load_cert_chain("public-cert.pem", "private-key.pem")
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def create_app():
@@ -41,47 +44,14 @@ def create_app():
     # Register the API Blueprint with a URL prefix
     app.register_blueprint(api_blueprint, url_prefix="/api")
 
-    # Ability to access endpoints via socket.
-    io = initialize(app, api)
-
-    # Listen for HTTP connections
-    http_server = WSGIServer(
-        (HOST_IP, httpPortNumber),
-        # Flask Application
-        app,
-        # SSL/TLS certificate
-        keyfile="private-key.pem",
-        certfile="public-cert.pem",
-        # Pass the SSL context here
-        ssl_context=context,
-        # Specify gevent worker class
-        worker_class="gevent",
-        # Improve logging with x-forwarded-for
-        access_log_format="%({x-forwarded-for}i)s %(l)s %(u)s %(t)s %(r)s %(s)s %(b)s %(f)s %(a)s",
-        # It allows Gunicorn to process standard HTTP requests while also allowing WebSocket connections.
-        handler_class=WebSocketHandler,
-    )
-
-    # Listen for WebSocket connections
-    ws_server = WSGIServer(
-        (HOST_IP, socketPortNumber),  # A different port number for WebSocket
-        # Flask Application
-        app,
-        # SSL/TLS certificate
-        keyfile="private-key.pem",
-        certfile="public-cert.pem",
-        # Pass the SSL context here
-        ssl_context=context,
-        # It allows Gunicorn to process standard HTTP requests while also allowing WebSocket connections.
-        handler_class=WebSocketHandler,
-    )
-
     # Get API paths from the request object
     paths = [
         rule.rule
         for rule in app.url_map.iter_rules()
         if rule.endpoint.startswith("api.")
     ]
+
+    _ = initialize(app, paths)  # Call initialize and assign the SocketIO instance
 
     @app.route("/")
     def home():
@@ -97,17 +67,21 @@ def create_app():
             "paths": paths,
         }
 
-    return app, io, http_server, ws_server
+    logger.debug(
+        "Application Start: %s",
+        {
+            "APP_ENV": APP_ENV,
+            "HOST_IP": HOST_IP,
+            "httpPortNumber": httpPortNumber,
+        },
+    )
+
+    return app
 
 
 # Listen for HTTP and WebSocket connections on the same port
-app, io, http_server, ws_server = create_app()
+app = create_app()
 
-# Build Flask app to migrate to Gunicorn
 if __name__ == "__main__":
-    print("http", httpPortNumber)
-    print("socket", socketPortNumber)
-    http_server.start()
-    ws_server.start()
-    io.init_app(app)
-    io.run(app, host=HOST_IP, port=httpPortNumber)
+    # Use app instance for Flask functionalities
+    app.run(debug=DEBUG, host=HOST_IP, port=httpPortNumber)

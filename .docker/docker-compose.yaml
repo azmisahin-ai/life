@@ -60,6 +60,7 @@ services:
 
     environment:
       # Environment override
+      - FLASK_ENV=$APP_ENV
       - FLASK_DEBUG=$SWICH_TRACKING_DEBUG
       - FLASK_APP=src.web.app:app
       - FLASK_RUN_HOST=$HOST_IP

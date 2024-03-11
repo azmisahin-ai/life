@@ -8,17 +8,18 @@ app = create_app()
 
 
 class AppTest(unittest.TestCase):
+
     def setUp(self):
         try:
             # Get environment variables
             APP_ENV = os.environ.get("APP_ENV")
-
-            # set
             self.app_env = APP_ENV
 
-            # create app
+            # set and create
             self.app = app
             self.app.config["ENV"] = self.app_env
+
+            # set client
             self.client = self.app.test_client()
 
         except Exception as e:
@@ -27,12 +28,21 @@ class AppTest(unittest.TestCase):
     def tearDown(self):
         pass  # Clean up if needed
 
-    def test_home_endpoint(self):
-        # Test the home endpoint
+    def test_server_via_http(self):
+        # Must be able to connect to the server via http
         response = self.client.get("/")
-        data = response.get_json()
-
         self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertIn("message", data)
+        self.assertIn("application", data)
+        self.assertIn("environment", data)
+        self.assertIn("paths", data)
+
+    def test_server_via_https(self):
+        # Must be able to connect to the server via https
+        response = self.client.get("/", environ_base={"wsgi.url_scheme": "https"})
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
         self.assertIn("message", data)
         self.assertIn("application", data)
         self.assertIn("environment", data)

@@ -3,7 +3,7 @@ from behave import given, when, then
 from src.web.app import create_app
 
 # Ensure that create_app returns the app instance directly
-app, _, _, _ = create_app()
+app = create_app()
 
 
 @given("the web service is running")

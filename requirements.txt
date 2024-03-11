@@ -1,4 +1,10 @@
 # packages that depend on the base environment.
+setuptools
+build
+flake8
+black
+Sphinx
+behave
 gunicorn
 flask
 flask-restx
@@ -7,3 +13,5 @@ flask-socketio
 flask-cors
 pyOpenSSL
 gevent-websocket
+websocket-client
+python-dotenv

@@ -13,3 +13,5 @@ flask-socketio
 flask-cors
 pyOpenSSL
 gevent-websocket
+websocket-client
+python-dotenv
