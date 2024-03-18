@@ -18,7 +18,12 @@ class SimulationPause(Resource):
         Returns:
             dict: A JSON object with the status of the paused simulation.
         """
-        return {"status": "paused"}
+        response = {
+            "status": "paused",
+            "number_of_particles": 1,
+            "time_step": 0.1,
+        }
+        return response
 
 
 if __name__ == "__main__":

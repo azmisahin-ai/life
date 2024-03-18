@@ -18,7 +18,12 @@ class SimulationContinue(Resource):
         Returns:
             dict: A JSON object with the status of the simulation.
         """
-        return {"status": "continues"}
+        response = {
+            "status": "continues",
+            "number_of_particles": 1,
+            "time_step": 0.1,
+        }
+        return response
 
 
 if __name__ == "__main__":

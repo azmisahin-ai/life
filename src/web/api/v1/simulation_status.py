@@ -20,8 +20,10 @@ class SimulationStatus(Resource):
                   - particle (dict): Information about
                   a particle including its name, charge, mass, spin, lifetime, energy, position, velocity, and momentum.
         """
-        return {
+        response = {
             "status": "continues",
+            "number_of_particles": 1,
+            "time_step": 0.1,
             "particle": {
                 "name": "Particle",
                 "charge": -1.602176634e-19,
@@ -34,6 +36,7 @@ class SimulationStatus(Resource):
                 "momentum": {"x": 0, "y": 0, "z": 0},
             },
         }
+        return response
 
 
 if __name__ == "__main__":

@@ -29,12 +29,12 @@ class SimulationStart(Resource):
                   number of particles, and time step used.
         """
         data = request.json
-        number_of_particles = data.get("number_Of_particles")
+        number_of_particles = data.get("number_of_particles")
         time_step = data.get("time_step")
 
         response = {
             "status": "started",
-            "number_Of_particles": number_of_particles,
+            "number_of_particles": number_of_particles,
             "time_step": time_step,
         }
 
