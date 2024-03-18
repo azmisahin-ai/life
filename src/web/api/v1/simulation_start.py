@@ -12,6 +12,8 @@ class SimulationStart(Resource):
         """
         Starts the simulation.
 
+        This endpoint is used to start the simulation process.
+
         Parameters:
         - number_Of_particles (int): Number of particles for the simulation.
         - time_step (float): Time step for the simulation.
@@ -21,15 +23,19 @@ class SimulationStart(Resource):
             "number_Of_particles": int,
             "time_step": float
         }
+
+        Returns:
+            dict: A JSON object with the status of the started simulation,
+                  number of particles, and time step used.
         """
         data = request.json
-        numberOfParticles = data.get("number_Of_particles")
-        timeStep = data.get("time_step")
+        number_of_particles = data.get("number_Of_particles")
+        time_step = data.get("time_step")
 
         response = {
             "status": "started",
-            "number_Of_particles": numberOfParticles,
-            "time_step": timeStep,
+            "number_Of_particles": number_of_particles,
+            "time_step": time_step,
         }
 
         return response

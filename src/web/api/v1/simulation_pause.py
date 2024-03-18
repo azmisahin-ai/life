@@ -11,6 +11,12 @@ class SimulationPause(Resource):
     def get(self):
         """
         Pause the simulation.
+
+        This endpoint is used to pause the simulation process.
+        It returns a JSON response indicating the status of the simulation being paused.
+
+        Returns:
+            dict: A JSON object with the status of the paused simulation.
         """
         return {"status": "paused"}
 

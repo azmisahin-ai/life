@@ -10,7 +10,15 @@ api = Api(app)
 class SimulationStatus(Resource):
     def get(self):
         """
-        Status the simulation.
+        Get the status of the simulation.
+
+        This endpoint is used to retrieve the current status of the simulation process.
+
+        Returns:
+            dict: A JSON object with the status of the simulation and information about a particle.
+                  - status (str): The status of the simulation.
+                  - particle (dict): Information about
+                  a particle including its name, charge, mass, spin, lifetime, energy, position, velocity, and momentum.
         """
         return {
             "status": "continues",

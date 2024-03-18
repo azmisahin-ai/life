@@ -11,6 +11,11 @@ class SimulationStop(Resource):
     def get(self):
         """
         Stop the simulation.
+
+        This endpoint is used to stop the simulation process.
+
+        Returns:
+            dict: A JSON object with the status of the stopped simulation.
         """
         return {"status": "stopped"}
 

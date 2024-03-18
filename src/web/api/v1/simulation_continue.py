@@ -10,7 +10,13 @@ api = Api(app)
 class SimulationContinue(Resource):
     def get(self):
         """
-        Contuninue the simulation.
+        Continue the simulation.
+
+        This endpoint is used to continue the simulation process.
+        It returns a JSON response indicating the status of the simulation.
+
+        Returns:
+            dict: A JSON object with the status of the simulation.
         """
         return {"status": "continues"}
 
