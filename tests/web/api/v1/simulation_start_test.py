@@ -30,7 +30,7 @@ class SimulationStartTest(unittest.TestCase):
 
     def test_simulation_start_endpoint(self):
         # Test the simulation_start endpoint
-        test_data = {"number_Of_particles": 100, "time_step": 0.1}
+        test_data = {"number_of_particles": 100, "time_step": 0.1}
 
         response = self.client.post("/api/v1/simulation_start", json=test_data)
         response_data = response.get_json()
@@ -38,7 +38,7 @@ class SimulationStartTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_data["status"], "started")
         self.assertEqual(
-            response_data["number_Of_particles"], test_data["number_Of_particles"]
+            response_data["number_of_particles"], test_data["number_of_particles"]
         )
         self.assertEqual(response_data["time_step"], test_data["time_step"])
 

@@ -1,6 +1,6 @@
 # src/web/api/v1/time_service.py
 
-import datetime
+from datetime import datetime
 from flask import Flask
 from flask_restx import Api, Resource
 
