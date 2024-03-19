@@ -3,8 +3,12 @@
 from flask import Flask
 from flask_restx import Api, Resource
 
+from ...controller.simulation import Simulation
+
 app = Flask(__name__)
 api = Api(app)
+
+simulation = Simulation()
 
 
 class SimulationPause(Resource):
@@ -18,11 +22,9 @@ class SimulationPause(Resource):
         Returns:
             dict: A JSON object with the status of the paused simulation.
         """
-        response = {
-            "status": "paused",
-            "number_of_particles": 1,
-            "time_step": 0.1,
-        }
+
+        response = simulation.pause().to_json()
+
         return response
 
 

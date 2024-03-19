@@ -3,8 +3,12 @@
 from flask import Flask, request
 from flask_restx import Api, Resource
 
+from ...controller.simulation import Simulation
+
 app = Flask(__name__)
 api = Api(app)
+
+simulation = Simulation()
 
 
 class SimulationStart(Resource):
@@ -32,11 +36,7 @@ class SimulationStart(Resource):
         number_of_particles = data.get("number_of_particles")
         time_step = data.get("time_step")
 
-        response = {
-            "status": "started",
-            "number_of_particles": number_of_particles,
-            "time_step": time_step,
-        }
+        response = simulation.start(number_of_particles, time_step).to_json()
 
         return response
 

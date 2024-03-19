@@ -3,8 +3,12 @@
 from flask import Flask
 from flask_restx import Api, Resource
 
+from ...controller.simulation import Simulation
+
 app = Flask(__name__)
 api = Api(app)
+
+simulation = Simulation()
 
 
 class SimulationStatus(Resource):
@@ -20,22 +24,9 @@ class SimulationStatus(Resource):
                   - particle (dict): Information about
                   a particle including its name, charge, mass, spin, lifetime, energy, position, velocity, and momentum.
         """
-        response = {
-            "status": "continues",
-            "number_of_particles": 1,
-            "time_step": 0.1,
-            "particle": {
-                "name": "Particle",
-                "charge": -1.602176634e-19,
-                "mass": 9.10938356e-31,
-                "spin": 0.5,
-                "lifetime": -1,
-                "energy": 0,
-                "position": {"x": 0, "y": 0, "z": 0},
-                "velocity": {"x": 0, "y": 0, "z": 0},
-                "momentum": {"x": 0, "y": 0, "z": 0},
-            },
-        }
+
+        response = simulation.status().to_json()
+
         return response
 
 
