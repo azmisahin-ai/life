@@ -3,12 +3,10 @@
 from flask import Flask, request
 from flask_restx import Api, Resource
 
-from ...controller.simulation import Simulation
+from ...controller.simulation import simulation
 
 app = Flask(__name__)
 api = Api(app)
-
-simulation = Simulation()
 
 
 class SimulationStart(Resource):

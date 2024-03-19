@@ -53,3 +53,7 @@ class Simulation:
     def status(self):
         # Simülasyon durumunu döndür
         return self.continues()  # Şu an simülasyon devam ediyor kabul edelim
+
+
+# Single instance
+simulation = Simulation()
