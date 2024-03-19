@@ -3,55 +3,52 @@
 from .simulation_result import SimulationResult, Particle, Vector
 
 
+def createParticle():
+    return Particle(
+        name="Particle",
+        charge=-1.602176634e-19,
+        mass=9.10938356e-31,
+        spin=0.5,
+        lifetime=-1,
+        energy=0,
+        position=Vector(x=0, y=0, z=0),
+        velocity=Vector(x=0, y=0, z=0),
+        momentum=Vector(x=0, y=0, z=0),
+    )
+
+
 class Simulation:
     def __init__(self) -> None:
-        pass
+        self.simulationResult = SimulationResult(
+            status="starting", number_of_particles=0, time_step=0, particle=None
+        )
 
     def start(self, number_of_particles, time_step):
         # Simülasyon başlatma işlemleri
-        return SimulationResult(
-            status="started",
-            number_of_particles=number_of_particles,
-            time_step=time_step,
-            particle=None,  # Başlangıçta parçacık bilgisi yok
-        )
+        self.simulationResult.number_of_particles = number_of_particles
+        self.simulationResult.time_step = time_step
+        self.simulationResult.status = "started"
+        self.simulationResult.particle = createParticle()
+
+        return self.simulationResult
 
     def stop(self):
         # Simülasyon durdurma işlemleri
-        return SimulationResult(
-            status="stopped",
-            number_of_particles=1,
-            time_step=0.1,
-            particle=None,  # Simülasyon durduğunda parçacık bilgisi yok
-        )
+        self.simulationResult.status = "stopped"
+
+        return self.simulationResult
 
     def pause(self):
-        # Simülasyon duraklatma işlemleri
-        return SimulationResult(
-            status="paused",
-            number_of_particles=1,
-            time_step=0.1,
-            particle=None,  # Simülasyon durakladığında parçacık bilgisi yok
-        )
+        # Simülasyon duraklatma işlemler
+        self.simulationResult.status = "paused"
+
+        return self.simulationResult
 
     def continues(self):
         # Simülasyonun devam etme işlemleri
-        return SimulationResult(
-            status="continues",
-            number_of_particles=1,
-            time_step=0.1,
-            particle=Particle(
-                name="Particle",
-                charge=-1.602176634e-19,
-                mass=9.10938356e-31,
-                spin=0.5,
-                lifetime=-1,
-                energy=0,
-                position=Vector(x=0, y=0, z=0),
-                velocity=Vector(x=0, y=0, z=0),
-                momentum=Vector(x=0, y=0, z=0),
-            ),
-        )
+        self.simulationResult.status = "continues"
+
+        return self.simulationResult
 
     def status(self):
         # Simülasyon durumunu döndür
