@@ -2,11 +2,12 @@
 
 from flask import Flask
 from flask_restx import Api, Resource
-
+from flask_socketio import SocketIO
 from ...controller.simulation import simulation
 
 app = Flask(__name__)
 api = Api(app)
+io = SocketIO(app)
 
 
 class SimulationStatus(Resource):
@@ -23,7 +24,9 @@ class SimulationStatus(Resource):
                   a particle including its name, charge, mass, spin, lifetime, energy, position, velocity, and momentum.
         """
 
-        response = simulation.status().to_json()
+        s = simulation.status()
+
+        response = s.to_json()
 
         return response
 

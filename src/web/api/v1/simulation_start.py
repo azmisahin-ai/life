@@ -2,11 +2,12 @@
 
 from flask import Flask, request
 from flask_restx import Api, Resource
-
+from flask_socketio import SocketIO
 from ...controller.simulation import simulation
 
 app = Flask(__name__)
 api = Api(app)
+io = SocketIO(app)
 
 
 class SimulationStart(Resource):
@@ -34,7 +35,13 @@ class SimulationStart(Resource):
         number_of_particles = data.get("number_of_particles")
         time_step = data.get("time_step")
 
-        response = simulation.start(number_of_particles, time_step).to_json()
+        def simulationEvent(data):
+            print("event-simulation", data)
+            io.emit("/api/v1/simulation_status", data)
+
+        s = simulation.start(number_of_particles, time_step)
+        s.instance.trigger(simulationEvent)
+        response = s.to_json()
 
         return response
 

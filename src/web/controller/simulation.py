@@ -1,59 +1,122 @@
-# web/controller/simulation.py
+# simulation.py
+import time
+from threading import Thread
 
-from .simulation_result import SimulationResult, Particle, Vector
+from flask import Flask
+from flask_socketio import SocketIO
 
 
-def createParticle():
-    return Particle(
-        name="Particle",
-        charge=-1.602176634e-19,
-        mass=9.10938356e-31,
-        spin=0.5,
-        lifetime=-1,
-        energy=0,
-        position=Vector(x=0, y=0, z=0),
-        velocity=Vector(x=0, y=0, z=0),
-        momentum=Vector(x=0, y=0, z=0),
-    )
+from src.web.controller.particle_simulation import ParticleSimulation
+from src.web.controller.base_simulation import BaseSimulation
+from src.web.controller.simulation_status import SimulationStatus
+from src.web.controller.simulation_type import SimulationType
+
+app = Flask(__name__)
+io = SocketIO(app)
 
 
 class Simulation:
-    def __init__(self) -> None:
-        self.simulationResult = SimulationResult(
-            status="starting", number_of_particles=0, time_step=0, particle=None
+    def __init__(self):
+        self.simulation_status = SimulationStatus.stopped
+        self.is_running = False
+        self.is_paused = False
+        self.simulation_type = SimulationType.Base  # default simualation type
+        self.time_step = 0.01  # default simulation time step
+        self.number_of_instance = 1  # default simulation instance
+
+    def to_json(self):
+        return {
+            "status": self.simulation_status.value,
+            "is_running": self.is_running,
+            "is_paused": self.is_paused,
+            "simulation_type": self.simulation_type.value,  # Enum'u string olarak dönüştürün
+            "simulation_time_step": self.time_step,
+            "time_step": self.time_step,  # Bu satır kaldırılacak
+            "number_of_particles": self.number_of_instance,  # Bu satır kaldırılacak
+            "number_of_instance": self.number_of_instance,
+        }
+
+    def swich_simulation(self, simulation_type, number_of_instance, lifetime_seconds):
+        if simulation_type == SimulationType.Base:
+            return BaseSimulation(
+                number_of_instance=number_of_instance,
+                lifetime=lifetime_seconds,
+            )
+        elif simulation_type == SimulationType.Particles:
+            return ParticleSimulation(
+                number_of_instance=number_of_instance,
+                lifetime=lifetime_seconds,
+            )
+        else:
+            return None
+
+    def _simulation_loop(self):
+        self.simulation_status = SimulationStatus.started
+        while self.is_running:
+            if not self.is_paused:
+                # self.simulation_status = SimulationStatus.continues
+                if isinstance(self.instance, BaseSimulation):
+                    self.instance.simulate()
+                if isinstance(self.instance, ParticleSimulation):
+                    self.instance.simulate()
+            time.sleep(self.time_step)
+
+    def start(
+        self,
+        number_of_instance,
+        simulation_time_step,
+        lifetime_seconds=5,
+        simulation_type=SimulationType.Particles,
+    ):
+        self.is_running = True
+        self.is_paused = False
+        self.simulation_type = simulation_type
+        self.time_step = simulation_time_step
+        self.number_of_instance = number_of_instance
+
+        self.instance = self.swich_simulation(
+            simulation_type, number_of_instance, lifetime_seconds
         )
 
-    def start(self, number_of_particles, time_step):
-        # Simülasyon başlatma işlemleri
-        self.simulationResult.number_of_particles = number_of_particles
-        self.simulationResult.time_step = time_step
-        self.simulationResult.status = "started"
-        self.simulationResult.particle = createParticle()
+        # self.simulation_status = SimulationStatus.started # this will be set when the thread is started
+        Thread(target=self._simulation_loop).start()
 
-        return self.simulationResult
+        return self
 
     def stop(self):
-        # Simülasyon durdurma işlemleri
-        self.simulationResult.status = "stopped"
-
-        return self.simulationResult
+        self.is_running = False
+        self.is_paused = False
+        self.simulation_status = SimulationStatus.stopped
+        return self
 
     def pause(self):
-        # Simülasyon duraklatma işlemler
-        self.simulationResult.status = "paused"
-
-        return self.simulationResult
+        self.is_paused = True
+        self.simulation_status = SimulationStatus.paused
+        return self
 
     def continues(self):
-        # Simülasyonun devam etme işlemleri
-        self.simulationResult.status = "continues"
-
-        return self.simulationResult
+        self.is_paused = False
+        self.simulation_status = SimulationStatus.continues
+        return self
 
     def status(self):
-        # Simülasyon durumunu döndür
-        return self.continues()  # Şu an simülasyon devam ediyor kabul edelim
+        return self
 
 
-# Single instance
 simulation = Simulation()
+
+if __name__ == "__main__":
+    number_of_instance = 2  # default simulation instance
+    time_step = 0.01  # default simulation time step
+    life_time = 5  # second or float("inf")
+
+    def simulationEvent(data):
+        print("event-simulation", data)
+
+    started = simulation.start(
+        number_of_instance=number_of_instance,
+        simulation_time_step=time_step,
+        simulation_type=SimulationType.Particles,
+        lifetime_seconds=life_time,
+    )
+    started.instance.trigger(simulationEvent)
