@@ -42,12 +42,12 @@ class LifeCycleSimulation:
     def create_instance(self):
         name = f"item-{self.number_of_instance_created}"
         self.last_item = LifeCycleManager(name, lifetime_seconds=self.lifetime_seconds)
+        self.number_of_instance_created += 1
 
     def run_simulation(self):
         try:
             condition = self.number_of_instance > self.number_of_instance_created
             if condition:
-                self.number_of_instance_created += 1
                 self.create_instance()
                 if self.event_function:
                     self.event_function(self.to_json())  # Event işlevini çağır

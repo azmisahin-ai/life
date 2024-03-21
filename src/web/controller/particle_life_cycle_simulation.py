@@ -57,6 +57,9 @@ class ParticleLifeCycleSimulation(LifeCycleSimulation):
             wave_function,
         )
 
+        # Parçacık örneği oluşturulduktan sonra number_of_instance_created özelliğini artır
+        self.number_of_instance_created += 1
+
 
 if __name__ == "__main__":
 
