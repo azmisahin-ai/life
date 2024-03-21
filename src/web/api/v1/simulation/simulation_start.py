@@ -14,7 +14,7 @@ io = SocketIO(app)
 
 class SimulationStart(Resource):
     @app.route("/start", methods=["POST"])
-    def post(self):
+    def post():
         data = request.json
         simulation_time_step = data.get("simulation_time_step", 1)
         simulation_type_str = data.get(
