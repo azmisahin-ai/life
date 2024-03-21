@@ -57,23 +57,33 @@ class LifeCycleSimulation:
 
 
 if __name__ == "__main__":
-
-    def life_cycle_item_event(data):
-        print("life_cycle_item_event", data)
-
-    def life_cycle_event(data):
-        print("life-cycle-event", data)
-
-    time_step = 1  # default simulation time step
+    #
+    simulation_time_step = 1  # default simulation time step
+    # simulation_type = SimulationType.LifeCycle
     number_of_instance = 2  # default simulation instance
-    lifetime_seconds = 5  # second
+    lifetime_seconds = 2  # second or float("inf")
 
     instance = LifeCycleSimulation(
         number_of_instance=number_of_instance,
         lifetime_seconds=lifetime_seconds,
     )
-    instance.trigger(life_cycle_event)
+
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    RESET = "\033[0m"  # Renkleri sıfırlamak için kullanılır
+
+    def simulation_event_item(data):
+        print(f"{GREEN}simulation_event_item{RESET}", data)
+
+    def simulation_event(data):
+        print(f"{YELLOW}simulation_event{RESET}", data)
 
     while instance.run_simulation():
-        instance.last_item.trigger_event(life_cycle_item_event)
-        time.sleep(time_step)
+        if instance:
+            instance.trigger(simulation_event)
+            instance.last_item.trigger_event(simulation_event_item)
+
+        time.sleep(simulation_time_step)

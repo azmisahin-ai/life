@@ -32,6 +32,16 @@ class SimulationStart(Resource):
             lifetime_seconds=lifetime_seconds,
         )
 
+        def simulation_event_item_event(data):
+            print("simulation_event_item_event", data)
+
+        def simulation_event(data):
+            print("simulation_event", data)
+
+        if started.instance:
+            started.instance.trigger(simulation_event)
+            started.instance.last_item.trigger_event(simulation_event_item_event)
+
         return jsonify(started.to_json())
 
 

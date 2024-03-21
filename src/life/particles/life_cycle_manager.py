@@ -64,15 +64,25 @@ class LifeCycleManager:
 
 
 if __name__ == "__main__":
+    #
+    simulation_time_step = 1  # default simulation time step
+    # simulation_type = SimulationType.LifeCycle
+    number_of_instance = 2  # default simulation instance
+    lifetime_seconds = 2  # second or float("inf")
 
-    def event_function_handler(data):
-        """
-        Olay işlevi örneği.
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    RESET = "\033[0m"  # Renkleri sıfırlamak için kullanılır
 
-        :param data: Olayla ilgili veri.
-        """
-        print("event-base", data)
+    def simulation_event_item(data):
+        print(f"{GREEN}simulation_event_item{RESET}", data)
+
+    def simulation_event(data):
+        print(f"{YELLOW}simulation_event{RESET}", data)
 
     # Test kodu
-    instance = LifeCycleManager(name="Particle", lifetime_seconds=10)
-    instance.trigger_event(event_function_handler)
+    instance = LifeCycleManager(name="Particle", lifetime_seconds=lifetime_seconds)
+    instance.trigger_event(simulation_event_item)

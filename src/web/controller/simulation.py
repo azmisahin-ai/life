@@ -175,10 +175,11 @@ class Simulation:
 simulation = Simulation()
 
 if __name__ == "__main__":
+    #
     simulation_time_step = 1  # default simulation time step
     simulation_type = SimulationType.LifeCycle
     number_of_instance = 2  # default simulation instance
-    lifetime_seconds = 5  # second or float("inf")
+    lifetime_seconds = 2  # second or float("inf")
 
     started = simulation.start(
         simulation_time_step=simulation_time_step,
@@ -187,8 +188,19 @@ if __name__ == "__main__":
         lifetime_seconds=lifetime_seconds,
     )
 
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    RESET = "\033[0m"  # Renkleri sıfırlamak için kullanılır
+
+    def simulation_event_item(data):
+        print(f"{GREEN}simulation_event_item{RESET}", data)
+
     def simulation_event(data):
-        print("simulation_event", data)
+        print(f"{YELLOW}simulation_event{RESET}", data)
 
     if started.instance:
         started.instance.trigger(simulation_event)
+        started.instance.last_item.trigger_event(simulation_event_item)

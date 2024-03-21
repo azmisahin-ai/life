@@ -147,12 +147,14 @@ class Particle(LifeCycleManager):
 
 
 if __name__ == "__main__":
+    #
+    simulation_time_step = 1  # default simulation time step
+    # simulation_type = SimulationType.LifeCycle
+    number_of_instance = 2  # default simulation instance
+    lifetime_seconds = 2  # second or float("inf")
 
     def force_function(t):
         return Vector(t**0.1, t**0.1, t**0.1)
-
-    def event_function(data):
-        print("event-particle", data)
 
     instance = Particle(
         name="Electron",
@@ -166,4 +168,18 @@ if __name__ == "__main__":
         momentum=Vector(0, 0, 0),
         wave_function=force_function(0.1),
     )
-    instance.trigger_event(event_function)
+
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    RESET = "\033[0m"  # Renkleri sıfırlamak için kullanılır
+
+    def simulation_event_item(data):
+        print(f"{GREEN}simulation_event_item{RESET}", data)
+
+    def simulation_event(data):
+        print(f"{YELLOW}simulation_event{RESET}", data)
+
+    instance.trigger_event(simulation_event_item)
