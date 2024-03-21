@@ -1,6 +1,6 @@
 # src/web/api/v1/simulation_continue.py
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_restx import Api, Resource
 from flask_socketio import SocketIO
 
@@ -12,22 +12,10 @@ io = SocketIO(app)
 
 
 class SimulationContinue(Resource):
+    @app.route("/continue", methods=["GET"])
     def get(self):
-        """
-        Continue the simulation.
-
-        This endpoint is used to continue the simulation process.
-        It returns a JSON response indicating the status of the simulation.
-
-        Returns:
-            dict: A JSON object with the status of the simulation.
-        """
-
-        s = simulation.continues()
-
-        response = s.to_json()
-
-        return response
+        continued = simulation.continues()
+        return jsonify(continued.to_json())
 
 
 if __name__ == "__main__":

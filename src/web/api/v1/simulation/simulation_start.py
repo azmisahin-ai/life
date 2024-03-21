@@ -1,6 +1,6 @@
 # src/web/api/v1/simulation_start.py
 
-from flask import Flask, request
+from flask import Flask, jsonify, request
 from flask_restx import Api, Resource
 from flask_socketio import SocketIO
 
@@ -13,47 +13,22 @@ io = SocketIO(app)
 
 
 class SimulationStart(Resource):
+    @app.route("/start", methods=["POST"])
     def post(self):
-        """
-        Starts the simulation.
-
-        This endpoint is used to start the simulation process.
-
-        Parameters:
-        - number_Of_particles (int): Number of particles for the simulation.
-        - time_step (float): Time step for the simulation.
-
-        Body:
-        {
-            "number_Of_particles": int,
-            "time_step": float
-        }
-
-        Returns:
-            dict: A JSON object with the status of the started simulation,
-                  number of particles, and time step used.
-        """
         data = request.json
-        #
-        number_of_particles = data.get("number_of_particles")
-        time_step = data.get("time_step")
+        simulation_time_step = data.get("simulation_time_step", 1)
+        simulation_type = data.get("simulation_type", SimulationType.LifeCycle)
+        number_of_instance = data.get("number_of_instance", 2)
+        lifetime_seconds = data.get("lifetime_seconds", 5)
 
-        s = simulation.start(
-            simulation_time_step=time_step,
-            simulation_type=SimulationType.Particles,
-            number_of_instance=number_of_particles,
-            lifetime_seconds=5,  # second or float("inf")
+        started = simulation.start(
+            simulation_time_step=simulation_time_step,
+            simulation_type=simulation_type,
+            number_of_instance=number_of_instance,
+            lifetime_seconds=lifetime_seconds,
         )
 
-        def simulation_event(data):
-            print("simulation_event", data)
-            io.emit("/api/v1/simulation/status", data)
-
-        s.instance.trigger(simulation_event)
-
-        response = s.to_json()
-
-        return response
+        return jsonify(started.to_json())
 
 
 if __name__ == "__main__":
