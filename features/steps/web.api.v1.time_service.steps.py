@@ -1,7 +1,7 @@
 # features/steps/web/api/v1/time_service_steps.py
 
 from behave import given, when, then
-from web.api.v1.time.time_service import TimeService
+from src.web.api.v1.time.time_service import TimeService
 from datetime import datetime
 from src.web.app import create_app
 

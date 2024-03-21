@@ -84,9 +84,9 @@ class Particle(LifeCycleManager):
         Parçacığın sinyalini gönderir.
         """
         self.update(force=self.wave_function, time_step=time_step)
-        print(
-            f"position: {self.position.to_json()} velocity: {self.velocity.to_json()} momentum: {self.momentum.to_json()} "
-        )
+        print(f"position: {self.position.to_json()}")
+        print(f"velocity: {self.velocity.to_json()}")
+        print(f"momentum: {self.momentum.to_json()}")
 
     def update(self, force, time_step):
         """
