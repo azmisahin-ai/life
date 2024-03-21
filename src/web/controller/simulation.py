@@ -18,6 +18,7 @@ class Simulation:
         self.simulation_time_step = 1  # default life cycle time step
         self.is_running = False
         self.is_paused = False
+        self.instance = None
 
     def to_json(self):
         simulation_data = {
@@ -44,7 +45,7 @@ class Simulation:
     def _simulation_loop(self):
         self.simulation_status = SimulationStatus.started
         while self.is_running:
-            if not self.is_paused:
+            if not self.is_paused and self.instance:
                 if isinstance(self.instance, LifeCycleSimulation):
                     if not self.instance.run_simulation():
                         self.stop()
@@ -108,4 +109,5 @@ if __name__ == "__main__":
     def simulation_event(data):
         print("simulation_event", data)
 
-    started.instance.trigger(simulation_event)
+    if started.instance:
+        started.instance.trigger(simulation_event)
