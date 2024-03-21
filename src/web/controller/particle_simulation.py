@@ -4,34 +4,21 @@ from flask_socketio import SocketIO
 
 from src.life.particles.vector import Vector
 from src.life.particles.particle import Particle
-from src.web.controller.base_simulation import BaseSimulation
+from src.web.controller.life_cycle_simulation import LifeCycleSimulation
 
 
 app = Flask(__name__)
 io = SocketIO(app)
 
 
-class ParticleSimulation(BaseSimulation):
-    def __init__(self, number_of_instance, lifetime):
-        super().__init__(number_of_instance=number_of_instance, lifetime=lifetime)
+class ParticleSimulation(LifeCycleSimulation):
+    def __init__(self, number_of_instance, lifetime_seconds):
+        super().__init__(
+            number_of_instance=number_of_instance, lifetime_seconds=lifetime_seconds
+        )
 
     def force_function(self, t):
         return Vector(t**0.1, t**0.1, t**0.1)
-
-    def to_json(self):
-        data = super().to_json()
-
-        data.update(
-            {
-                "status": self.status.value,
-                "number_of_particles": self.number_of_instance,
-                "time_step": "0",
-                "number_of_instance_created": self.number_of_instance_created,
-                "lifetime": self.lifetime,
-            }
-        )
-        # data.update({"particle": self.last_item.to_json()})
-        return data
 
     def create(self):
         name = f"electron-{self.number_of_instance_created}"

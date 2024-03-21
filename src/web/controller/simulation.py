@@ -7,9 +7,10 @@ from flask_socketio import SocketIO
 
 
 from src.web.controller.particle_simulation import ParticleSimulation
-from src.web.controller.base_simulation import BaseSimulation
-from src.web.controller.simulation_status import SimulationStatus
+
+from web.controller.life_cycle_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
+from src.web.controller.life_cycle_simulation import LifeCycleSimulation
 
 app = Flask(__name__)
 io = SocketIO(app)
@@ -21,6 +22,7 @@ class Simulation:
         self.is_running = False
         self.is_paused = False
         self.simulation_type = SimulationType.Base  # default simualation type
+
         self.time_step = 0.01  # default simulation time step
         self.number_of_instance = 1  # default simulation instance
 
@@ -38,7 +40,7 @@ class Simulation:
 
     def swich_simulation(self, simulation_type, number_of_instance, lifetime_seconds):
         if simulation_type == SimulationType.Base:
-            return BaseSimulation(
+            return LifeCycleSimulation(
                 number_of_instance=number_of_instance,
                 lifetime=lifetime_seconds,
             )
@@ -55,7 +57,7 @@ class Simulation:
         while self.is_running:
             if not self.is_paused:
                 # self.simulation_status = SimulationStatus.continues
-                if isinstance(self.instance, BaseSimulation):
+                if isinstance(self.instance, LifeCycleSimulation):
                     self.instance.simulate()
                 if isinstance(self.instance, ParticleSimulation):
                     self.instance.simulate()

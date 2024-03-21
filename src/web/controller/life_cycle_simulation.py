@@ -3,23 +3,23 @@ import time
 from flask import Flask
 from flask_socketio import SocketIO
 
-from src.life.particles.base import Base
-from src.web.controller.simulation_status import SimulationStatus
-from src.web.controller.simulation_type import SimulationType
+
+from src.life.particles.life_cycle_manager import LifeCycleManager
+
 
 app = Flask(__name__)
 io = SocketIO(app)
 
 
-class BaseSimulation:
-    def __init__(self, number_of_instance, lifetime):
-        self.status = SimulationStatus.stopped
-        self.is_running = False
-        self.is_paused = False
-        self.type = SimulationType.Base  # default simualation type
-        self.lifetime = lifetime
+class LifeCycleSimulation:
+    def __init__(self, number_of_instance, lifetime_seconds):
         self.number_of_instance = number_of_instance
+        self.lifetime_seconds = lifetime_seconds
+
+        #
         self.number_of_instance_created = 0
+
+        #
         self.last_item = None
 
         self.event_function = None  # Event işlevi
@@ -30,14 +30,13 @@ class BaseSimulation:
 
     def to_json(self):
         return {
-            "lifetime": self.lifetime,
             "number_of_instance": self.number_of_instance,
             "number_of_instance_created": self.number_of_instance_created,
         }
 
     def create(self):
-        name = f"base-{self.number_of_instance_created}"
-        self.last_item = Base(name, lifetime=self.lifetime)
+        name = f"item-{self.number_of_instance_created}"
+        self.last_item = LifeCycleManager(name, lifetime_seconds=self.lifetime_seconds)
 
     def simulate(self):
         condition = self.number_of_instance > self.number_of_instance_created
@@ -52,20 +51,23 @@ class BaseSimulation:
 
 if __name__ == "__main__":
 
-    def lastItemEvent(data):
-        # print("event-simulation-base", data)
+    def life_cycle_item_event(data):
+        print("life_sycle_item_event", data)
         pass
 
-    def simulationEvent(data):
-        print("event-simulation", data)
+    def life_cycle_event(data):
+        print("life-cycle-event", data)
 
-    time_step = 0.01  # default simulation time step
-    number_of_instance = 1  # default simulation instance
-    life_time = 2  # second
+    time_step = 1  # default simulation time step
+    number_of_instance = 2  # default simulation instance
+    lifetime_seconds = 5  # second
 
-    instance = BaseSimulation(lifetime=life_time, number_of_instance=number_of_instance)
-    instance.trigger(simulationEvent)
+    instance = LifeCycleSimulation(
+        number_of_instance=number_of_instance,
+        lifetime_seconds=lifetime_seconds,
+    )
+    instance.trigger(life_cycle_event)
 
     while instance.simulate():
-        instance.last_item.trigger(lastItemEvent)
+        instance.last_item.trigger_event(life_cycle_item_event)
         time.sleep(time_step)
