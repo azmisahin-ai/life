@@ -1,8 +1,8 @@
-# src/web/controller/life_cycle_status.py
+# src/web/controller/simulation_status.py
 from enum import Enum
 
 
-class LifeCycleStatus(Enum):
+class SimulationStatus(Enum):
     stopped = "stopped"
     started = "started"
     paused = "paused"

@@ -1,8 +1,8 @@
-# src/web/controller/life_cycle_type.py
+# src/web/controller/simulation_type.py
 from enum import Enum
 
 
-class LifeCycleType(Enum):
+class SimulationType(Enum):
     LifeCycle = "LifeCycle"
     Particles = "Particles"
     Atoms = "Atoms"
