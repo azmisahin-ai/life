@@ -47,6 +47,16 @@ class Particle(LifeCycleManager):
         self.momentum = momentum
         self.wave_function = wave_function or Vector(0, 0, 0)
 
+    def trigger_event(self, event_function):
+        """
+        Bir olay işlevini tetiklemek için kullanılır.
+
+        :param event_function: Tetiklenen olayın işlevi.
+        """
+        self.event_function = event_function
+        if self.event_function:
+            self.event_function(self.to_json())
+
     def to_json(self):
         """
         Parçacığı JSON formatına dönüştürür.
