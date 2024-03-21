@@ -2,7 +2,9 @@
 
 import json
 import unittest
-from src.web.controller.simulation import Simulation, SimulationStatus, SimulationType
+from src.web.controller.simulation import Simulation
+from src.web.controller.simulation_status import SimulationStatus
+from src.web.controller.simulation_type import SimulationType
 
 
 class TestSimulation(unittest.TestCase):
