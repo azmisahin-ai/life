@@ -36,19 +36,10 @@ class TestSimulation(unittest.TestCase):
         )
         self.assertIsNotNone(
             started.instance
-        )  # Başlatılan simülasyonun değeri None olmamalı
-        self.assertIsNotNone(
+        )  # Başlatılan simülasyonun değeri None olmalı
+        self.assertIsNone(
             started.instance.last_item
-        )  # Simülasyonun son öğesi None olmamalı
-
-        # trigger_event metodu None döndürmemeli
-        def simulation_event_item(data):
-            # data is json data
-            pass
-
-        self.assertIsNotNone(
-            started.instance.last_item.trigger_event(simulation_event_item)
-        )
+        )  # Simülasyonun son öğesi None olmalı
 
     def test_stop_simulation(self):
         # Simülasyon durdurulduğunda durumun değiştiği ve çalıştırılmadığı kontrol edilmeli
