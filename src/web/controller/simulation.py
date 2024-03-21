@@ -1,6 +1,6 @@
 # src/web/controller/simulation.py
 
-import json
+
 import time
 from threading import Thread
 
@@ -57,7 +57,7 @@ class Simulation:
             "simulation_type": self.simulation_type.value,  # Enum'u string olarak dönüştürün
             "simulation_time_step": self.simulation_time_step,
         }
-        return json.dumps(simulation_data)
+        return simulation_data
 
     def switch_simulation(self, simulation_type, number_of_instance, lifetime_seconds):
         """

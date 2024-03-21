@@ -1,6 +1,5 @@
 # tests/web/controller/simulation_test.py
 
-import json
 import unittest
 from src.web.controller.simulation import Simulation
 from src.web.controller.simulation_status import SimulationStatus
@@ -70,7 +69,8 @@ class TestSimulation(unittest.TestCase):
             "simulation_type": SimulationType.LifeCycle.value,
             "simulation_time_step": 1,
         }
-        self.assertEqual(json.loads(self.simulation.to_json()), expected_json)
+        actual = self.simulation.to_json()
+        self.assertEqual(actual, expected_json)
 
 
 if __name__ == "__main__":

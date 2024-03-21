@@ -29,12 +29,26 @@ class SimulationStatusTest(unittest.TestCase):
         pass  # Clean up if needed
 
     def test_simulation_status_endpoint(self):
+        # Test the simulation_start endpoint
+        test_data = {
+            "simulation_time_step": 1,
+            "simulation_type": "LifeCycle",
+            "number_of_instance": 2,
+            "lifetime_seconds": 5,
+        }
+
+        response = self.client.post("/api/v1/simulation/start", json=test_data)
+        response_data = response.get_json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_data["simulation_status"], "started")
+
         # Test the simulation_continue endpoint
         response = self.client.get("/api/v1/simulation/status")
         response_data = response.get_json()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_data["simulation_status"], "continues")
+        self.assertEqual(response_data["simulation_status"], "started")
 
 
 if __name__ == "__main__":

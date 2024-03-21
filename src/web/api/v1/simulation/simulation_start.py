@@ -17,7 +17,11 @@ class SimulationStart(Resource):
     def post(self):
         data = request.json
         simulation_time_step = data.get("simulation_time_step", 1)
-        simulation_type = data.get("simulation_type", SimulationType.LifeCycle)
+        simulation_type_str = data.get(
+            "simulation_type", "LifeCycle"
+        )  # Öntanımlı değer olarak dize kullanılabilir
+        simulation_type = SimulationType(simulation_type_str)  # Dizeyi Enum'a dönüştür
+
         number_of_instance = data.get("number_of_instance", 2)
         lifetime_seconds = data.get("lifetime_seconds", 5)
 
