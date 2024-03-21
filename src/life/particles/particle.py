@@ -1,74 +1,88 @@
 # src/life/particles/particle.py
-from src.life.particles.base import Base
+
+import json
 from src.life.particles.vector import Vector
+from src.life.particles.life_cycle_manager import LifeCycleManager
 
 
-class Particle(Base):
+class Particle(LifeCycleManager):
+    """
+    Parçacık sınıfı, LifeCycleManager sınıfından türetilir ve parçacıkların özelliklerini ve davranışlarını tanımlar.
+    """
+
     def __init__(
         self,
         name,
         charge,
         mass,
         spin,
-        lifetime,
+        lifetime_seconds,
         energy,
         position=Vector(),
         velocity=Vector(),
         momentum=Vector(),
         wave_function=None,
     ):
-        super().__init__(name, lifetime)
-        self.name = name
+        """
+        Parçacık sınıfını başlatır.
+
+        :param name: Parçacığın adı.
+        :param charge: Parçacığın yükü.
+        :param mass: Parçacığın kütlesi.
+        :param spin: Parçacığın spin'i.
+        :param lifetime_seconds: Parçacığın ömrü.
+        :param energy: Parçacığın enerjisi.
+        :param position: Parçacığın pozisyonu.
+        :param velocity: Parçacığın hızı.
+        :param momentum: Parçacığın momentumu.
+        :param wave_function: Parçacığın dalga fonksiyonu.
+        """
+        super().__init__(name, lifetime_seconds)
         self.charge = charge
         self.mass = mass
         self.spin = spin
-        self.lifetime = lifetime
         self.energy = energy
         self.position = position
         self.velocity = velocity
         self.momentum = momentum
-        self.wave_function = (
-            wave_function if wave_function is not None else Vector(0, 0, 0)
-        )
-
-    @classmethod
-    def from_json(cls, data):
-        return cls(
-            name=data.get("name", ""),
-            charge=data.get("charge", 0),
-            mass=data.get("mass", 0.0),
-            spin=data.get("spin", 0.0),
-            energy=data.get("energy", 0.0),
-            position=Vector.from_json(data.get("position", {})),
-            velocity=Vector.from_json(data.get("velocity", {})),
-            momentum=Vector.from_json(data.get("momentum", {})),
-            wave_function=Vector.from_json(data.get("wave_function", {})),
-        )
+        self.wave_function = wave_function or Vector(0, 0, 0)
 
     def to_json(self):
-        data = super().to_json()
-        data.update(
-            {
-                "charge": self.charge,
-                "mass": self.mass,
-                "spin": self.spin,
-                "lifetime": self.lifetime,
-                "energy": self.energy,
-                "position": self.position.to_json(),
-                "velocity": self.velocity.to_json(),
-                "momentum": self.momentum.to_json(),
-                "wave_function": self.wave_function.to_json(),
-            }
-        )
-        return data
+        """
+        Parçacığı JSON formatına dönüştürür.
 
-    def signal(self):
-        self.update(force=self.wave_function, time_step=0.01)
+        :return: JSON formatında parçacık verisi.
+        """
+        data = {
+            "name": self.name,
+            "charge": self.charge,
+            "mass": self.mass,
+            "spin": self.spin,
+            "lifetime_seconds": self.lifetime_seconds,
+            "energy": self.energy,
+            "position": self.position.to_json(),
+            "velocity": self.velocity.to_json(),
+            "momentum": self.momentum.to_json(),
+            "wave_function": self.wave_function.to_json(),
+        }
+        return json.dumps(data)
+
+    def signal(self, time_step):
+        """
+        Parçacığın sinyalini gönderir.
+        """
+        self.update(force=self.wave_function, time_step=time_step)
         print(
             f"position: {self.position.to_json()} velocity: {self.velocity.to_json()} momentum: {self.momentum.to_json()} "
         )
 
-    def update(self, force=Vector(), time_step=0.1):
+    def update(self, force, time_step):
+        """
+        Parçacığın durumunu günceller.
+
+        :param force: Uygulanan kuvvet.
+        :param time_step: Zaman adımı.
+        """
         # Schrödinger denklemini kullanarak dalga fonksiyonunu güncelle
         self.wave_function += self.__schrodinger_eq() * time_step
 
@@ -85,20 +99,38 @@ class Particle(Base):
         self.position += self.velocity * time_step
 
     def __schrodinger_eq(self):
-        # Schrödinger denklemi ile dalga fonksiyonunu hesapla
+        """
+        Schrödinger denklemi ile dalga fonksiyonunu hesaplar.
+        """
         # Burada kompleks bir işlem gerçekleştirilir, bu sadece bir örnektir.
         return self.position * self.velocity
 
     def pauli_exclusion_principle(self, other_particle):
-        if self.spin == other_particle.spin:
-            return True
-        else:
-            return False
+        """
+        Parçacıklar arasındaki Pauli dışlama prensibini kontrol eder.
+
+        :param other_particle: Diğer parçacık.
+        :return: Prensibe uygunsa True, aksi halde False.
+        """
+        return self.spin == other_particle.spin
 
     def calculate_momentum(self, electric_field):
+        """
+        Parçacığın momentumunu hesaplar.
+
+        :param electric_field: Elektrik alanı.
+        :return: Momentum.
+        """
         return self.__schrodinger_eq() * electric_field
 
     def electromagnetic_interaction(self, electric_field, magnetic_field):
+        """
+        Elektromanyetik etkileşimi hesaplar.
+
+        :param electric_field: Elektrik alanı.
+        :param magnetic_field: Manyetik alan.
+        :return: Elektromanyetik etkileşim.
+        """
         return electric_field * self.charge + magnetic_field * self.charge
 
 
@@ -107,7 +139,7 @@ if __name__ == "__main__":
     def force_function(t):
         return Vector(t**0.1, t**0.1, t**0.1)
 
-    def eventFunction(data):
+    def event_function(data):
         print("event-particle", data)
 
     instance = Particle(
@@ -115,11 +147,11 @@ if __name__ == "__main__":
         charge=-1.602176634e-19,
         mass=9.10938356e-31,
         spin=1 / 2,
-        lifetime=float("inf"),
+        lifetime_seconds=5,  # float("inf"),
         energy=0,
         position=Vector(0, 0, 0),
         velocity=Vector(0, 0, 0),
         momentum=Vector(0, 0, 0),
         wave_function=force_function(0.1),
     )
-    instance.trigger(eventFunction)
+    instance.trigger_event(event_function)
