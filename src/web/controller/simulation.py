@@ -84,7 +84,7 @@ class Simulation:
         else:
             return None
 
-    def _simulation_loop(self):
+    def _run_simulation_loop(self):
         """
         Simülasyon döngüsünü başlatır ve çalıştırır.
         """
@@ -118,6 +118,12 @@ class Simulation:
         Returns:
             Simulation: Oluşturulan simülasyon örneği.
         """
+        # Geçersiz girişleri kontrol et
+        if not isinstance(simulation_type, SimulationType):
+            raise ValueError("Invalid simulation type")
+        if lifetime_seconds < 0:
+            raise ValueError("Lifetime seconds cannot be negative")
+
         self.is_running = True
         self.is_paused = False
         self.simulation_time_step = simulation_time_step

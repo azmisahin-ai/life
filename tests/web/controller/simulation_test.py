@@ -72,6 +72,18 @@ class TestSimulation(unittest.TestCase):
         actual = self.simulation.to_json()
         self.assertEqual(actual, expected_json)
 
+    def test_start_simulation_invalid_input(self):
+        # Geçersiz girişlerle simülasyon başlatıldığında hata durumunun doğru işlendiği kontrol edilmeli
+        with self.assertRaises(
+            ValueError
+        ):  # Hata durumu beklenen bir istisna türüne göre güncellenmeli
+            self.simulation.start(
+                simulation_time_step=1,
+                simulation_type="InvalidType",  # Geçersiz bir simülasyon türü
+                number_of_instance=2,
+                lifetime_seconds=-5,  # Negatif bir ömür değeri
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
