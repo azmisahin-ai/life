@@ -1,27 +1,32 @@
+# src/web/controller/life_cycle_simulation.py
+
 import threading
 import time
-from flask import Flask
-from flask_socketio import SocketIO
-
-
 from src.life.particles.life_cycle_manager import LifeCycleManager
 
 
-app = Flask(__name__)
-io = SocketIO(app)
-
-
 class LifeCycleSimulation:
+    """
+    Parçacıkların yaşam döngüsü simülasyonunu yöneten sınıf.
+
+    Args:
+        number_of_instance (int): Oluşturulacak parçacık örneklerinin sayısı.
+        lifetime_seconds (float): Parçacık örneklerinin yaşam süresi saniye cinsinden.
+
+    Attributes:
+        number_of_instance (int): Oluşturulacak parçacık örneklerinin sayısı.
+        lifetime_seconds (float): Parçacık örneklerinin yaşam süresi saniye cinsinden.
+        number_of_instance_created (int): Şu ana kadar oluşturulan parçacık örneklerinin sayısı.
+        last_item (LifeCycleManager): Son oluşturulan parçacık örneği.
+        event_function (function): Olay işlevi.
+        event_trigger (threading.Event): Olay tetikleyici.
+    """
+
     def __init__(self, number_of_instance, lifetime_seconds):
         self.number_of_instance = number_of_instance
         self.lifetime_seconds = lifetime_seconds
-
-        #
         self.number_of_instance_created = 0
-
-        #
         self.last_item = None
-
         self.event_function = None  # Event işlevi
         self.event_trigger = threading.Event()  # Olay tetikleyici oluştur
 
@@ -34,26 +39,27 @@ class LifeCycleSimulation:
             "number_of_instance_created": self.number_of_instance_created,
         }
 
-    def create(self):
+    def create_instance(self):
         name = f"item-{self.number_of_instance_created}"
         self.last_item = LifeCycleManager(name, lifetime_seconds=self.lifetime_seconds)
 
-    def simulate(self):
-        condition = self.number_of_instance > self.number_of_instance_created
-        if condition:
-            self.number_of_instance_created += 1
-            self.create()
-            if self.event_function:
-                self.event_function(self.to_json())  # Event işlevini çağır
-
-        return condition
+    def run_simulation(self):
+        try:
+            condition = self.number_of_instance > self.number_of_instance_created
+            if condition:
+                self.number_of_instance_created += 1
+                self.create_instance()
+                if self.event_function:
+                    self.event_function(self.to_json())  # Event işlevini çağır
+            return condition
+        except Exception as e:
+            print(f"LifeCycleSimulation Error: {e}")
 
 
 if __name__ == "__main__":
 
     def life_cycle_item_event(data):
-        print("life_sycle_item_event", data)
-        pass
+        print("life_cycle_item_event", data)
 
     def life_cycle_event(data):
         print("life-cycle-event", data)
@@ -68,6 +74,6 @@ if __name__ == "__main__":
     )
     instance.trigger(life_cycle_event)
 
-    while instance.simulate():
+    while instance.run_simulation():
         instance.last_item.trigger_event(life_cycle_item_event)
         time.sleep(time_step)
