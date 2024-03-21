@@ -131,7 +131,7 @@ class Simulation:
         self.instance = self.switch_simulation(
             self.simulation_type, number_of_instance, lifetime_seconds
         )
-        Thread(target=self._simulation_loop).start()
+        Thread(target=self._run_simulation_loop).start()
         return self
 
     def stop(self):
@@ -183,7 +183,7 @@ simulation = Simulation()
 if __name__ == "__main__":
     #
     simulation_time_step = 1  # default simulation time step
-    simulation_type = SimulationType.LifeCycle
+    simulation_type = SimulationType.Particles
     number_of_instance = 2  # default simulation instance
     lifetime_seconds = 2  # second or float("inf")
 
