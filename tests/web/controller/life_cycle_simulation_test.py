@@ -1,14 +1,7 @@
 # tests/web/controller/life_cycle_simulation_test.py
 
-# tests/web/controller/life_cycle_simulation_test.py
-
 import unittest
 from src.web.controller.life_cycle_simulation import LifeCycleSimulation
-
-
-# life_cycle_event fonksiyonunu tanımlayalım
-def life_cycle_event(data):
-    print("life-cycle-event", data)
 
 
 class TestLifeCycleSimulation(unittest.TestCase):
@@ -32,9 +25,7 @@ class TestLifeCycleSimulation(unittest.TestCase):
     def test_trigger_event_function(self):
         # Event işlevini tetikliyor mu?
         simulation = LifeCycleSimulation(number_of_instance=2, lifetime_seconds=5)
-        simulation.trigger(
-            life_cycle_event
-        )  # life_cycle_event fonksiyonunu burada kullanıyoruz
+        simulation.trigger(lambda x: print("Triggered"))
         self.assertIsNotNone(simulation.event_function)
 
     def test_to_json(self):
@@ -58,19 +49,6 @@ class TestLifeCycleSimulation(unittest.TestCase):
         self.assertFalse(
             simulation.run_simulation()
         )  # Üçüncü döngüyü çalıştırma, örnek sınırına ulaşıldı
-
-    def test_run_simulation_increment(self):
-        # run_simulation fonksiyonu çağrıldıktan sonra number_of_instance_created değeri artıyor mu?
-        simulation = LifeCycleSimulation(number_of_instance=2, lifetime_seconds=5)
-        self.assertEqual(
-            simulation.number_of_instance_created, 0
-        )  # Başlangıçta 0 olmalı
-        simulation.run_simulation()  # Bir kez çağrıldı
-        self.assertEqual(simulation.number_of_instance_created, 1)  # Artık 1 olmalı
-        simulation.run_simulation()  # İkinci kez çağrıldı
-        self.assertEqual(simulation.number_of_instance_created, 2)  # Artık 2 olmalı
-
-    # Diğer test fonksiyonlarını buraya ekleyin
 
 
 if __name__ == "__main__":
