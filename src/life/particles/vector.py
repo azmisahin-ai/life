@@ -94,3 +94,34 @@ class Vector:
         :return: Vektör sıfırsa True, aksi halde False.
         """
         return self.x == 0 and self.y == 0 and self.z == 0
+
+
+if __name__ == "__main__":
+    # Vektörlerin başlatılması
+    v1 = Vector()
+    print("Default vector:", v1)
+
+    v2 = Vector(x=1, y=2, z=3)
+    print("Custom vector:", v2)
+
+    # JSON'dan vektör oluşturma
+    json_data = {"x": 4, "y": 5, "z": 6}
+    v3 = Vector.from_json(json_data)
+    print("Vector from JSON:", v3)
+
+    # Vektörün toplanması
+    v4 = v2 + v3
+    print("Addition result:", v4)
+
+    # Vektörün skalerle çarpılması
+    v5 = v4 * 2
+    print("Multiplication result:", v5)
+
+    # Vektörün uzunluğu
+    length = v5.length()
+    print("Length of the vector:", length)
+
+    # Sıfır vektör kontrolü
+    zero_vector = Vector()
+    print("Is v5 zero vector?", v5.is_zero())
+    print("Is zero_vector zero vector?", zero_vector.is_zero())
