@@ -3,7 +3,8 @@
 from flask import Flask
 from flask_restx import Api, Resource
 from flask_socketio import SocketIO
-from ...controller.simulation import simulation
+
+from src.web.controller.simulation import simulation
 
 app = Flask(__name__)
 api = Api(app)

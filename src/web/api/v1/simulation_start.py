@@ -4,9 +4,8 @@ from flask import Flask, request
 from flask_restx import Api, Resource
 from flask_socketio import SocketIO
 
-
-from web.controller.simulation_type import LifeCycleType
 from src.web.controller.simulation import simulation
+from src.web.controller.simulation_type import SimulationType
 
 app = Flask(__name__)
 api = Api(app)
@@ -41,7 +40,7 @@ class SimulationStart(Resource):
 
         s = simulation.start(
             life_cycle_time_step=time_step,
-            life_cycle_type=LifeCycleType.Particles,
+            life_cycle_type=SimulationType.Particles,
             number_of_instance=number_of_particles,
             lifetime_seconds=5,  # second or float("inf")
         )
