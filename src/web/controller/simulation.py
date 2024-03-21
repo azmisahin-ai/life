@@ -1,16 +1,18 @@
-# simulation.py
+# src/web/controller/simulation.py
+import json
 import time
 from threading import Thread
 
 from flask import Flask
 from flask_socketio import SocketIO
 
-
-from src.web.controller.particle_life_cycle_simulation import ParticleSimulation
-
-from web.controller.life_cycle_status import SimulationStatus
-from src.web.controller.simulation_type import SimulationType
+from src.web.controller.life_cycle_status import LifeCycleStatus
+from src.web.controller.life_cycle_type import LifeCycleType
 from src.web.controller.life_cycle_simulation import LifeCycleSimulation
+from src.web.controller.particle_life_cycle_simulation import (
+    ParticleLifeCycleSimulation,
+)
+
 
 app = Flask(__name__)
 io = SocketIO(app)
@@ -18,69 +20,68 @@ io = SocketIO(app)
 
 class Simulation:
     def __init__(self):
-        self.simulation_status = SimulationStatus.stopped
+        self.life_cycle_status = LifeCycleStatus.stopped
+        self.life_cycle_type = LifeCycleType.LifeCycle  # default life cycle type
+        self.life_cycle_time_step = 1  # ? default life cycle time step
+        #
         self.is_running = False
         self.is_paused = False
-        self.simulation_type = SimulationType.Base  # default simualation type
-
-        self.time_step = 0.01  # default simulation time step
-        self.number_of_instance = 1  # default simulation instance
 
     def to_json(self):
-        return {
-            "status": self.simulation_status.value,
-            "is_running": self.is_running,
-            "is_paused": self.is_paused,
-            "simulation_type": self.simulation_type.value,  # Enum'u string olarak dönüştürün
-            "simulation_time_step": self.time_step,
-            "time_step": self.time_step,  # Bu satır kaldırılacak
-            "number_of_particles": self.number_of_instance,  # Bu satır kaldırılacak
-            "number_of_instance": self.number_of_instance,
+        instance_json = json.loads(self.instance.to_json())
+        simulation_data = {
+            "life_cycle_status": self.life_cycle_status.value,
+            "life_cycle_type": self.life_cycle_type.value,  # Enum'u string olarak dönüştürün
+            "life_cycle_time_step": self.time_step,
         }
+        instance_json.update(simulation_data)  # Düzeltildi
+        return json.dumps(instance_json)
 
-    def swich_simulation(self, simulation_type, number_of_instance, lifetime_seconds):
-        if simulation_type == SimulationType.Base:
+    def swich_simulation(self, life_cycle_type, number_of_instance, lifetime_seconds):
+        if life_cycle_type == LifeCycleType.LifeCycle:
             return LifeCycleSimulation(
                 number_of_instance=number_of_instance,
-                lifetime=lifetime_seconds,
+                lifetime_seconds=lifetime_seconds,
             )
-        elif simulation_type == SimulationType.Particles:
-            return ParticleSimulation(
+        elif life_cycle_type == LifeCycleType.Particles:
+            return ParticleLifeCycleSimulation(
                 number_of_instance=number_of_instance,
-                lifetime=lifetime_seconds,
+                lifetime_seconds=lifetime_seconds,
             )
         else:
             return None
 
     def _simulation_loop(self):
-        self.simulation_status = SimulationStatus.started
+        self.life_cycle_status = LifeCycleStatus.started
         while self.is_running:
             if not self.is_paused:
-                # self.simulation_status = SimulationStatus.continues
+                # self.life_cycle_status = LifeCycleStatus.continues
                 if isinstance(self.instance, LifeCycleSimulation):
-                    self.instance.simulate()
-                if isinstance(self.instance, ParticleSimulation):
-                    self.instance.simulate()
-            time.sleep(self.time_step)
+                    self.instance.run_simulation()
+                if isinstance(self.instance, ParticleLifeCycleSimulation):
+                    self.instance.run_simulation()
+            time.sleep(self.life_cycle_time_step)
 
     def start(
         self,
+        life_cycle_time_step,
+        life_cycle_type,
         number_of_instance,
-        simulation_time_step,
-        lifetime_seconds=5,
-        simulation_type=SimulationType.Particles,
+        lifetime_seconds,
     ):
         self.is_running = True
         self.is_paused = False
-        self.simulation_type = simulation_type
-        self.time_step = simulation_time_step
-        self.number_of_instance = number_of_instance
+        #
+        self.life_cycle_time_step = life_cycle_time_step
+        self.life_cycle_type = life_cycle_type  # also transfer instance
+        # self.number_of_instance = number_of_instance  # transfer instance
+        # self.lifetime_seconds = lifetime_seconds  # transfer instance
 
         self.instance = self.swich_simulation(
-            simulation_type, number_of_instance, lifetime_seconds
+            self.life_cycle_type, number_of_instance, lifetime_seconds
         )
 
-        # self.simulation_status = SimulationStatus.started # this will be set when the thread is started
+        # self.life_cycle_type = LifeCycleStatus.started # this will be set when the thread is started
         Thread(target=self._simulation_loop).start()
 
         return self
@@ -88,17 +89,17 @@ class Simulation:
     def stop(self):
         self.is_running = False
         self.is_paused = False
-        self.simulation_status = SimulationStatus.stopped
+        self.simulation_status = LifeCycleStatus.stopped
         return self
 
     def pause(self):
         self.is_paused = True
-        self.simulation_status = SimulationStatus.paused
+        self.simulation_status = LifeCycleStatus.paused
         return self
 
     def continues(self):
         self.is_paused = False
-        self.simulation_status = SimulationStatus.continues
+        self.simulation_status = LifeCycleStatus.continues
         return self
 
     def status(self):
@@ -108,17 +109,24 @@ class Simulation:
 simulation = Simulation()
 
 if __name__ == "__main__":
+    life_cycle_time_step = 1  # default life cycle time step 0.1
+    life_cycle_type = LifeCycleType.LifeCycle
     number_of_instance = 2  # default simulation instance
-    time_step = 0.01  # default simulation time step
-    life_time = 5  # second or float("inf")
-
-    def simulationEvent(data):
-        print("event-simulation", data)
+    lifetime_seconds = 5  # second or float("inf")
 
     started = simulation.start(
+        life_cycle_time_step=life_cycle_time_step,
+        life_cycle_type=life_cycle_type,
         number_of_instance=number_of_instance,
-        simulation_time_step=time_step,
-        simulation_type=SimulationType.Particles,
-        lifetime_seconds=life_time,
+        lifetime_seconds=lifetime_seconds,
     )
-    started.instance.trigger(simulationEvent)
+
+    def life_cycle_event(data):
+        print("life_cycle_event", data)
+
+    started.instance.trigger(life_cycle_event)
+
+    # def life_cycle_item_event(data):
+    #     print("life_cycle_item_event", data)
+
+    # started.instance.last_item.trigger_event(life_cycle_item_event)
