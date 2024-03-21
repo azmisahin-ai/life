@@ -1,4 +1,7 @@
 # src/life/particles/vector.py
+import math
+
+
 class Vector:
     def __init__(self, x: float = 0, y: float = 0, z: float = 0):
         """
@@ -55,3 +58,39 @@ class Vector:
             return Vector(self.x * scalar.x, self.y * scalar.y, self.z * scalar.z)
         else:
             raise TypeError("Scalar must be an integer, a float, or a Vector.")
+
+    def __eq__(self, other: "Vector") -> bool:
+        """
+        Vektörlerin eşitliğini kontrol eder.
+
+        :param other: Diğer vektör.
+        :return: Eşitlik durumu.
+        """
+        if isinstance(other, Vector):
+            return self.x == other.x and self.y == other.y and self.z == other.z
+        else:
+            return False
+
+    def __repr__(self) -> str:
+        """
+        Vektörün temsilini döndürür.
+
+        :return: Vektörün temsili.
+        """
+        return f"Vector(x={self.x}, y={self.y}, z={self.z})"
+
+    def length(self) -> float:
+        """
+        Vektörün uzunluğunu hesaplar.
+
+        :return: Vektörün uzunluğu.
+        """
+        return math.sqrt(self.x**2 + self.y**2 + self.z**2)
+
+    def is_zero(self) -> bool:
+        """
+        Vektörün sıfır olup olmadığını kontrol eder.
+
+        :return: Vektör sıfırsa True, aksi halde False.
+        """
+        return self.x == 0 and self.y == 0 and self.z == 0
