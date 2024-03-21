@@ -12,8 +12,8 @@ io = SocketIO(app)
 
 
 class ParticleSimulation(BaseSimulation):
-    def __init__(self, lifetime, number_of_instance):
-        super().__init__(lifetime, number_of_instance)
+    def __init__(self, number_of_instance, lifetime):
+        super().__init__(number_of_instance=number_of_instance, lifetime=lifetime)
 
     def force_function(self, t):
         return Vector(t**0.1, t**0.1, t**0.1)
@@ -30,7 +30,7 @@ class ParticleSimulation(BaseSimulation):
                 "lifetime": self.lifetime,
             }
         )
-        data.update({"particle": self.last_item.to_json()})
+        # data.update({"particle": self.last_item.to_json()})
         return data
 
     def create(self):

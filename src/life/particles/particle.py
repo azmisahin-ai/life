@@ -1,3 +1,4 @@
+# src/life/particles/particle.py
 from src.life.particles.base import Base
 from src.life.particles.vector import Vector
 
