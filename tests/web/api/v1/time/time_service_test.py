@@ -1,6 +1,6 @@
 # tests/web/api/v1/test_time_service.py
 import unittest
-from src.web.api.v1.time_service import TimeService
+from src.web.api.v1.time.time_service import TimeService
 
 
 class TimServiceTest(unittest.TestCase):

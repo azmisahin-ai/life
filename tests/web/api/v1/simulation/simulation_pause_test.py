@@ -1,4 +1,4 @@
-# tests/web/api/v1/simulation_start_test.py
+# tests/web/api/v1/simulation_pause_test.py
 
 import os
 import unittest
@@ -8,7 +8,7 @@ from src.web.app import create_app
 app = create_app()
 
 
-class SimulationStartTest(unittest.TestCase):
+class SimulationPauseTest(unittest.TestCase):
     def setUp(self):
         try:
             # Get environment variables
@@ -28,19 +28,13 @@ class SimulationStartTest(unittest.TestCase):
     def tearDown(self):
         pass  # Clean up if needed
 
-    def test_simulation_start_endpoint(self):
-        # Test the simulation_start endpoint
-        test_data = {"number_of_particles": 100, "time_step": 0.1}
-
-        response = self.client.post("/api/v1/simulation_start", json=test_data)
+    def test_simulation_pause_endpoint(self):
+        # Test the simulation_continue endpoint
+        response = self.client.get("/api/v1/simulation/pause")
         response_data = response.get_json()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_data["status"], "started")
-        self.assertEqual(
-            response_data["number_of_particles"], test_data["number_of_particles"]
-        )
-        self.assertEqual(response_data["time_step"], test_data["time_step"])
+        self.assertEqual(response_data["simulation_status"], "paused")
 
 
 if __name__ == "__main__":

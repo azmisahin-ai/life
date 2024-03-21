@@ -1,4 +1,4 @@
-# tests/web/api/v1/simulation_pause_test.py
+# tests/web/api/v1/simulation_stop_test.py
 
 import os
 import unittest
@@ -8,7 +8,7 @@ from src.web.app import create_app
 app = create_app()
 
 
-class SimulationPauseTest(unittest.TestCase):
+class SimulationStopTest(unittest.TestCase):
     def setUp(self):
         try:
             # Get environment variables
@@ -28,13 +28,13 @@ class SimulationPauseTest(unittest.TestCase):
     def tearDown(self):
         pass  # Clean up if needed
 
-    def test_simulation_pause_endpoint(self):
+    def test_simulation_stop_endpoint(self):
         # Test the simulation_continue endpoint
-        response = self.client.get("/api/v1/simulation_pause")
+        response = self.client.get("/api/v1/simulation/stop")
         response_data = response.get_json()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_data["status"], "paused")
+        self.assertEqual(response_data["simulation_status"], "stopped")
 
 
 if __name__ == "__main__":

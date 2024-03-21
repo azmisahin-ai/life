@@ -1,4 +1,4 @@
-# tests/web/api/v1/simulation_status_test.py
+# tests/web/api/v1/simulation_continue_test.py
 
 import os
 import unittest
@@ -8,7 +8,7 @@ from src.web.app import create_app
 app = create_app()
 
 
-class SimulationStatusTest(unittest.TestCase):
+class SimulationContinueTest(unittest.TestCase):
     def setUp(self):
         try:
             # Get environment variables
@@ -28,13 +28,13 @@ class SimulationStatusTest(unittest.TestCase):
     def tearDown(self):
         pass  # Clean up if needed
 
-    def test_simulation_status_endpoint(self):
+    def test_simulation_continue_endpoint(self):
         # Test the simulation_continue endpoint
-        response = self.client.get("/api/v1/simulation_status")
+        response = self.client.get("/api/v1/simulation/continue")
         response_data = response.get_json()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_data["status"], "continues")
+        self.assertEqual(response_data["simulation_status"], "continues")
 
 
 if __name__ == "__main__":
