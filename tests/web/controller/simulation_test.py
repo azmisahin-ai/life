@@ -12,7 +12,7 @@ class TestSimulation(unittest.TestCase):
 
     def test_start_simulation(self):
         # Simülasyon başlatıldığında doğru durum ve başlatılma değeri kontrol edilmeli
-        self.simulation.start(
+        started = self.simulation.start(
             simulation_time_step=1,
             simulation_type=SimulationType.LifeCycle,
             number_of_instance=2,
@@ -21,6 +21,32 @@ class TestSimulation(unittest.TestCase):
         self.assertTrue(self.simulation.is_running)
         self.assertFalse(self.simulation.is_paused)
         self.assertEqual(self.simulation.simulation_status, SimulationStatus.started)
+        self.assertIsNotNone(
+            started.instance
+        )  # Başlatılan simülasyonun değeri None olmamalı
+
+    def test_simulation_event_trigger(self):
+        # Simülasyon başarıyla başlatıldığında
+        # trigger_event metodunun doğru bir şekilde çağrıldığını kontrol etmek için bir test
+        started = self.simulation.start(
+            simulation_time_step=1,
+            simulation_type=SimulationType.LifeCycle,
+            number_of_instance=2,
+            lifetime_seconds=5,
+        )
+        self.assertIsNotNone(
+            started.instance
+        )  # Başlatılan simülasyonun değeri None olmamalı
+        self.assertIsNotNone(
+            started.instance.last_item
+        )  # Simülasyonun son öğesi None olmamalı
+
+        def simulation_event_item(data):
+            pass
+
+        self.assertIsNone(
+            started.instance.last_item.trigger_event(simulation_event_item)
+        )  # trigger_event metodu çağrılmalı
 
     def test_stop_simulation(self):
         # Simülasyon durdurulduğunda durumun değiştiği ve çalıştırılmadığı kontrol edilmeli
