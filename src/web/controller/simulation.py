@@ -6,7 +6,7 @@ from flask import Flask
 from flask_socketio import SocketIO
 
 
-from src.web.controller.particle_simulation import ParticleSimulation
+from src.web.controller.particle_life_cycle_simulation import ParticleSimulation
 
 from web.controller.life_cycle_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType

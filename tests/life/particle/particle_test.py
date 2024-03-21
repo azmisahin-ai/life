@@ -7,10 +7,14 @@ from src.life.particles.vector import Vector
 
 
 class TestParticle(unittest.TestCase):
+    def setUp(self):
+        self.maxDiff = None
+
     def test_particle_creation(self):
         """
         Parçacık oluşturma testi.
         """
+        # Test verileri
         name = "Electron"
         charge = -1.602176634e-19
         mass = 9.10938356e-31
@@ -22,6 +26,7 @@ class TestParticle(unittest.TestCase):
         momentum = Vector(0, 0, 0)
         wave_function = Vector(0, 0, 0)
 
+        # Parçacık oluşturma
         particle = Particle(
             name=name,
             charge=charge,
@@ -35,6 +40,7 @@ class TestParticle(unittest.TestCase):
             wave_function=wave_function,
         )
 
+        # Özelliklerin doğru oluşturulduğunu doğrula
         self.assertEqual(particle.name, name)
         self.assertEqual(particle.charge, charge)
         self.assertEqual(particle.mass, mass)
@@ -50,7 +56,10 @@ class TestParticle(unittest.TestCase):
         """
         Olay tetikleme testi.
         """
+        # Mock event function
         event_function_mock = Mock()
+
+        # Parçacık oluşturma
         particle = Particle(
             name="Electron",
             charge=-1.602176634e-19,
@@ -64,10 +73,33 @@ class TestParticle(unittest.TestCase):
             wave_function=Vector(0, 0, 0),
         )
 
+        # Olay tetikleme
         particle.trigger_event(event_function_mock)
 
-        # Bekleyin, olay işlevinin çağrıldığını doğrulayın
+        # Beklenen şekilde olay fonksiyonunun çağrıldığını doğrula
         event_function_mock.assert_called_once()
+
+    def test_to_json(self):
+        """
+        JSON dönüşüm testi.
+        """
+        # Test verileri
+        particle = Particle(
+            name="Electron",
+            charge=-1.602176634e-19,
+            mass=9.10938356e-31,
+            spin=1 / 2,
+            lifetime_seconds=5,
+            energy=0,
+            position=Vector(0, 0, 0),
+            velocity=Vector(0, 0, 0),
+            momentum=Vector(0, 0, 0),
+            wave_function=Vector(0, 0, 0),
+        )
+
+        # Beklenen JSON çıktısı içinde "momentum"un olup olmadığını kontrol et
+        expected_json = particle.to_json()
+        self.assertIn('"momentum"', expected_json)
 
 
 if __name__ == "__main__":

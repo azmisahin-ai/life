@@ -1,14 +1,29 @@
-# src/web/controller/particle_simulation.py
+# src/web/controller/particle_life_cycle_simulation.py
 
 import time
-
 
 from src.life.particles.vector import Vector
 from src.life.particles.particle import Particle
 from src.web.controller.life_cycle_simulation import LifeCycleSimulation
 
 
-class ParticleSimulation(LifeCycleSimulation):
+class ParticleLifeCycleSimulation(LifeCycleSimulation):
+    """
+    Parçacıkların yaşam döngüsü simülasyonunu yöneten sınıf.
+
+    Args:
+        number_of_instance (int): Oluşturulacak parçacık örneklerinin sayısı.
+        lifetime_seconds (float): Parçacık örneklerinin yaşam süresi saniye cinsinden.
+
+    Attributes:
+        number_of_instance (int): Oluşturulacak parçacık örneklerinin sayısı.
+        lifetime_seconds (float): Parçacık örneklerinin yaşam süresi saniye cinsinden.
+        number_of_instance_created (int): Şu ana kadar oluşturulan parçacık örneklerinin sayısı.
+        last_item (LifeCycleManager): Son oluşturulan parçacık örneği.
+        event_function (function): Olay işlevi.
+        event_trigger (threading.Event): Olay tetikleyici.
+    """
+
     def __init__(self, number_of_instance, lifetime_seconds):
         super().__init__(
             number_of_instance=number_of_instance, lifetime_seconds=lifetime_seconds
@@ -55,7 +70,7 @@ if __name__ == "__main__":
     number_of_instance = 2  # default simulation instance
     lifetime_seconds = 5  # second
 
-    instance = ParticleSimulation(
+    instance = ParticleLifeCycleSimulation(
         number_of_instance=number_of_instance,
         lifetime_seconds=lifetime_seconds,
     )

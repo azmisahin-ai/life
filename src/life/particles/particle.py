@@ -63,7 +63,8 @@ class Particle(LifeCycleManager):
 
         :return: JSON formatında parçacık verisi.
         """
-        data = {
+        base_json = json.loads(super().to_json())
+        particle_data = {
             "name": self.name,
             "charge": self.charge,
             "mass": self.mass,
@@ -75,7 +76,8 @@ class Particle(LifeCycleManager):
             "momentum": self.momentum.to_json(),
             "wave_function": self.wave_function.to_json(),
         }
-        return json.dumps(data)
+        base_json.update(particle_data)  # Düzeltildi
+        return json.dumps(base_json)
 
     def signal(self, time_step):
         """
