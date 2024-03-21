@@ -39,15 +39,15 @@ class SimulationStart(Resource):
         time_step = data.get("time_step")
 
         s = simulation.start(
-            life_cycle_time_step=time_step,
-            life_cycle_type=SimulationType.Particles,
+            simulation_time_step=time_step,
+            simulation_type=SimulationType.Particles,
             number_of_instance=number_of_particles,
             lifetime_seconds=5,  # second or float("inf")
         )
 
         def simulation_event(data):
             print("simulation_event", data)
-            io.emit("/api/v1/simulation_status", data)
+            io.emit("/api/v1/simulation/status", data)
 
         s.instance.trigger(simulation_event)
 
