@@ -3,19 +3,12 @@ import json
 import time
 from threading import Thread
 
-from flask import Flask
-from flask_socketio import SocketIO
-
 from src.web.controller.life_cycle_status import LifeCycleStatus
 from src.web.controller.life_cycle_type import LifeCycleType
 from src.web.controller.life_cycle_simulation import LifeCycleSimulation
 from src.web.controller.particle_life_cycle_simulation import (
     ParticleLifeCycleSimulation,
 )
-
-
-app = Flask(__name__)
-io = SocketIO(app)
 
 
 class Simulation:
