@@ -13,7 +13,7 @@ io = SocketIO(app)
 
 class SimulationContinue(Resource):
     @app.route("/continue", methods=["GET"])
-    def get():
+    def get(self):
         continued = simulation.continues()
         return jsonify(continued.to_json())
 

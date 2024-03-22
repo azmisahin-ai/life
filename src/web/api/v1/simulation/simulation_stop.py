@@ -13,7 +13,7 @@ io = SocketIO(app)
 
 class SimulationStop(Resource):
     @app.route("/stop", methods=["GET"])
-    def get():
+    def get(self):
         stopped = simulation.stop()
         return jsonify(stopped.to_json())
 

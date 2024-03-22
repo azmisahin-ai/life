@@ -14,7 +14,7 @@ io = SocketIO(app)
 
 class SimulationStart(Resource):
     @app.route("/start", methods=["POST"])
-    def post():
+    def post(self):
         data = request.json
         simulation_time_step = data.get("simulation_time_step", 1)
         simulation_type_str = data.get(
@@ -32,15 +32,18 @@ class SimulationStart(Resource):
             lifetime_seconds=lifetime_seconds,
         )
 
-        def simulation_event_item_event(data):
-            print("simulation_event_item_event", data)
+        # RED = "\033[91m"
+        # GREEN = "\033[92m"
+        YELLOW = "\033[93m"
+        # BLUE = "\033[94m"
+        # CYAN = "\033[96m"
+        RESET = "\033[0m"  # Renkleri sıfırlamak için kullanılır
 
         def simulation_event(data):
-            print("simulation_event", data)
+            print(f"{YELLOW}simulation_event{RESET}", data)
 
         if started.instance:
             started.instance.trigger(simulation_event)
-            started.instance.last_item.trigger_event(simulation_event_item_event)
 
         return jsonify(started.to_json())
 

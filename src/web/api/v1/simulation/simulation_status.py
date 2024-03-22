@@ -13,7 +13,7 @@ io = SocketIO(app)
 
 class SimulationStatus(Resource):
     @app.route("/status", methods=["GET"])
-    def get():
+    def get(self):
         status = simulation.status()
         return jsonify(status.to_json())
 
