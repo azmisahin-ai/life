@@ -55,7 +55,7 @@ class Particle(LifeCycleManager):
         """
         self.event_function = event_function
         if self.event_function:
-            self.event_function(self.to_json())
+            self.event_function(self)
 
     def to_json(self):
         """
@@ -180,6 +180,6 @@ if __name__ == "__main__":
         print(f"{GREEN}simulation_event_item{RESET}", data)
 
     def simulation_event(data):
-        print(f"{YELLOW}simulation_event{RESET}", data)
+        print(f"{YELLOW}simulation_event_inst{RESET}", data)
 
     instance.trigger_event(simulation_event_item)

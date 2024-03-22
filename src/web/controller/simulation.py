@@ -202,7 +202,7 @@ if __name__ == "__main__":
     RESET = "\033[0m"  # Renkleri sıfırlamak için kullanılır
 
     def simulation_event(data):
-        print(f"{YELLOW}simulation_event{RESET}", data)
+        print(f"{YELLOW}simulation_event_inst{RESET}", data)
 
     if started.instance:
         started.instance.trigger(simulation_event)

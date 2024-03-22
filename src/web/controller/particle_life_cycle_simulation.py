@@ -84,7 +84,7 @@ if __name__ == "__main__":
         print(f"{GREEN}simulation_event_item{RESET}", data)
 
     def simulation_event(data):
-        print(f"{YELLOW}simulation_event{RESET}", data)
+        print(f"{YELLOW}simulation_event_inst{RESET}", data)
 
     while instance.run_simulation():
         if instance:

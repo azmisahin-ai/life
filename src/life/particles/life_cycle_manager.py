@@ -42,7 +42,7 @@ class LifeCycleManager:
         while time.time() - current_time < self.lifetime_seconds:
             self.elapsed_lifespan = time.time() - self.life_start_time
             if self.event_function:
-                self.event_function(self.to_json())
+                self.event_function(self)
             time.sleep(self.lifecycle)
 
     def to_json(self):
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         print(f"{GREEN}simulation_event_item{RESET}", data)
 
     def simulation_event(data):
-        print(f"{YELLOW}simulation_event{RESET}", data)
+        print(f"{YELLOW}simulation_event_inst{RESET}", data)
 
     # Test kodu
     instance = LifeCycleManager(name="Particle", lifetime_seconds=lifetime_seconds)
