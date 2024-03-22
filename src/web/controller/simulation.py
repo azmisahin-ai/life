@@ -10,6 +10,8 @@ from src.web.controller.life_cycle_simulation import LifeCycleSimulation
 from src.web.controller.particle_life_cycle_simulation import (
     ParticleLifeCycleSimulation,
 )
+from src.life.particles.life_cycle_manager import LifeCycleManager
+from src.life.particles.particle import Particle
 
 
 class Simulation:
@@ -185,7 +187,7 @@ if __name__ == "__main__":
     simulation_time_step = 1  # default simulation time step
     simulation_type = SimulationType.Particles
     number_of_instance = 2  # default simulation instance
-    lifetime_seconds = 2  # second or float("inf")
+    lifetime_seconds = 1  # second or float("inf")
 
     started = simulation.start(
         simulation_time_step=simulation_time_step,
@@ -201,8 +203,21 @@ if __name__ == "__main__":
     CYAN = "\033[96m"
     RESET = "\033[0m"  # Renkleri sıfırlamak için kullanılır
 
-    def simulation_event(data):
-        print(f"{YELLOW}simulation_event_inst{RESET}", data)
+    # Event status
+    def simulation_event_item(inst):
+        # print(f"{GREEN}simulation_event_item{RESET}", inst)
+        if issubclass(type(inst), LifeCycleManager):
+            print(f"{BLUE}simulation_event_event{RESET}", inst.name)
+        elif isinstance(inst, Particle):
+            print(f"{BLUE}simulation_event_event{RESET}", inst.name)
+
+    # Simulation status
+    def simulation_event(inst):
+        print(f"{YELLOW}simulation_event_inst{RESET}", inst)
+        if issubclass(type(inst), LifeCycleSimulation):
+            inst.last_item.trigger_event(simulation_event_item)
+        elif isinstance(inst, ParticleLifeCycleSimulation):
+            inst.last_item.trigger_event(simulation_event_item)
 
     if started.instance:
         started.instance.trigger(simulation_event)
