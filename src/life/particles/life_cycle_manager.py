@@ -1,7 +1,6 @@
 # src/life/particles/life_cycle_manager.py
 import threading
 import time
-import json
 
 
 class LifeCycleManager:
@@ -51,16 +50,14 @@ class LifeCycleManager:
 
         :return: JSON formatında nesne.
         """
-        return json.dumps(
-            {
-                "name": self.name,
-                "life_start_time": self.life_start_time,
-                "elapsed_lifespan": self.elapsed_lifespan,
-                "lifecycle_rate_per_minute": self.lifecycle_rate_per_minute,
-                "lifecycle": self.lifecycle,
-                "lifetime_seconds": self.lifetime_seconds,
-            }
-        )
+        return {
+            "name": self.name,
+            "life_start_time": self.life_start_time,
+            "elapsed_lifespan": self.elapsed_lifespan,
+            "lifecycle_rate_per_minute": self.lifecycle_rate_per_minute,
+            "lifecycle": self.lifecycle,
+            "lifetime_seconds": self.lifetime_seconds,
+        }
 
 
 if __name__ == "__main__":

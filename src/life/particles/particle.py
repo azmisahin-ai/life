@@ -1,6 +1,6 @@
 # src/life/particles/particle.py
 
-import json
+
 from src.life.particles.vector import Vector
 from src.life.particles.life_cycle_manager import LifeCycleManager
 
@@ -63,21 +63,22 @@ class Particle(LifeCycleManager):
 
         :return: JSON formatında parçacık verisi.
         """
-        base_json = json.loads(super().to_json())
-        particle_data = {
+        return {
             "name": self.name,
+            "life_start_time": self.life_start_time,
+            "elapsed_lifespan": self.elapsed_lifespan,
+            "lifecycle_rate_per_minute": self.lifecycle_rate_per_minute,
+            "lifecycle": self.lifecycle,
+            "lifetime_seconds": self.lifetime_seconds,
             "charge": self.charge,
             "mass": self.mass,
             "spin": self.spin,
-            "lifetime_seconds": self.lifetime_seconds,
             "energy": self.energy,
             "position": self.position.to_json(),
             "velocity": self.velocity.to_json(),
             "momentum": self.momentum.to_json(),
             "wave_function": self.wave_function.to_json(),
         }
-        base_json.update(particle_data)  # Düzeltildi
-        return json.dumps(base_json)
 
     def signal(self, time_step):
         """
