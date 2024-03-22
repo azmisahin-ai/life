@@ -100,6 +100,7 @@ class Simulation:
                     if not self.instance.run_simulation():
                         self.stop()
             time.sleep(self.simulation_time_step)
+        self.simulation_status = SimulationStatus.stopped
 
     def start(
         self,
@@ -134,6 +135,7 @@ class Simulation:
             self.simulation_type, number_of_instance, lifetime_seconds
         )
         Thread(target=self._run_simulation_loop).start()
+        self.simulation_status = SimulationStatus.started
         return self
 
     def stop(self):
