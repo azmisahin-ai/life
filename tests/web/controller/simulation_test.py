@@ -16,7 +16,7 @@ class TestSimulation(unittest.TestCase):
             simulation_time_step=1,
             simulation_type=SimulationType.LifeCycle,
             number_of_instance=2,
-            lifetime_seconds=5,
+            lifetime_seconds=1,
         )
         self.assertTrue(self.simulation.is_running)
         self.assertFalse(self.simulation.is_paused)
@@ -32,7 +32,7 @@ class TestSimulation(unittest.TestCase):
             simulation_time_step=1,
             simulation_type=SimulationType.LifeCycle,
             number_of_instance=2,
-            lifetime_seconds=5,
+            lifetime_seconds=1,
         )
         self.assertIsNotNone(
             started.instance
@@ -47,7 +47,7 @@ class TestSimulation(unittest.TestCase):
             simulation_time_step=1,
             simulation_type=SimulationType.LifeCycle,
             number_of_instance=2,
-            lifetime_seconds=5,
+            lifetime_seconds=1,
         )
         self.simulation.stop()
         self.assertFalse(self.simulation.is_running)
@@ -60,7 +60,7 @@ class TestSimulation(unittest.TestCase):
             simulation_time_step=1,
             simulation_type=SimulationType.LifeCycle,
             number_of_instance=2,
-            lifetime_seconds=5,
+            lifetime_seconds=1,
         )
         self.simulation.pause()
         self.assertTrue(self.simulation.is_running)
@@ -73,7 +73,7 @@ class TestSimulation(unittest.TestCase):
             simulation_time_step=1,
             simulation_type=SimulationType.LifeCycle,
             number_of_instance=2,
-            lifetime_seconds=5,
+            lifetime_seconds=1,
         )
         self.simulation.pause()
         self.simulation.continues()
@@ -100,7 +100,7 @@ class TestSimulation(unittest.TestCase):
                 simulation_time_step=1,
                 simulation_type="InvalidType",  # Geçersiz bir simülasyon türü
                 number_of_instance=2,
-                lifetime_seconds=-5,  # Negatif bir ömür değeri
+                lifetime_seconds=-1,  # Negatif bir ömür değeri
             )
 
 

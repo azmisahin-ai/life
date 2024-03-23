@@ -8,16 +8,20 @@ class LifeCycleManager:
     LifeCycleManager sınıfı, parçacıkların yaşam döngüsünü yönetir.
     """
 
-    def __init__(self, name, lifetime_seconds):
+    def __init__(self, name, lifetime_seconds, lifecycle_rate_per_minute=70):
         """
         Yöneticiyi başlatır.
 
         :param name: Parçacığın adı.
         :param lifetime_seconds: Parçacığın yaşam süresi saniye cinsinden.
         """
+        if name is None:
+            raise ValueError("Name cannot be None.")
+        if lifetime_seconds <= 0:
+            raise ValueError("Lifetime seconds must be a positive value.")
         self.life_start_time = time.time()
         self.elapsed_lifespan = 0
-        self.lifecycle_rate_per_minute = 70
+        self.lifecycle_rate_per_minute = lifecycle_rate_per_minute
         self.lifecycle = 60.0 / self.lifecycle_rate_per_minute
         self.lifetime_seconds = lifetime_seconds
         self.name = name
