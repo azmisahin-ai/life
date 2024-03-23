@@ -97,9 +97,14 @@ class TestParticle(unittest.TestCase):
             wave_function=Vector(0, 0, 0),
         )
 
-        # Beklenen JSON çıktısı içinde "momentum"un olup olmadığını kontrol et
+        # JSON çıktısını al
         expected_json = particle.to_json()
-        self.assertIn('"momentum"', expected_json)
+
+        # Beklenen JSON çıktısının momentum içerip içermediğini kontrol et
+        self.assertIn("momentum", expected_json)
+
+        # JSON çıktısındaki momentumun değerini kontrol et
+        self.assertEqual(expected_json["momentum"], {"x": 0, "y": 0, "z": 0})
 
 
 if __name__ == "__main__":
