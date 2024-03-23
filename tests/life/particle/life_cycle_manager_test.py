@@ -4,12 +4,16 @@ import time
 from unittest.mock import MagicMock
 from src.life.particles.life_cycle_manager import LifeCycleManager
 
+mockLifetime_seconds = 0.8577
+
 
 class TestLifeCycleManager(unittest.TestCase):
     def test_trigger_event(self):
         # Test etkinliğinin tetiklenip tetiklenmediğini doğrulama
         event_function_mock = MagicMock()
-        instance = LifeCycleManager(name="TestParticle", lifetime_seconds=0.8577)
+        instance = LifeCycleManager(
+            name="TestParticle", lifetime_seconds=mockLifetime_seconds
+        )
         instance.trigger_event(event_function_mock)
         time.sleep(
             instance.lifetime_seconds
@@ -18,7 +22,9 @@ class TestLifeCycleManager(unittest.TestCase):
 
     def test_to_json(self):
         # JSON dönüşümünün doğruluğunu ve formatını doğrulama
-        instance = LifeCycleManager(name="TestParticle", lifetime_seconds=1)
+        instance = LifeCycleManager(
+            name="TestParticle", lifetime_seconds=mockLifetime_seconds
+        )
         json_data = instance.to_json()
 
         self.assertIsInstance(json_data, dict)
@@ -46,20 +52,31 @@ class TestLifeCycleManager(unittest.TestCase):
     def test_infinite_lifetime(self):
         # Sonsuz yaşam süresi için nasıl davrandığını test etme
         instance = LifeCycleManager(name="TestParticle", lifetime_seconds=float("inf"))
-        # instance nesnesinin oluşturulduğunu doğrula
 
-        # Ya da belirli bir özelliğin kontrol edilmesi
+        # instance nesnesinin oluşturulduğunu doğrula
         self.assertEqual(instance.lifetime_seconds, float("inf"))
+
+        # Bir olay işlevini tetikleme
+        event_function_mock = MagicMock()
+        instance.trigger_event(event_function_mock)
+
+        # Olayın tetiklenmesini bekleyin ve ardından olayın çağrıldığını kontrol edin
+        time.sleep(mockLifetime_seconds)  # Biraz bekleme süresi ekleyin
+        self.assertTrue(event_function_mock.called)
 
     def test_invalid_instance_creation(self):
         # Geçersiz bir örnek oluşturulduğunda nasıl davrandığını test etme
         with self.assertRaises(ValueError):
-            LifeCycleManager(name=None, lifetime_seconds=5)
+            LifeCycleManager(name=None, lifetime_seconds=0.8577)
 
     def test_multiple_scenarios(self):
         # Farklı yaşam süreleri ve senaryolar altında testleri genişletme
-        instance_1 = LifeCycleManager(name="Particle1", lifetime_seconds=0.8577)
-        instance_2 = LifeCycleManager(name="Particle2", lifetime_seconds=1.7156)
+        instance_1 = LifeCycleManager(
+            name="Particle1", lifetime_seconds=mockLifetime_seconds
+        )
+        instance_2 = LifeCycleManager(
+            name="Particle2", lifetime_seconds=mockLifetime_seconds * 2.1
+        )
 
         # Farklı yaşam döngüsü olaylarını tetikleme ve doğrulama
         event_function_mock_1 = MagicMock()
@@ -74,4 +91,4 @@ class TestLifeCycleManager(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(exit=False)
