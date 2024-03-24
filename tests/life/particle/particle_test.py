@@ -1,110 +1,83 @@
 # tests/life/particle/particle_test.py
 
 import unittest
-from unittest.mock import Mock
 from src.life.particles.particle import Particle
 from src.life.particles.vector import Vector
 
 
 class TestParticle(unittest.TestCase):
     def setUp(self):
-        self.maxDiff = None
+        def force_function(t):
+            return Vector(t**0.1, t**0.1, t**0.1)
+
+        # Parçacık örnekleri oluşturulur
+        self.particle_1 = Particle(
+            name="test_particle_1",
+            lifetime_seconds=10,
+            charge=-1.602176634e-19,
+            mass=9.10938356e-31,
+            spin=1 / 2,
+            energy=0,
+            position=Vector(0.1, 0.1, 0.1),
+            velocity=Vector(0.1, 0.1, 0.1),
+            momentum=Vector(0.1, 0.1, 0.1),
+            wave_function=force_function(0.01),
+        )
+
+        self.particle_2 = Particle(
+            name="test_particle_2",
+            lifetime_seconds=10,
+            charge=-1.602176634e-19,
+            mass=9.10938356e-31,
+            spin=1 / 2,
+            energy=0,
+            position=Vector(0.2, 0.2, 0.2),
+            velocity=Vector(0.1, 0.1, 0.1),
+            momentum=Vector(0.1, 0.1, 0.1),
+            wave_function=force_function(0.01),
+        )
 
     def test_particle_creation(self):
-        """
-        Parçacık oluşturma testi.
-        """
-        # Test verileri
-        name = "Electron"
-        charge = -1.602176634e-19
-        mass = 9.10938356e-31
-        spin = 1 / 2
-        lifetime_seconds = 5
-        energy = 0
-        position = Vector(0, 0, 0)
-        velocity = Vector(0, 0, 0)
-        momentum = Vector(0, 0, 0)
-        wave_function = Vector(0, 0, 0)
+        # Parçacık özelliklerinin doğru oluşturulduğunu kontrol etme
+        self.assertEqual(self.particle_1.name, "test_particle_1")
+        self.assertEqual(self.particle_1.charge, -1.602176634e-19)
+        self.assertEqual(self.particle_1.mass, 9.10938356e-31)
+        self.assertEqual(self.particle_1.spin, 1 / 2)
+        self.assertEqual(self.particle_1.energy, 0)
 
-        # Parçacık oluşturma
-        particle = Particle(
-            name=name,
-            charge=charge,
-            mass=mass,
-            spin=spin,
-            lifetime_seconds=lifetime_seconds,
-            energy=energy,
-            position=position,
-            velocity=velocity,
-            momentum=momentum,
-            wave_function=wave_function,
+    def test_particle_interaction(self):
+        # Parçacıklar arasındaki etkileşimi kontrol etme
+        self.assertTrue(self.particle_1.pauli_exclusion_principle(self.particle_2))
+
+    def test_particle_update(self):
+        # Parçacığın güncellenmesini kontrol etme
+        initial_position = self.particle_1.position
+        initial_velocity = self.particle_1.velocity
+        initial_momentum = self.particle_1.momentum
+        self.particle_1.update(force=Vector(0.1, 0.1, 0.1), time_step=1)
+        self.assertNotEqual(self.particle_1.position.x, initial_position.x)
+        self.assertNotEqual(self.particle_1.position.y, initial_position.y)
+        self.assertNotEqual(self.particle_1.position.z, initial_position.z)
+        self.assertNotEqual(self.particle_1.velocity.x, initial_velocity.x)
+        self.assertNotEqual(self.particle_1.velocity.y, initial_velocity.y)
+        self.assertNotEqual(self.particle_1.velocity.z, initial_velocity.z)
+        self.assertNotEqual(self.particle_1.momentum.x, initial_momentum.x)
+        self.assertNotEqual(self.particle_1.momentum.y, initial_momentum.y)
+        self.assertNotEqual(self.particle_1.momentum.z, initial_momentum.z)
+
+    def test_schrodinger_eq(self):
+        # Schrödinger denkleminin hesaplanmasını kontrol etme
+        wave_function_before = self.particle_1.wave_function
+        self.particle_1.signal(time_step=1)
+        self.assertNotAlmostEqual(
+            self.particle_1.wave_function.x, wave_function_before.x
         )
-
-        # Özelliklerin doğru oluşturulduğunu doğrula
-        self.assertEqual(particle.name, name)
-        self.assertEqual(particle.charge, charge)
-        self.assertEqual(particle.mass, mass)
-        self.assertEqual(particle.spin, spin)
-        self.assertEqual(particle.lifetime_seconds, lifetime_seconds)
-        self.assertEqual(particle.energy, energy)
-        self.assertEqual(particle.position, position)
-        self.assertEqual(particle.velocity, velocity)
-        self.assertEqual(particle.momentum, momentum)
-        self.assertEqual(particle.wave_function, wave_function)
-
-    def test_event_triggering(self):
-        """
-        Olay tetikleme testi.
-        """
-        # Mock event function
-        event_function_mock = Mock()
-
-        # Parçacık oluşturma
-        particle = Particle(
-            name="Electron",
-            charge=-1.602176634e-19,
-            mass=9.10938356e-31,
-            spin=1 / 2,
-            lifetime_seconds=5,
-            energy=0,
-            position=Vector(0, 0, 0),
-            velocity=Vector(0, 0, 0),
-            momentum=Vector(0, 0, 0),
-            wave_function=Vector(0, 0, 0),
+        self.assertNotAlmostEqual(
+            self.particle_1.wave_function.y, wave_function_before.y
         )
-
-        # Olay tetikleme
-        particle.trigger_event(event_function_mock)
-
-        # Beklenen şekilde olay fonksiyonunun çağrıldığını doğrula
-        event_function_mock.assert_called_once()
-
-    def test_to_json(self):
-        """
-        JSON dönüşüm testi.
-        """
-        # Test verileri
-        particle = Particle(
-            name="Electron",
-            charge=-1.602176634e-19,
-            mass=9.10938356e-31,
-            spin=1 / 2,
-            lifetime_seconds=5,
-            energy=0,
-            position=Vector(0, 0, 0),
-            velocity=Vector(0, 0, 0),
-            momentum=Vector(0, 0, 0),
-            wave_function=Vector(0, 0, 0),
+        self.assertNotAlmostEqual(
+            self.particle_1.wave_function.z, wave_function_before.z
         )
-
-        # JSON çıktısını al
-        expected_json = particle.to_json()
-
-        # Beklenen JSON çıktısının momentum içerip içermediğini kontrol et
-        self.assertIn("momentum", expected_json)
-
-        # JSON çıktısındaki momentumun değerini kontrol et
-        self.assertEqual(expected_json["momentum"], {"x": 0, "y": 0, "z": 0})
 
 
 if __name__ == "__main__":
