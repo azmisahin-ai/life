@@ -85,25 +85,25 @@ class Core(threading.Thread):
         """
         Örneği duraklatır ve durumu günceller.
         """
+        self._paused = True
         if self.event_function:
             self.event_function(self)  # Durumu güncelle
-        self._paused = True
 
     def resume(self):
         """
         Duraklatılan örneği devam ettirir ve durumu günceller.
         """
+        self._paused = False
         if self.event_function:
             self.event_function(self)  # Durumu güncelle
-        self._paused = False
 
     def stop(self):
         """
         Örneği durdurur ve durumu günceller.
         """
+        self._stop_event.set()
         if self.event_function:
             self.event_function(self)  # Durumu güncelle
-        self._stop_event.set()
 
     def status(self):
         """
@@ -189,13 +189,13 @@ if __name__ == "__main__":
             if instance.name == f"{instance_prefix}_1":
                 instance.pause()
 
-        await asyncio.sleep(5)  #
+        await asyncio.sleep(2)  #
         # öernekleri devam ettirme
         for instance in instances:
             if instance.name == f"{instance_prefix}_1":
                 instance.resume()
 
-        await asyncio.sleep(10)  #
+        await asyncio.sleep(2)  #
         # Thread'leri durdurma
         for instance in instances:
             instance.stop()

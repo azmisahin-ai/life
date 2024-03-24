@@ -1,6 +1,7 @@
 # src/life/particles/particle.py
 
 
+import asyncio
 from src.life.particles.vector import Vector
 from src.life.particles.core import Core
 
@@ -13,10 +14,10 @@ class Particle(Core):
     def __init__(
         self,
         name,
+        lifetime_seconds,
         charge,
         mass,
         spin,
-        lifetime_seconds,
         energy,
         position=Vector(),
         velocity=Vector(),
@@ -27,11 +28,13 @@ class Particle(Core):
         Parçacık sınıfını başlatır.
 
         :param name: Parçacığın adı.
+        :param lifetime_seconds: Parçacığın ömrü.
+
         :param charge: Parçacığın yükü.
         :param mass: Parçacığın kütlesi.
         :param spin: Parçacığın spin'i.
-        :param lifetime_seconds: Parçacığın ömrü.
         :param energy: Parçacığın enerjisi.
+
         :param position: Parçacığın pozisyonu.
         :param velocity: Parçacığın hızı.
         :param momentum: Parçacığın momentumu.
@@ -47,16 +50,6 @@ class Particle(Core):
         self.momentum = momentum
         self.wave_function = wave_function or Vector(0, 0, 0)
 
-    def trigger_event(self, event_function):
-        """
-        Bir olay işlevini tetiklemek için kullanılır.
-
-        :param event_function: Tetiklenen olayın işlevi.
-        """
-        self.event_function = event_function
-        if self.event_function:
-            self.event_function(self)
-
     def to_json(self):
         """
         Parçacığı JSON formatına dönüştürür.
@@ -65,15 +58,22 @@ class Particle(Core):
         """
         return {
             "name": self.name,
+            "lifetime_seconds": self.lifetime_seconds,
+            # created information
+            "life_created_time": self.life_created_time,
             "life_start_time": self.life_start_time,
+            # cycle information
             "elapsed_lifespan": self.elapsed_lifespan,
             "lifecycle_rate_per_minute": self.lifecycle_rate_per_minute,
             "lifecycle": self.lifecycle,
-            "lifetime_seconds": self.lifetime_seconds,
+            # status information
+            "life_status": self.status(),
+            # particle information
             "charge": self.charge,
             "mass": self.mass,
             "spin": self.spin,
             "energy": self.energy,
+            # particle activation
             "position": self.position.to_json(),
             "velocity": self.velocity.to_json(),
             "momentum": self.momentum.to_json(),
@@ -85,9 +85,6 @@ class Particle(Core):
         Parçacığın sinyalini gönderir.
         """
         self.update(force=self.wave_function, time_step=time_step)
-        print(f"position: {self.position.to_json()}")
-        print(f"velocity: {self.velocity.to_json()}")
-        print(f"momentum: {self.momentum.to_json()}")
 
     def update(self, force, time_step):
         """
@@ -147,40 +144,101 @@ class Particle(Core):
         return electric_field * self.charge + magnetic_field * self.charge
 
 
+# Example Usage
 if __name__ == "__main__":
-    #
-    simulation_time_step = 1  # default simulation time step
-    # simulation_type = SimulationType.LifeCycle
-    number_of_instance = 2  # default simulation instance
-    lifetime_seconds = 2  # second or float("inf")
-
-    def force_function(t):
-        return Vector(t**0.1, t**0.1, t**0.1)
-
-    instance = Particle(
-        name="Electron",
-        charge=-1.602176634e-19,
-        mass=9.10938356e-31,
-        spin=1 / 2,
-        lifetime_seconds=5,  # float("inf"),
-        energy=0,
-        position=Vector(0, 0, 0),
-        velocity=Vector(0, 0, 0),
-        momentum=Vector(0, 0, 0),
-        wave_function=force_function(0.1),
-    )
+    simulation_time_step = 1
+    number_of_instance = 2
+    lifetime_seconds = float("inf")
+    instance_prefix = "Particle"
 
     RED = "\033[91m"
     GREEN = "\033[92m"
     YELLOW = "\033[93m"
     BLUE = "\033[94m"
+    PURPLE = "\033[95m"
     CYAN = "\033[96m"
-    RESET = "\033[0m"  # Renkleri sıfırlamak için kullanılır
+    WHITE = "\033[97m"
+    SOFT = "\033[98m"
+    RESET = "\033[0m"
 
-    def simulation_event_item(data):
-        print(f"{GREEN}simulation_event_item{RESET}", data)
+    def instance_signal(data):
+        if not hasattr(data, "created_printed"):
+            print(
+                f"{WHITE}instance_signal{RESET} ",
+                f"{PURPLE}Created{RESET}",
+                f"{CYAN}{data.name}{RESET}",
+                f"{SOFT}{data.elapsed_lifespan}{RESET}",
+            )
+            data.created_printed = True  # Created durumu yazıldı
+        else:
+            status = data.status()
+            if status == "Running":
+                status_color = GREEN
+            elif status == "Paused":
+                status_color = YELLOW
+            elif status == "Stopped":
+                status_color = RED
+            else:
+                status_color = PURPLE  # Created durumu
+                status = "Created"
+            print(
+                f"{WHITE}instance_signal{RESET} ",
+                f"{status_color}{status}{RESET}",
+                f"{CYAN}{data.name}{RESET}",
+                f"{SOFT}{data.elapsed_lifespan}{RESET}",
+            )
 
-    def simulation_event(data):
-        print(f"{YELLOW}simulation_event_inst{RESET}", data)
+    instance_created_counter = 0
 
-    instance.trigger_event(simulation_event_item)
+    async def create_instance(name, lifetime_seconds):
+        global instance_created_counter
+        instance_created_counter += 1
+
+        def force_function(t):
+            return Vector(t**0.1, t**0.1, t**0.1)
+
+        instance = Particle(
+            name=f"{name}_{instance_created_counter}",
+            lifetime_seconds=lifetime_seconds,
+            charge=-1.602176634e-19,
+            mass=9.10938356e-31,
+            spin=1 / 2,
+            energy=0,
+            position=Vector(0, 0, 0),
+            velocity=Vector(0, 0, 0),
+            momentum=Vector(0, 0, 0),
+            wave_function=force_function(0.1),
+        )
+
+        instance.trigger_event(instance_signal)
+        instance.start()
+        return instance
+
+    async def main():
+        # Örnek yönetimi
+        instances = await asyncio.gather(
+            *[
+                create_instance(instance_prefix, lifetime_seconds=2)
+                for _ in range(number_of_instance)
+            ]
+        )
+        # Tüm işlemleri burada kontrol edebilirsiniz
+        await asyncio.sleep(2)  #
+        # örnekleri duraklatma
+        for instance in instances:
+            if instance.name == f"{instance_prefix}_1":
+                instance.pause()
+
+        await asyncio.sleep(2)  #
+        # öernekleri devam ettirme
+        for instance in instances:
+            if instance.name == f"{instance_prefix}_1":
+                instance.resume()
+
+        await asyncio.sleep(2)  #
+        # Thread'leri durdurma
+        for instance in instances:
+            instance.stop()
+            instance.join()
+
+    asyncio.run(main())
