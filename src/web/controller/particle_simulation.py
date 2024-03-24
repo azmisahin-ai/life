@@ -1,11 +1,13 @@
-# src/web/controller/life_cycle_simulation.py
+# src/web/controller/particle_simulation.py
 
-import threading
 import time
-from src.life.particles.life_cycle_manager import LifeCycleManager
+
+from src.life.particles.vector import Vector
+from src.life.particles.particle import Particle
+from src.web.controller.core_simulation import CoreSimulation
 
 
-class LifeCycleSimulation:
+class ParticleSimulation(CoreSimulation):
     """
     Parçacıkların yaşam döngüsü simülasyonunu yöneten sınıf.
 
@@ -23,37 +25,40 @@ class LifeCycleSimulation:
     """
 
     def __init__(self, number_of_instance, lifetime_seconds):
-        self.number_of_instance = number_of_instance
-        self.lifetime_seconds = lifetime_seconds
-        self.number_of_instance_created = 0
-        self.last_item = None
-        self.event_function = None  # Event işlevi
-        self.event_trigger = threading.Event()  # Olay tetikleyici oluştur
+        super().__init__(
+            number_of_instance=number_of_instance, lifetime_seconds=lifetime_seconds
+        )
 
-    def trigger(self, event_function):
-        self.event_function = event_function  # Event işlevini ata
-
-    def to_json(self):
-        return {
-            "number_of_instance": self.number_of_instance,
-            "number_of_instance_created": self.number_of_instance_created,
-        }
+    def force_function(self, t):
+        return Vector(t**0.1, t**0.1, t**0.1)
 
     def create_instance(self):
-        name = f"item-{self.number_of_instance_created}"
-        self.last_item = LifeCycleManager(name, lifetime_seconds=self.lifetime_seconds)
-        self.number_of_instance_created += 1
+        name = f"particle-{self.number_of_instance_created}"
+        charge = -1.6e-19
+        mass = 9.1e-31
+        spin = 1 / 2
+        lifetime_seconds = self.lifetime_seconds
+        energy = 0
+        position = Vector(0, 0, 0)
+        velocity = Vector(0, 0, 0)
+        momentum = Vector(0, 0, 0)
+        wave_function = self.force_function(0.1)
 
-    def run_simulation(self):
-        try:
-            condition = self.number_of_instance > self.number_of_instance_created
-            if condition:
-                self.create_instance()
-                if self.event_function:
-                    self.event_function(self)  # Event işlevini çağır
-            return condition
-        except Exception as e:
-            print(f"LifeCycleSimulation Error: {e}")
+        self.last_item = Particle(
+            name,
+            charge,
+            mass,
+            spin,
+            lifetime_seconds,
+            energy,
+            position,
+            velocity,
+            momentum,
+            wave_function,
+        )
+
+        # Parçacık örneği oluşturulduktan sonra number_of_instance_created özelliğini artır
+        self.number_of_instance_created += 1
 
 
 if __name__ == "__main__":
@@ -63,7 +68,7 @@ if __name__ == "__main__":
     number_of_instance = 2  # default simulation instance
     lifetime_seconds = 2  # second or float("inf")
 
-    instance = LifeCycleSimulation(
+    instance = ParticleSimulation(
         number_of_instance=number_of_instance,
         lifetime_seconds=lifetime_seconds,
     )

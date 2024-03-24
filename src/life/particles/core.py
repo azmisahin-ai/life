@@ -1,10 +1,10 @@
-# src/life/particles/life_cycle_manager.py
+# src/life/particles/core.py
 import asyncio
 import threading
 import time
 
 
-class Life(threading.Thread):
+class Core(threading.Thread):
     """
     Life sınıfı, parçacıkların yaşam döngüsünü yönetir.
     """
@@ -164,7 +164,7 @@ if __name__ == "__main__":
     async def create_instance(name, lifetime_seconds):
         global instance_created_counter
         instance_created_counter += 1
-        instance = Life(
+        instance = Core(
             name=f"{name}_{instance_created_counter}", lifetime_seconds=lifetime_seconds
         )
         instance.trigger_event(instance_signal)

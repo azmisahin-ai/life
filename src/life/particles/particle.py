@@ -2,10 +2,10 @@
 
 
 from src.life.particles.vector import Vector
-from src.life.particles.life_cycle_manager import LifeCycleManager
+from src.life.particles.core import Core
 
 
-class Particle(LifeCycleManager):
+class Particle(Core):
     """
     Parçacık sınıfı, LifeCycleManager sınıfından türetilir ve parçacıkların özelliklerini ve davranışlarını tanımlar.
     """

@@ -1,11 +1,11 @@
-# tests/web/controller/particle_life_cycle_simulation_test.py
+# tests/web/controller/particle_simulation_test.py
 import unittest
-from src.web.controller.particle_life_cycle_simulation import (
-    ParticleLifeCycleSimulation,
+from src.web.controller.particle_simulation import (
+    ParticleSimulation,
 )
 
 
-class TestParticleLifeCycleSimulation(unittest.TestCase):
+class TestParticleSimulation(unittest.TestCase):
     def test_initialization(self):
         """
         Parçacık yaşam döngüsü simülasyonunun başlatılmasını test et.
@@ -13,7 +13,7 @@ class TestParticleLifeCycleSimulation(unittest.TestCase):
         number_of_instance = 2
         lifetime_seconds = 5
 
-        simulation = ParticleLifeCycleSimulation(number_of_instance, lifetime_seconds)
+        simulation = ParticleSimulation(number_of_instance, lifetime_seconds)
 
         self.assertEqual(simulation.number_of_instance, number_of_instance)
         self.assertEqual(simulation.lifetime_seconds, lifetime_seconds)
@@ -28,7 +28,7 @@ class TestParticleLifeCycleSimulation(unittest.TestCase):
         number_of_instance = 2
         lifetime_seconds = 5
 
-        simulation = ParticleLifeCycleSimulation(number_of_instance, lifetime_seconds)
+        simulation = ParticleSimulation(number_of_instance, lifetime_seconds)
 
         # create_instance yöntemi çağrıldığında son öğenin oluşturulması gerektiğini doğrula
         simulation.create_instance()
@@ -43,7 +43,7 @@ class TestParticleLifeCycleSimulation(unittest.TestCase):
         number_of_instance = 2
         lifetime_seconds = 5
 
-        simulation = ParticleLifeCycleSimulation(number_of_instance, lifetime_seconds)
+        simulation = ParticleSimulation(number_of_instance, lifetime_seconds)
 
         # run_simulation çağrıldığında bir parçacık örneğinin oluşturulduğunu doğrula
         self.assertTrue(simulation.run_simulation())

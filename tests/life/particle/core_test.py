@@ -1,17 +1,17 @@
-# tests/life/particle/life_cycle_manager_test.py
+# tests/life/particle/core_test.py
 import unittest
 import time
 from unittest.mock import MagicMock
-from src.life.particles.life_cycle_manager import LifeCycleManager
+from src.life.particles.core import Core
 
 mockLifetime_seconds = 0.8577
 
 
-class TestLifeCycleManager(unittest.TestCase):
+class TestCore(unittest.TestCase):
     def test_trigger_event(self):
         # Test etkinliğinin tetiklenip tetiklenmediğini doğrulama
         event_function_mock = MagicMock()
-        instance = LifeCycleManager(
+        instance = Core(
             name="TestParticle", lifetime_seconds=mockLifetime_seconds
         )
         instance.trigger_event(event_function_mock)
@@ -22,7 +22,7 @@ class TestLifeCycleManager(unittest.TestCase):
 
     def test_to_json(self):
         # JSON dönüşümünün doğruluğunu ve formatını doğrulama
-        instance = LifeCycleManager(
+        instance = Core(
             name="TestParticle", lifetime_seconds=mockLifetime_seconds
         )
         json_data = instance.to_json()
@@ -44,14 +44,14 @@ class TestLifeCycleManager(unittest.TestCase):
     def test_lifetime_zero_or_negative(self):
         # Yaşam süresi sıfır veya negatif olduğunda nasıl davrandığını test etme
         with self.assertRaises(ValueError):
-            LifeCycleManager(name="TestParticle", lifetime_seconds=0)
+            Core(name="TestParticle", lifetime_seconds=0)
 
         with self.assertRaises(ValueError):
-            LifeCycleManager(name="TestParticle", lifetime_seconds=-1)
+            Core(name="TestParticle", lifetime_seconds=-1)
 
     def test_infinite_lifetime(self):
         # Sonsuz yaşam süresi için nasıl davrandığını test etme
-        instance = LifeCycleManager(name="TestParticle", lifetime_seconds=float("inf"))
+        instance = Core(name="TestParticle", lifetime_seconds=float("inf"))
 
         # instance nesnesinin oluşturulduğunu doğrula
         self.assertEqual(instance.lifetime_seconds, float("inf"))
@@ -67,14 +67,14 @@ class TestLifeCycleManager(unittest.TestCase):
     def test_invalid_instance_creation(self):
         # Geçersiz bir örnek oluşturulduğunda nasıl davrandığını test etme
         with self.assertRaises(ValueError):
-            LifeCycleManager(name=None, lifetime_seconds=0.8577)
+            Core(name=None, lifetime_seconds=0.8577)
 
     def test_multiple_scenarios(self):
         # Farklı yaşam süreleri ve senaryolar altında testleri genişletme
-        instance_1 = LifeCycleManager(
+        instance_1 = Core(
             name="Particle1", lifetime_seconds=mockLifetime_seconds
         )
-        instance_2 = LifeCycleManager(
+        instance_2 = Core(
             name="Particle2", lifetime_seconds=mockLifetime_seconds * 2.1
         )
 

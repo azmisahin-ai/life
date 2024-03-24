@@ -4,13 +4,11 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from src.life.particles.life_cycle_manager import LifeCycleManager
+from src.life.particles.core import Core
 from src.life.particles.particle import Particle
 from src.web.controller.simulation import simulation
-from src.web.controller.life_cycle_simulation import LifeCycleSimulation
-from src.web.controller.particle_life_cycle_simulation import (
-    ParticleLifeCycleSimulation,
-)
+from src.web.controller.core_simulation import CoreSimulation
+from src.web.controller.particle_simulation import ParticleSimulation
 from src.web.controller.simulation_type import SimulationType
 
 from .api import blueprint as api_blueprint
@@ -106,7 +104,7 @@ def create_app():
         def simulation_event_item(inst):
             io.emit("/simulation/status/item", inst.to_json())
             # print(f"{GREEN}/simulation-status-item{RESET}", inst)
-            if issubclass(type(inst), LifeCycleManager):
+            if issubclass(type(inst), Core):
                 print(f"{BLUE}/simulation/status/item{RESET}", inst.name)
             elif isinstance(inst, Particle):
                 print(f"{BLUE}/simulation/status/item{RESET}", inst.name)
@@ -115,9 +113,9 @@ def create_app():
         def simulation_event(inst):
             io.emit("/simulation/status/instance", inst.to_json())
             print(f"{YELLOW}/simulation/status/instance{RESET}", inst)
-            if issubclass(type(inst), LifeCycleSimulation):
+            if issubclass(type(inst), CoreSimulation):
                 inst.last_item.trigger_event(simulation_event_item)
-            elif isinstance(inst, ParticleLifeCycleSimulation):
+            elif isinstance(inst, ParticleSimulation):
                 inst.last_item.trigger_event(simulation_event_item)
 
         if started.instance:
