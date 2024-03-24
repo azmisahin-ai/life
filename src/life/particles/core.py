@@ -85,22 +85,25 @@ class Core(threading.Thread):
         """
         Örneği duraklatır ve durumu günceller.
         """
+        if self.event_function:
+            self.event_function(self)  # Durumu güncelle
         self._paused = True
-        self.event_function(self)  # Durumu güncelle
 
     def resume(self):
         """
         Duraklatılan örneği devam ettirir ve durumu günceller.
         """
+        if self.event_function:
+            self.event_function(self)  # Durumu güncelle
         self._paused = False
-        self.event_function(self)  # Durumu güncelle
 
     def stop(self):
         """
         Örneği durdurur ve durumu günceller.
         """
+        if self.event_function:
+            self.event_function(self)  # Durumu güncelle
         self._stop_event.set()
-        self.event_function(self)  # Durumu güncelle
 
     def status(self):
         """
@@ -120,7 +123,7 @@ if __name__ == "__main__":
     simulation_time_step = 1
     number_of_instance = 2
     lifetime_seconds = float("inf")
-    instance_prefix = "Particle"
+    instance_prefix = "Cycle"
 
     RED = "\033[91m"
     GREEN = "\033[92m"
