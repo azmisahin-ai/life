@@ -94,10 +94,10 @@ class Core(threading.Thread):
         """
         Duraklatılan örneği devam ettirir ve durumu günceller.
         """
-        print("resume")
         self._paused = False
         if self.event_function:
             self.event_function(self)  # Durumu güncelle
+        self._resumed = True  # Resumed bayrağını ayarla
 
     def stop(self):
         """
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     name = "Cycle"  # Parçacığın adı.
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 2  # oluşturulacak örnek sayısı
+    number_of_instance = 3  # oluşturulacak örnek sayısı
 
     RED = "\033[91m"
     GREEN = "\033[92m"
@@ -135,6 +135,7 @@ if __name__ == "__main__":
     CYAN = "\033[96m"
     WHITE = "\033[97m"
     SOFT = "\033[98m"
+    GREENB = "\033[102m"
     RESET = "\033[0m"
 
     def instance_signal(data):
@@ -157,6 +158,14 @@ if __name__ == "__main__":
             else:
                 status_color = PURPLE  # Created durumu
                 status = "Created"
+            # Duraklatılmış veya devam eden durumu kontrol et
+            if data._paused:
+                status_color = YELLOW
+                status = "Paused"
+            elif status == "Running" and hasattr(data, "_resumed") and data._resumed:
+                status_color = GREENB
+                status = "Resumed"
+                data._resumed = False  # Resumed bayrağını sıfırla
             print(
                 f"{WHITE}instance_signal{RESET} ",
                 f"{status_color}{status}{RESET}",
