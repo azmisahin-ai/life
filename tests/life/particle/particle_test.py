@@ -54,7 +54,7 @@ class TestParticle(unittest.TestCase):
         initial_position = self.particle_1.position
         initial_velocity = self.particle_1.velocity
         initial_momentum = self.particle_1.momentum
-        self.particle_1.update(force=Vector(0.1, 0.1, 0.1), time_step=1)
+        self.particle_1.update(force=Vector(0.1, 0.1, 0.1), time_step=0.2)
         self.assertNotEqual(self.particle_1.position.x, initial_position.x)
         self.assertNotEqual(self.particle_1.position.y, initial_position.y)
         self.assertNotEqual(self.particle_1.position.z, initial_position.z)
