@@ -9,18 +9,21 @@ class Core(threading.Thread):
     Life sınıfı, parçacıkların yaşam döngüsünü yönetir.
     """
 
-    def __init__(self, name, lifetime_seconds, lifecycle_rate_per_minute=70):
+    def __init__(self, name, lifetime_seconds, lifecycle):
         super().__init__()
         """
         Life Oluşturulur.
 
         :param name: Parçacığın adı.
         :param lifetime_seconds: Parçacığın yaşam süresi saniye cinsinden.
+        :param lifecycle: Parçacığın saniyedeki yaşam döngüsü.
         """
         if name is None:
             raise ValueError("Name cannot be None.")
         if lifetime_seconds <= 0:
             raise ValueError("Lifetime seconds must be a positive value.")
+        if lifecycle <= 0:
+            raise ValueError("Lifecycle must be a positive value.")
         self.lifetime_seconds = lifetime_seconds
         self.name = name
         # created information
@@ -28,8 +31,7 @@ class Core(threading.Thread):
         self.life_start_time = None  # Henüz başlamadı
         # cycle information
         self.elapsed_lifespan = 0
-        self.lifecycle_rate_per_minute = lifecycle_rate_per_minute
-        self.lifecycle = 60.0 / self.lifecycle_rate_per_minute
+        self.lifecycle = lifecycle
         # events
         self.event_function = None
         self.event_trigger = threading.Event()
@@ -52,7 +54,6 @@ class Core(threading.Thread):
             "life_start_time": self.life_start_time,
             # cycle information
             "elapsed_lifespan": self.elapsed_lifespan,
-            "lifecycle_rate_per_minute": self.lifecycle_rate_per_minute,
             "lifecycle": self.lifecycle,
             # status information
             "life_status": self.status(),
@@ -93,6 +94,7 @@ class Core(threading.Thread):
         """
         Duraklatılan örneği devam ettirir ve durumu günceller.
         """
+        print("resume")
         self._paused = False
         if self.event_function:
             self.event_function(self)  # Durumu güncelle
@@ -120,10 +122,10 @@ class Core(threading.Thread):
 
 # Example Usage
 if __name__ == "__main__":
-    simulation_time_step = 1
-    number_of_instance = 2
-    lifetime_seconds = float("inf")
-    instance_prefix = "Cycle"
+    name = "Cycle"  # Parçacığın adı.
+    lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
+    number_of_instance = 2  # oluşturulacak örnek sayısı
 
     RED = "\033[91m"
     GREEN = "\033[92m"
@@ -164,11 +166,13 @@ if __name__ == "__main__":
 
     instance_created_counter = 0
 
-    async def create_instance(name, lifetime_seconds):
+    async def create_instance(name, lifetime_seconds, lifecycle):
         global instance_created_counter
         instance_created_counter += 1
         instance = Core(
-            name=f"{name}_{instance_created_counter}", lifetime_seconds=lifetime_seconds
+            name=f"{name}_{instance_created_counter}",
+            lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
         )
         instance.trigger_event(instance_signal)
         instance.start()
@@ -178,7 +182,11 @@ if __name__ == "__main__":
         # Örnek yönetimi
         instances = await asyncio.gather(
             *[
-                create_instance(instance_prefix, lifetime_seconds=2)
+                create_instance(
+                    name=name,
+                    lifetime_seconds=lifetime_seconds,
+                    lifecycle=lifecycle,
+                )
                 for _ in range(number_of_instance)
             ]
         )
@@ -186,13 +194,13 @@ if __name__ == "__main__":
         await asyncio.sleep(2)  #
         # örnekleri duraklatma
         for instance in instances:
-            if instance.name == f"{instance_prefix}_1":
+            if instance.name == f"{name}_1":
                 instance.pause()
 
         await asyncio.sleep(2)  #
         # öernekleri devam ettirme
         for instance in instances:
-            if instance.name == f"{instance_prefix}_1":
+            if instance.name == f"{name}_1":
                 instance.resume()
 
         await asyncio.sleep(2)  #
