@@ -10,85 +10,86 @@ from src.web.controller.core_simulation import CoreSimulation
 class ParticleSimulation(CoreSimulation):
     """
     Parçacıkların yaşam döngüsü simülasyonunu yöneten sınıf.
-
-    Args:
-        number_of_instance (int): Oluşturulacak parçacık örneklerinin sayısı.
-        lifetime_seconds (float): Parçacık örneklerinin yaşam süresi saniye cinsinden.
-
-    Attributes:
-        number_of_instance (int): Oluşturulacak parçacık örneklerinin sayısı.
-        lifetime_seconds (float): Parçacık örneklerinin yaşam süresi saniye cinsinden.
-        number_of_instance_created (int): Şu ana kadar oluşturulan parçacık örneklerinin sayısı.
-        last_item (LifeCycleManager): Son oluşturulan parçacık örneği.
-        event_function (function): Olay işlevi.
-        event_trigger (threading.Event): Olay tetikleyici.
     """
 
-    def __init__(self, number_of_instance, lifetime_seconds):
+    def __init__(
+        self, name: str, number_of_instance, lifetime_seconds: float, lifecycle: float
+    ) -> None:
+        """
+        Particle simulasyonunu oluştur.
+
+        :param name: Simulasyon adı.
+        :param number_of_instance: Oluşturulacak örnek sayısı
+        :param lifetime_seconds: Örneklerin yaşam süresi saniye cinsinden.
+        :param lifecycle: Örneklerin saniyedeki yaşam döngüsü.
+        """
         super().__init__(
-            number_of_instance=number_of_instance, lifetime_seconds=lifetime_seconds
+            name=name,
+            number_of_instance=number_of_instance,
+            lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
         )
 
     def force_function(self, t):
         return Vector(t**0.1, t**0.1, t**0.1)
 
-    def create_instance(self):
-        name = f"particle-{self.number_of_instance_created}"
-        charge = -1.6e-19
-        mass = 9.1e-31
-        spin = 1 / 2
-        lifetime_seconds = self.lifetime_seconds
-        energy = 0
-        position = Vector(0, 0, 0)
-        velocity = Vector(0, 0, 0)
-        momentum = Vector(0, 0, 0)
-        wave_function = self.force_function(0.1)
-
-        self.last_item = Particle(
-            name,
-            charge,
-            mass,
-            spin,
-            lifetime_seconds,
-            energy,
-            position,
-            velocity,
-            momentum,
-            wave_function,
-        )
-
-        # Parçacık örneği oluşturulduktan sonra number_of_instance_created özelliğini artır
+    def create_instance(
+        self, name, lifetime_seconds: float, lifecycle: float
+    ) -> Particle:
         self.number_of_instance_created += 1
+        instance_name = f"{name}_{self.number_of_instance_created}"
+
+        return Particle(
+            name=instance_name,
+            lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
+            #
+            charge=-1.6e-19,
+            mass=9.1e-31,
+            spin=1 / 2,
+            energy=0,
+            position=Vector(0, 0, 0),
+            velocity=Vector(0, 0, 0),
+            momentum=Vector(0, 0, 0),
+            wave_function=self.force_function(0.1),
+        ).trigger_event(self.instance_signal)
 
 
+# Example Usage
 if __name__ == "__main__":
-    #
-    simulation_time_step = 1  # default simulation time step
-    # simulation_type = SimulationType.LifeCycle
-    number_of_instance = 2  # default simulation instance
-    lifetime_seconds = 2  # second or float("inf")
+    name = "Particle"  # Parçacığın adı.
+    lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
+    number_of_instance = 3  # oluşturulacak örnek sayısı
 
-    instance = ParticleSimulation(
-        number_of_instance=number_of_instance,
-        lifetime_seconds=lifetime_seconds,
+    def simulation_signal(simulation):
+        simulation.status()
+
+    def instance_signal(instance):
+        instance.status()
+
+    simulation = (
+        CoreSimulation(
+            name=name,
+            number_of_instance=number_of_instance,
+            lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
+        )
+        .trigger_event(simulation_signal)
+        .trigger_event_instance(instance_signal)
     )
 
-    RED = "\033[91m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    CYAN = "\033[96m"
-    RESET = "\033[0m"  # Renkleri sıfırlamak için kullanılır
+    # Simülasyonu başlat
+    simulation.start_simulation()
 
-    def simulation_event_item(data):
-        print(f"{GREEN}simulation_event_item{RESET}", data)
+    # Simülasyonu duraklat
+    time.sleep(2)
+    simulation.pause_simulation()
 
-    def simulation_event(data):
-        print(f"{YELLOW}simulation_event_inst{RESET}", data)
+    # Simülasyonu devam ettir
+    time.sleep(2)
+    simulation.resume_simulation()
 
-    while instance.run_simulation():
-        if instance:
-            instance.trigger(simulation_event)
-            instance.last_item.trigger_event(simulation_event_item)
-
-        time.sleep(simulation_time_step)
+    # Simülasyonu durdur
+    time.sleep(2)
+    simulation.stop_simulation()
