@@ -40,7 +40,7 @@ class Core(threading.Thread):
         self.lifecycle = lifecycle
         # events
         self.event_function = None
-        self.event_trigger = threading.Event()
+        # self.event_trigger = threading.Event()
         self._paused = False
         self._stop_event = threading.Event()
         self._resumed = False
