@@ -3,7 +3,7 @@ from enum import Enum
 
 
 class SimulationType(Enum):
-    LifeCycle = "LifeCycle"
+    Core = "Core"
     Particles = "Particles"
     Atoms = "Atoms"
     Molecules = "Molecules"

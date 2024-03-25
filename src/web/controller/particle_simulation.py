@@ -13,7 +13,11 @@ class ParticleSimulation(CoreSimulation):
     """
 
     def __init__(
-        self, name: str, number_of_instance, lifetime_seconds: float, lifecycle: float
+        self,
+        name: str,
+        number_of_instance: int,
+        lifetime_seconds: float,
+        lifecycle: float,
     ) -> None:
         """
         Particle simulasyonunu oluştur.

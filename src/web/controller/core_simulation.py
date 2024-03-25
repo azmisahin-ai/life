@@ -18,7 +18,11 @@ class CoreSimulation:
     """
 
     def __init__(
-        self, name: str, number_of_instance, lifetime_seconds: float, lifecycle: float
+        self,
+        name: str,
+        number_of_instance: int,
+        lifetime_seconds: float,
+        lifecycle: float,
     ) -> None:
         """
         Çekirdek simulasyonunu oluştur.
@@ -119,8 +123,10 @@ class CoreSimulation:
                 if self.event_function:
                     self.event_function(self)  # Event işlevini çağır
             return condition
+        except TypeError as e:
+            self.logger.error(f"Core Simulation Error Type : {e}")
         except Exception as e:
-            self.logger.error(f"CoreSimulation Error: {e}")
+            self.logger.error(f"Core Simulation Error      : {e}")
 
     def _run_simulation_loop(self):
         """
