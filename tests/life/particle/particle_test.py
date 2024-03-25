@@ -12,7 +12,7 @@ class TestParticle(unittest.TestCase):
 
         # Parçacık örnekleri oluşturulur
         self.particle_1 = Particle(
-            name="Particle_1",
+            name="Particle_1.test",
             lifetime_seconds=float("inf"),  # Parçacığın yaşam süresi saniye cinsinden.
             charge=-1.602176634e-19,
             mass=9.10938356e-31,
@@ -25,7 +25,7 @@ class TestParticle(unittest.TestCase):
         )
 
         self.particle_2 = Particle(
-            name="Particle_2",
+            name="Particle_2.test",
             lifetime_seconds=float("inf"),  # Parçacığın yaşam süresi saniye cinsinden.
             charge=-1.602176634e-19,
             mass=9.10938356e-31,
@@ -39,7 +39,7 @@ class TestParticle(unittest.TestCase):
 
     def test_particle_creation(self):
         # Parçacık özelliklerinin doğru oluşturulduğunu kontrol etme
-        self.assertEqual(self.particle_1.name, "Particle_1")
+        self.assertEqual(self.particle_1.name, "Particle_1.test")
         self.assertEqual(self.particle_1.charge, -1.602176634e-19)
         self.assertEqual(self.particle_1.mass, 9.10938356e-31)
         self.assertEqual(self.particle_1.spin, 1 / 2)
