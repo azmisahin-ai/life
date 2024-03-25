@@ -6,6 +6,8 @@ import threading
 import time
 import colorlog
 
+DATA_FOLDER = ""
+
 
 class Core(threading.Thread):
     """
@@ -48,7 +50,7 @@ class Core(threading.Thread):
         self.trigger_event(self)
 
     def _configure_logging(self):
-        log_file_path = f"logs/{self.name}.log"
+        log_file_path = f"{DATA_FOLDER}logs/{self.name}.log"
 
         if not os.path.exists(os.path.dirname(log_file_path)):
             os.makedirs(os.path.dirname(log_file_path))
