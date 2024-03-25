@@ -2,6 +2,8 @@
 
 import logging
 import os
+import threading
+import time
 
 import colorlog
 from src.life.particles.core import Core
@@ -36,6 +38,9 @@ class CoreSimulation:
         # events
         self.event_function = None
         self.event_function_instance = None
+        self._stop_event = threading.Event()
+        self._resumed = False
+        self._exit_flag = False
         # Log ayarlarını yapılandırma
         self.logger = logging.getLogger(name)
         self._configure_logging()
@@ -93,15 +98,11 @@ class CoreSimulation:
         self.number_of_instance_created += 1
         instance_name = f"{name}_{self.number_of_instance_created}"
 
-        return (
-            Core(
-                name=instance_name,
-                lifetime_seconds=lifetime_seconds,
-                lifecycle=lifecycle,
-            )
-            .trigger_event(self.instance_signal)
-            .start()
-        )
+        return Core(
+            name=instance_name,
+            lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
+        ).trigger_event(self.instance_signal)
 
     def run_simulation(self):
         try:
@@ -109,15 +110,23 @@ class CoreSimulation:
             if condition:
                 instance = self.create_instance(
                     name=self.name,
-                    lifetime_seconds=lifetime_seconds,
+                    lifetime_seconds=self.lifetime_seconds,
                     lifecycle=self.lifecycle,
                 )
                 self.instances.append(instance)
+                instance.start()
                 if self.event_function:
                     self.event_function(self)  # Event işlevini çağır
             return condition
         except Exception as e:
-            print(f"CoreSimulation Error: {e}")
+            self.logger.error(f"CoreSimulation Error: {e}")
+
+    def _run_simulation_loop(self):
+        """
+        Simülasyon döngüsünü çalıştırır.
+        """
+        while not self._paused and not self._exit_flag and self.run_simulation():
+            pass
 
     def trigger_event(self, event_function):
         """
@@ -139,25 +148,74 @@ class CoreSimulation:
         self.event_function_instance = event_function
         return self
 
+    def pause_simulation(self):
+        """
+        Simülasyonu duraklatır.
+        """
+        self._paused = True
+        self.status()
+        for instance in self.instances:
+            instance.pause()
+
+    def resume_simulation(self):
+        """
+        Duraklatılan simülasyonu devam ettirir.
+        """
+        self._paused = False
+        self._resumed = True
+        self.status()
+        for instance in self.instances:
+            instance.resume()
+
+    def stop_simulation(self):
+        """
+        Simülasyonu durdurur.
+        """
+        self._paused = False
+        self._stop_event.set()  # _stop_event'i ayarlayın
+        self.status()
+        for instance in self.instances:
+            instance.stop()
+
+        self._exit_flag = True  # Uygulamayı sonlandırmak için bayrağı ayarla
+
+    def start_simulation(self):
+        """
+        Simülasyonu başlatır.
+        """
+        self._paused = False
+        self.status()
+        self._run_simulation_loop()
+
     def status(self):
         """
         Örneğin mevcut durumunu döndürür.
         """
-        state = "?"
+        if self._paused:
+            state = "Paused"
+        elif self._stop_event.is_set():
+            state = "Stopped"
+        elif self._resumed:
+            self._resumed = False
+            state = "Resumed"
+        else:
+            state = "Running"
 
-        message = f"\
-            {state}\
-            {self.lifetime_seconds}\
-            {self.lifecycle}\
-            {self.number_of_instance}\
-            {self.number_of_instance_created}\
-            "
+        message = f"{self.name} - {state} - {self.number_of_instance_created}/{self.number_of_instance} instances"
 
-        self.logger.info(message)
+        if state == "Paused":
+            self.logger.warning(message)
+        elif state == "Resumed":
+            self.logger.info(message)
+        elif state == "Stopped":
+            self.logger.warning(message)
+        else:
+            self.logger.info(message)
 
         return state
 
 
+# Example Usage
 if __name__ == "__main__":
     name = "Cycle"  # Parçacığın adı.
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
@@ -166,11 +224,9 @@ if __name__ == "__main__":
 
     def simulation_signal(simulation):
         simulation.status()
-        pass
 
     def instance_signal(instance):
         instance.status()
-        pass
 
     simulation = (
         CoreSimulation(
@@ -183,5 +239,17 @@ if __name__ == "__main__":
         .trigger_event_instance(instance_signal)
     )
 
-    while simulation.run_simulation():
-        pass
+    # Simülasyonu başlat
+    simulation.start_simulation()
+
+    # Simülasyonu duraklat
+    time.sleep(2)
+    simulation.pause_simulation()
+
+    # Simülasyonu devam ettir
+    time.sleep(2)
+    simulation.resume_simulation()
+
+    # Simülasyonu durdur
+    time.sleep(2)
+    simulation.stop_simulation()

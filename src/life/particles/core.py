@@ -192,7 +192,7 @@ class Core(threading.Thread):
         elif state == "Paused" or state == "Resumed":
             self.logger.warning(message)
         elif state == "Stopped":
-            self.logger.critical(message)
+            self.logger.warning(message)
         else:
             self.logger.debug(message)
         return state
