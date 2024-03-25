@@ -14,6 +14,7 @@ class TestParticle(unittest.TestCase):
         self.particle_1 = Particle(
             name="Particle_1.test",
             lifetime_seconds=float("inf"),  # Parçacığın yaşam süresi saniye cinsinden.
+            lifecycle=60 / 70,  # Parçacığın saniyedeki yaşam döngüsü.
             charge=-1.602176634e-19,
             mass=9.10938356e-31,
             spin=1 / 2,
@@ -27,6 +28,7 @@ class TestParticle(unittest.TestCase):
         self.particle_2 = Particle(
             name="Particle_2.test",
             lifetime_seconds=float("inf"),  # Parçacığın yaşam süresi saniye cinsinden.
+            lifecycle=60 / 70,  # Parçacığın saniyedeki yaşam döngüsü.
             charge=-1.602176634e-19,
             mass=9.10938356e-31,
             spin=1 / 2,

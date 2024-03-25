@@ -14,6 +14,7 @@ class Particle(Core):
         self,
         name: str,
         lifetime_seconds: float,
+        lifecycle: float,
         charge: float,
         mass: float,
         spin: float,
@@ -28,6 +29,7 @@ class Particle(Core):
 
         :param name: Parçacığın adı.
         :param lifetime_seconds: Parçacığın ömrü.
+        :param lifecycle: Parçacığın saniyedeki yaşam döngüsü.
 
         :param charge: Parçacığın yükü.
         :param mass: Parçacığın kütlesi.
@@ -39,7 +41,9 @@ class Particle(Core):
         :param momentum: Parçacığın momentumu.
         :param wave_function: Parçacığın dalga fonksiyonu.
         """
-        super().__init__(name, lifetime_seconds, lifecycle=spin)
+        super().__init__(
+            name=name, lifetime_seconds=lifetime_seconds, lifecycle=lifecycle
+        )
         self.charge = charge  # Parçacığın yükü
         self.mass = mass  # Parçacığın kütlesi
         self.spin = spin  # Parçacığın spin'i
