@@ -1,7 +1,10 @@
 # src/life/particles/core.py
-import asyncio
+
+import logging
+import os
 import threading
 import time
+import colorlog
 
 
 class Core(threading.Thread):
@@ -37,8 +40,48 @@ class Core(threading.Thread):
         self.event_trigger = threading.Event()
         self._paused = False
         self._stop_event = threading.Event()
+        self._resumed = False
+        # Log ayarlarını yapılandırma
+        self.logger = logging.getLogger(name)
+        self._configure_logging()
         # Created durumunu tetikle
         self.trigger_event(self)
+
+    def _configure_logging(self):
+        log_file_path = f"logs/{self.name}.log"
+
+        if not os.path.exists(os.path.dirname(log_file_path)):
+            os.makedirs(os.path.dirname(log_file_path))
+
+        file_handler = logging.FileHandler(log_file_path)
+        file_handler.setLevel(logging.DEBUG)
+
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(
+            logging.INFO
+        )  # Konsola sadece INFO ve üstü seviyelerde mesaj gönderelim
+
+        formatter = colorlog.ColoredFormatter(
+            "%(asctime)s\t%(log_color)s%(name)s\t%(levelname)s\t%(reset)s%(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            log_colors={
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red,bg_white",
+            },
+        )
+        file_formatter = logging.Formatter(
+            "%(asctime)s\t%(name)s\t%(levelname)s\t%(message)s"
+        )
+
+        file_handler.setFormatter(file_formatter)
+        console_handler.setFormatter(formatter)
+
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(console_handler)
+        self.logger.setLevel(logging.DEBUG)
 
     def to_json(self):
         """
@@ -66,6 +109,7 @@ class Core(threading.Thread):
         :param event_function: Tetiklenen olayın işlevi.
         """
         self.event_function = event_function
+        return self
 
     def run(self):
         """
@@ -107,17 +151,48 @@ class Core(threading.Thread):
         if self.event_function:
             self.event_function(self)  # Durumu güncelle
 
+    def start(self):
+        super().start()
+        return self
+
     def status(self):
         """
         Örneğin mevcut durumunu döndürür.
         """
-        if not self._stop_event.is_set():
-            if self._paused:
-                return "Paused"
-            else:
-                return "Running"
+        state = "Unknown"
+        if not hasattr(self, "created_printed"):
+            state = "Created"
+            self.created_printed = True  # Created durumu yazıldı
         else:
-            return "Stopped"
+            if self._stop_event.is_set():
+                state = "Stopped"
+            elif self._paused:
+                state = "Paused"
+            elif self._resumed:
+                self._resumed = False
+                state = "Resumed"
+            else:
+                state = "Running"
+
+        message = f"\
+            {state}\
+            {self.lifetime_seconds}\
+            {self.lifecycle}\
+            {self.elapsed_lifespan}\
+            {self.life_created_time}\
+            {self.life_start_time}"
+
+        if state == "Created":
+            self.logger.info(message)
+        elif state == "Running":
+            self.logger.info(message)
+        elif state == "Paused" or state == "Resumed":
+            self.logger.warning(message)
+        elif state == "Stopped":
+            self.logger.critical(message)
+        else:
+            self.logger.debug(message)
+        return state
 
 
 # Example Usage
@@ -127,95 +202,55 @@ if __name__ == "__main__":
     lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı
 
-    RED = "\033[91m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    PURPLE = "\033[95m"
-    CYAN = "\033[96m"
-    WHITE = "\033[97m"
-    SOFT = "\033[98m"
-    GREENB = "\033[102m"
-    RESET = "\033[0m"
-
-    def instance_signal(data):
-        if not hasattr(data, "created_printed"):
-            print(
-                f"{WHITE}instance_signal{RESET} ",
-                f"{PURPLE}Created{RESET}",
-                f"{CYAN}{data.name}{RESET}",
-                f"{SOFT}{data.elapsed_lifespan}{RESET}",
-            )
-            data.created_printed = True  # Created durumu yazıldı
-        else:
-            status = data.status()
-            if status == "Running":
-                status_color = GREEN
-            elif status == "Paused":
-                status_color = YELLOW
-            elif status == "Stopped":
-                status_color = RED
-            else:
-                status_color = PURPLE  # Created durumu
-                status = "Created"
-            # Duraklatılmış veya devam eden durumu kontrol et
-            if data._paused:
-                status_color = YELLOW
-                status = "Paused"
-            elif status == "Running" and hasattr(data, "_resumed") and data._resumed:
-                status_color = GREENB
-                status = "Resumed"
-                data._resumed = False  # Resumed bayrağını sıfırla
-            print(
-                f"{WHITE}instance_signal{RESET} ",
-                f"{status_color}{status}{RESET}",
-                f"{CYAN}{data.name}{RESET}",
-                f"{SOFT}{data.elapsed_lifespan}{RESET}",
-            )
-
     instance_created_counter = 0
 
-    async def create_instance(name, lifetime_seconds, lifecycle):
+    def create_instance(name, lifetime_seconds, lifecycle):
+        def instance_signal(instance):
+            instance.status()
+
         global instance_created_counter
         instance_created_counter += 1
-        instance = Core(
-            name=f"{name}_{instance_created_counter}",
-            lifetime_seconds=lifetime_seconds,
-            lifecycle=lifecycle,
-        )
-        instance.trigger_event(instance_signal)
-        instance.start()
-        return instance
+        instance_name = f"{name}_{instance_created_counter}"
 
-    async def main():
-        # Örnek yönetimi
-        instances = await asyncio.gather(
-            *[
-                create_instance(
-                    name=name,
-                    lifetime_seconds=lifetime_seconds,
-                    lifecycle=lifecycle,
-                )
-                for _ in range(number_of_instance)
-            ]
+        return (
+            Core(
+                name=instance_name,
+                lifetime_seconds=lifetime_seconds,
+                lifecycle=lifecycle,
+            )
+            .trigger_event(instance_signal)
+            .start()
         )
+
+    instances = []
+
+    def main():
+        # Örnek yönetimi
+        for _ in range(number_of_instance):
+            instance = create_instance(
+                name=name,
+                lifetime_seconds=lifetime_seconds,
+                lifecycle=lifecycle,
+            )
+            instances.append(instance)
+
         # Tüm işlemleri burada kontrol edebilirsiniz
-        await asyncio.sleep(2)  #
+        time.sleep(2)  #
         # örnekleri duraklatma
         for instance in instances:
             if instance.name == f"{name}_1":
                 instance.pause()
 
-        await asyncio.sleep(2)  #
+        time.sleep(2)  #
         # öernekleri devam ettirme
         for instance in instances:
             if instance.name == f"{name}_1":
                 instance.resume()
 
-        await asyncio.sleep(2)  #
+        time.sleep(2)  #
         # Thread'leri durdurma
         for instance in instances:
             instance.stop()
             instance.join()
 
-    asyncio.run(main())
+    main()

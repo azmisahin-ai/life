@@ -30,16 +30,20 @@ class TestCore(unittest.TestCase):
 
     def test_status_running(self):
         # Core örneğinin durumunun "Running" olduğunu kontrol eder
+        self.core_instance.start()
+        self.assertEqual(self.core_instance.status(), "Created")
         self.assertEqual(self.core_instance.status(), "Running")
 
     def test_status_paused(self):
         # Core örneğinin durumunun "Paused" olduğunu kontrol eder
         self.core_instance._paused = True
+        self.assertEqual(self.core_instance.status(), "Created")
         self.assertEqual(self.core_instance.status(), "Paused")
 
     def test_status_stopped(self):
         # Core örneğinin durumunun "Stopped" olduğunu kontrol eder
         self.core_instance._stop_event.set()
+        self.assertEqual(self.core_instance.status(), "Created")
         self.assertEqual(self.core_instance.status(), "Stopped")
 
     def test_pause_method(self):
