@@ -1,107 +1,41 @@
 # tests/web/controller/simulation_test.py
 
 import unittest
-from src.web.controller.simulation import Simulation
+from src.web.controller.simulation import simulation
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
 
 
 class TestSimulation(unittest.TestCase):
-    def setUp(self):
-        self.simulation = Simulation()
-
-    def test_start_simulation(self):
-        # Simülasyon başlatıldığında doğru durum ve başlatılma değeri kontrol edilmeli
-        started = self.simulation.start(
-            simulation_time_step=1,
-            simulation_type=SimulationType.LifeCycle,
-            number_of_instance=2,
-            lifetime_seconds=1,
+    def test_setup(self):
+        # Parametreleri doğru şekilde ayarlayarak simülasyonu başlatma
+        simulation.setup(
+            number_of_instance=3,
+            lifetime_seconds=float("inf"),
+            lifecycle=60 / 60,
+            simulation_type=SimulationType.Particles,
         )
-        self.assertTrue(self.simulation.is_running)
-        self.assertFalse(self.simulation.is_paused)
-        self.assertEqual(self.simulation.simulation_status, SimulationStatus.started)
-        self.assertIsNotNone(
-            started.instance
-        )  # Başlatılan simülasyonun değeri None olmamalı
+        self.assertEqual(simulation.simulation_status, SimulationStatus.stopped)
+        self.assertIsNotNone(simulation.sampler)
 
-    def test_simulation_event_trigger(self):
-        # Simülasyon başarıyla başlatıldığında
-        # trigger_event metodunun doğru bir şekilde çağrıldığını kontrol etmek için bir test
-        started = self.simulation.start(
-            simulation_time_step=1,
-            simulation_type=SimulationType.LifeCycle,
-            number_of_instance=2,
-            lifetime_seconds=1,
-        )
-        self.assertIsNotNone(
-            started.instance
-        )  # Başlatılan simülasyonun değeri None olmalı
-        self.assertIsNone(
-            started.instance.last_item
-        )  # Simülasyonun son öğesi None olmalı
+    def test_trigger_functions(self):
+        # Tetikleyici fonksiyonların çalışıp çalışmadığını kontrol etme
+        def simulation_signal(simulation):
+            pass
 
-    def test_stop_simulation(self):
-        # Simülasyon durdurulduğunda durumun değiştiği ve çalıştırılmadığı kontrol edilmeli
-        self.simulation.start(
-            simulation_time_step=1,
-            simulation_type=SimulationType.LifeCycle,
-            number_of_instance=2,
-            lifetime_seconds=1,
-        )
-        self.simulation.stop()
-        self.assertFalse(self.simulation.is_running)
-        self.assertFalse(self.simulation.is_paused)
-        self.assertEqual(self.simulation.simulation_status, SimulationStatus.stopped)
+        def sampler_signal(sampler):
+            pass
 
-    def test_pause_simulation(self):
-        # Simülasyon duraklatıldığında durumun değiştiği ve işlem yapılmadığı kontrol edilmeli
-        self.simulation.start(
-            simulation_time_step=1,
-            simulation_type=SimulationType.LifeCycle,
-            number_of_instance=2,
-            lifetime_seconds=1,
-        )
-        self.simulation.pause()
-        self.assertTrue(self.simulation.is_running)
-        self.assertTrue(self.simulation.is_paused)
-        self.assertEqual(self.simulation.simulation_status, SimulationStatus.paused)
+        def instance_signal(instance):
+            pass
 
-    def test_continue_simulation(self):
-        # Duraklatılan simülasyonun devam ettirildiğinde durumun değiştiği ve işlem yapıldığı kontrol edilmeli
-        self.simulation.start(
-            simulation_time_step=1,
-            simulation_type=SimulationType.LifeCycle,
-            number_of_instance=2,
-            lifetime_seconds=1,
-        )
-        self.simulation.pause()
-        self.simulation.continues()
-        self.assertTrue(self.simulation.is_running)
-        self.assertFalse(self.simulation.is_paused)
-        self.assertEqual(self.simulation.simulation_status, SimulationStatus.continues)
+        simulation.trigger_simulation(simulation_signal)
+        simulation.trigger_sampler(sampler_signal)
+        simulation.trigger_instance(instance_signal)
 
-    def test_simulation_to_json(self):
-        # Simülasyonun JSON dökümünün doğru olduğu kontrol edilmeli
-        expected_json = {
-            "simulation_status": SimulationStatus.stopped.value,
-            "simulation_type": SimulationType.LifeCycle.value,
-            "simulation_time_step": 1,
-        }
-        actual = self.simulation.to_json()
-        self.assertEqual(actual, expected_json)
-
-    def test_start_simulation_invalid_input(self):
-        # Geçersiz girişlerle simülasyon başlatıldığında hata durumunun doğru işlendiği kontrol edilmeli
-        with self.assertRaises(
-            ValueError
-        ):  # Hata durumu beklenen bir istisna türüne göre güncellenmeli
-            self.simulation.start(
-                simulation_time_step=1,
-                simulation_type="InvalidType",  # Geçersiz bir simülasyon türü
-                number_of_instance=2,
-                lifetime_seconds=-1,  # Negatif bir ömür değeri
-            )
+        self.assertEqual(simulation.simulation_event_function, simulation_signal)
+        self.assertEqual(simulation.sampler_event_function, sampler_signal)
+        self.assertEqual(simulation.instance_event_function, instance_signal)
 
 
 if __name__ == "__main__":
