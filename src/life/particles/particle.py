@@ -1,7 +1,6 @@
 # src/life/particles/particle.py
 
-
-import asyncio
+import time
 from src.life.particles.vector import Vector
 from src.life.particles.core import Core
 
@@ -40,7 +39,7 @@ class Particle(Core):
         :param momentum: Parçacığın momentumu.
         :param wave_function: Parçacığın dalga fonksiyonu.
         """
-        super().__init__(name, lifetime_seconds)
+        super().__init__(name, lifetime_seconds, lifecycle=spin)
         self.charge = charge
         self.mass = mass
         self.spin = spin
@@ -146,99 +145,70 @@ class Particle(Core):
 
 # Example Usage
 if __name__ == "__main__":
-    simulation_time_step = 1
-    number_of_instance = 2
-    lifetime_seconds = float("inf")
-    instance_prefix = "Particle"
-
-    RED = "\033[91m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    PURPLE = "\033[95m"
-    CYAN = "\033[96m"
-    WHITE = "\033[97m"
-    SOFT = "\033[98m"
-    RESET = "\033[0m"
-
-    def instance_signal(data):
-        if not hasattr(data, "created_printed"):
-            print(
-                f"{WHITE}instance_signal{RESET} ",
-                f"{PURPLE}Created{RESET}",
-                f"{CYAN}{data.name}{RESET}",
-                f"{SOFT}{data.elapsed_lifespan}{RESET}",
-            )
-            data.created_printed = True  # Created durumu yazıldı
-        else:
-            status = data.status()
-            if status == "Running":
-                status_color = GREEN
-            elif status == "Paused":
-                status_color = YELLOW
-            elif status == "Stopped":
-                status_color = RED
-            else:
-                status_color = PURPLE  # Created durumu
-                status = "Created"
-            print(
-                f"{WHITE}instance_signal{RESET} ",
-                f"{status_color}{status}{RESET}",
-                f"{CYAN}{data.name}{RESET}",
-                f"{SOFT}{data.elapsed_lifespan}{RESET}",
-            )
+    name = "Cycle"  # Parçacığın adı.
+    lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
+    number_of_instance = 3  # oluşturulacak örnek sayısı
 
     instance_created_counter = 0
 
-    async def create_instance(name, lifetime_seconds):
+    def create_instance(name, lifetime_seconds, lifecycle):
+        def instance_signal(instance):
+            instance.status()
+
         global instance_created_counter
         instance_created_counter += 1
+        instance_name = f"{name}_{instance_created_counter}"
 
         def force_function(t):
             return Vector(t**0.1, t**0.1, t**0.1)
 
-        instance = Particle(
-            name=f"{name}_{instance_created_counter}",
-            lifetime_seconds=lifetime_seconds,
-            charge=-1.602176634e-19,
-            mass=9.10938356e-31,
-            spin=1 / 2,
-            energy=0,
-            position=Vector(0, 0, 0),
-            velocity=Vector(0, 0, 0),
-            momentum=Vector(0, 0, 0),
-            wave_function=force_function(0.1),
+        return (
+            Particle(
+                name=instance_name,
+                lifetime_seconds=lifetime_seconds,
+                charge=-1.602176634e-19,
+                mass=9.10938356e-31,
+                spin=1 / 2,
+                energy=0,
+                position=Vector(0.2, 0.2, 0.2),
+                velocity=Vector(0.1, 0.1, 0.1),
+                momentum=Vector(0.1, 0.1, 0.1),
+                wave_function=force_function(0.01),
+            )
+            .trigger_event(instance_signal)
+            .start()
         )
 
-        instance.trigger_event(instance_signal)
-        instance.start()
-        return instance
+    instances = []
 
-    async def main():
+    def main():
         # Örnek yönetimi
-        instances = await asyncio.gather(
-            *[
-                create_instance(instance_prefix, lifetime_seconds=2)
-                for _ in range(number_of_instance)
-            ]
-        )
+        for _ in range(number_of_instance):
+            instance = create_instance(
+                name=name,
+                lifetime_seconds=lifetime_seconds,
+                lifecycle=lifecycle,
+            )
+            instances.append(instance)
+
         # Tüm işlemleri burada kontrol edebilirsiniz
-        await asyncio.sleep(2)  #
+        time.sleep(2)  #
         # örnekleri duraklatma
         for instance in instances:
-            if instance.name == f"{instance_prefix}_1":
+            if instance.name == f"{name}_1":
                 instance.pause()
 
-        await asyncio.sleep(2)  #
+        time.sleep(2)  #
         # öernekleri devam ettirme
         for instance in instances:
-            if instance.name == f"{instance_prefix}_1":
+            if instance.name == f"{name}_1":
                 instance.resume()
 
-        await asyncio.sleep(2)  #
+        time.sleep(2)  #
         # Thread'leri durdurma
         for instance in instances:
             instance.stop()
             instance.join()
 
-    asyncio.run(main())
+    main()
