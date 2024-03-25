@@ -39,6 +39,7 @@ class CoreSimulation:
         self.event_function = None
         self.event_function_instance = None
         self._stop_event = threading.Event()
+        self._paused = False
         self._resumed = False
         self._exit_flag = False
         # Log ayarlarını yapılandırma
