@@ -12,17 +12,17 @@ class Particle(Core):
 
     def __init__(
         self,
-        name,
-        lifetime_seconds,
-        charge,
-        mass,
-        spin,
-        energy,
-        position=Vector(),
-        velocity=Vector(),
-        momentum=Vector(),
-        wave_function=None,
-    ):
+        name: str,
+        lifetime_seconds: float,
+        charge: float,
+        mass: float,
+        spin: float,
+        energy: float,
+        position: Vector = Vector(),
+        velocity: Vector = Vector(),
+        momentum: Vector = Vector(),
+        wave_function: Vector = None,
+    ) -> None:
         """
         Parçacık sınıfını başlatır.
 
@@ -40,20 +40,23 @@ class Particle(Core):
         :param wave_function: Parçacığın dalga fonksiyonu.
         """
         super().__init__(name, lifetime_seconds, lifecycle=spin)
-        self.charge = charge
-        self.mass = mass
-        self.spin = spin
-        self.energy = energy
-        self.position = position
-        self.velocity = velocity
-        self.momentum = momentum
-        self.wave_function = wave_function or Vector(0, 0, 0)
+        self.charge = charge  # Parçacığın yükü
+        self.mass = mass  # Parçacığın kütlesi
+        self.spin = spin  # Parçacığın spin'i
+        self.energy = energy  # Parçacığın enerjisi
+        self.position = position  # Parçacığın pozisyonu
+        self.velocity = velocity  # Parçacığın hızı
+        self.momentum = momentum  # Parçacığın momentumu
+        self.wave_function = wave_function or Vector(
+            0, 0, 0
+        )  # Parçacığın dalga fonksiyonu
 
-    def to_json(self):
+    def to_json(self) -> dict:
         """
         Parçacığı JSON formatına dönüştürür.
 
         :return: JSON formatında parçacık verisi.
+        :rtype: dict
         """
         return {
             "name": self.name,
@@ -79,18 +82,23 @@ class Particle(Core):
             "wave_function": self.wave_function.to_json(),
         }
 
-    def signal(self, time_step):
+    def signal(self, time_step: float) -> None:
         """
         Parçacığın sinyalini gönderir.
+
+        :param time_step: Zaman adımı.
+        :type time_step: float
         """
         self.update(force=self.wave_function, time_step=time_step)
 
-    def update(self, force, time_step):
+    def update(self, force: Vector, time_step: float) -> None:
         """
         Parçacığın durumunu günceller.
 
         :param force: Uygulanan kuvvet.
+        :type force: Vector
         :param time_step: Zaman adımı.
+        :type time_step: float
         """
         # Schrödinger denklemini kullanarak dalga fonksiyonunu güncelle
         self.wave_function += self.__schrodinger_eq() * time_step
@@ -114,31 +122,40 @@ class Particle(Core):
         # Burada kompleks bir işlem gerçekleştirilir, bu sadece bir örnektir.
         return self.position * self.velocity
 
-    def pauli_exclusion_principle(self, other_particle):
+    def pauli_exclusion_principle(self, other_particle: "Particle") -> bool:
         """
         Parçacıklar arasındaki Pauli dışlama prensibini kontrol eder.
 
         :param other_particle: Diğer parçacık.
+        :type other_particle: Particle
         :return: Prensibe uygunsa True, aksi halde False.
+        :rtype: bool
         """
         return self.spin == other_particle.spin
 
-    def calculate_momentum(self, electric_field):
+    def calculate_momentum(self, electric_field: Vector) -> Vector:
         """
         Parçacığın momentumunu hesaplar.
 
         :param electric_field: Elektrik alanı.
+        :type electric_field: Vector
         :return: Momentum.
+        :rtype: Vector
         """
         return self.__schrodinger_eq() * electric_field
 
-    def electromagnetic_interaction(self, electric_field, magnetic_field):
+    def electromagnetic_interaction(
+        self, electric_field: Vector, magnetic_field: Vector
+    ) -> Vector:
         """
         Elektromanyetik etkileşimi hesaplar.
 
         :param electric_field: Elektrik alanı.
+        :type electric_field: Vector
         :param magnetic_field: Manyetik alan.
+        :type magnetic_field: Vector
         :return: Elektromanyetik etkileşim.
+        :rtype: Vector
         """
         return electric_field * self.charge + magnetic_field * self.charge
 
