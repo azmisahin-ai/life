@@ -14,8 +14,7 @@ class Core(threading.Thread):
     Life sınıfı, parçacıkların yaşam döngüsünü yönetir.
     """
 
-    def __init__(self, name, lifetime_seconds, lifecycle):
-        super().__init__()
+    def __init__(self, name: str, lifetime_seconds: float, lifecycle: float) -> None:
         """
         Life Oluşturulur.
 
@@ -23,6 +22,8 @@ class Core(threading.Thread):
         :param lifetime_seconds: Parçacığın yaşam süresi saniye cinsinden.
         :param lifecycle: Parçacığın saniyedeki yaşam döngüsü.
         """
+        super().__init__()
+
         if name is None:
             raise ValueError("Name cannot be None.")
         if lifetime_seconds <= 0:
