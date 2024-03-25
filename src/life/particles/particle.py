@@ -145,10 +145,10 @@ class Particle(Core):
 
 # Example Usage
 if __name__ == "__main__":
-    name = "Cycle"  # Parçacığın adı.
+    name = "Particle"  # Parçacığın adı.
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 3  # oluşturulacak örnek sayısı
+    number_of_instance = 10  # oluşturulacak örnek sayısı
 
     instance_created_counter = 0
 
