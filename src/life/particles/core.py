@@ -177,14 +177,12 @@ class Core(threading.Thread):
             else:
                 state = "Running"
 
-        message = f"\
-            {state}\
-            {self.lifetime_seconds}\
-            {self.lifecycle}\
-            {self.elapsed_lifespan}\
-            {self.life_created_time}\
-            {self.life_start_time}"
-
+        message = "{}\t{}\t{}\t{}".format(  # noqa: F524
+            state,
+            self.name,
+            self.life_created_time,
+            self.life_start_time,
+        )
         if state == "Created":
             self.logger.info(message)
         elif state == "Running":

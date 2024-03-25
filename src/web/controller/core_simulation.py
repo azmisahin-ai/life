@@ -208,8 +208,12 @@ class CoreSimulation:
         else:
             state = "Running"
 
-        message = f"{self.name} - {state} - {self.number_of_instance_created}/{self.number_of_instance} instances"
-
+        message = "{}\t{}\t{}\t{}".format(  # noqa: F524
+            state,
+            self.name,
+            self.number_of_instance_created,
+            self.number_of_instance,
+        )
         if state == "Paused":
             self.logger.warning(message)
         elif state == "Resumed":

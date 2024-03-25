@@ -1,13 +1,16 @@
 # src/web/controller/simulation.py
 
-
+import logging
+import os
 import time
-from threading import Thread
 
+import colorlog
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
 from src.web.controller.core_simulation import CoreSimulation
 from src.web.controller.particle_simulation import ParticleSimulation
+
+DATA_FOLDER = ""
 
 
 class Simulation:
@@ -21,9 +24,47 @@ class Simulation:
         """
         # state
         self.simulation_status = SimulationStatus.stopped
-        self.is_running = False
-        self.is_paused = False
         self.sampler = None
+
+        # Log ayarlarını yapılandırma
+        self.logger = logging.getLogger("Simulation.__Life__")
+        self._configure_logging()
+
+    def _configure_logging(self):
+        log_file_path = f"{DATA_FOLDER}logs/Simulation.log"
+
+        if not os.path.exists(os.path.dirname(log_file_path)):
+            os.makedirs(os.path.dirname(log_file_path))
+
+        file_handler = logging.FileHandler(log_file_path)
+        file_handler.setLevel(logging.DEBUG)
+
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(
+            logging.INFO
+        )  # Konsola sadece INFO ve üstü seviyelerde mesaj gönderelim
+
+        formatter = colorlog.ColoredFormatter(
+            "%(asctime)s\t%(log_color)s%(name)s\t%(levelname)s\t%(reset)s%(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            log_colors={
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red,bg_white",
+            },
+        )
+        file_formatter = logging.Formatter(
+            "%(asctime)s\t%(name)s\t%(levelname)s\t%(message)s"
+        )
+
+        file_handler.setFormatter(file_formatter)
+        console_handler.setFormatter(formatter)
+
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(console_handler)
+        self.logger.setLevel(logging.DEBUG)
 
     def to_json(self):
         """
@@ -61,22 +102,6 @@ class Simulation:
         else:
             return None
 
-    def _run_simulation_loop(self):
-        """
-        Simülasyon döngüsünü başlatır ve çalıştırır.
-        """
-        self.simulation_status = SimulationStatus.started
-        while self.is_running:
-            if not self.is_paused and self.sampler:
-                if isinstance(self.sampler, CoreSimulation):
-                    if not self.sampler.start_simulation():
-                        self.stop()
-                if isinstance(self.sampler, ParticleSimulation):
-                    if not self.sampler.start_simulation():
-                        self.stop()
-            time.sleep(self.lifecycle)
-        self.simulation_status = SimulationStatus.stopped
-
     def setup(
         self,
         number_of_instance: int,
@@ -113,56 +138,81 @@ class Simulation:
 
         return self
 
+    def status(self):
+        message = "{}\t{}\t{}\t{}".format(  # noqa: F524
+            self.simulation_status.value,
+            "Simulation",
+            self.simulation_type,
+            self.number_of_instance,
+        )
+        if self.simulation_status == SimulationStatus.paused:
+            self.logger.warning(message)
+        elif self.simulation_status == SimulationStatus.continues:
+            self.logger.info(message)
+        elif self.simulation_status == SimulationStatus.stopped:
+            self.logger.warning(message)
+        else:
+            self.logger.info(message)
+
+        return self.simulation_status
+
     def start(self):
         # state
-        self.is_running = True
-        self.is_paused = False
-        Thread(target=self._run_simulation_loop).start()
         self.simulation_status = SimulationStatus.started
+        # trigger
+        if self.simulation_event_function:
+            self.simulation_event_function(self)
+        # proccess
+        self.sampler.trigger_event(self.sampler_event_function).trigger_event_instance(
+            self.instance_event_function
+        )
+        self.sampler.start_simulation()
+
+        return self
+
+    def pause(self):
+        # state
+        self.simulation_status = SimulationStatus.paused
+        # trigger
+        if self.simulation_event_function:
+            self.simulation_event_function(self)
+        # proccess
+        self.sampler.pause_simulation()
+
+        return self
+
+    def continues(self):
+        # state
+        self.simulation_status = SimulationStatus.continues
+        # trigger
+        if self.simulation_event_function:
+            self.simulation_event_function(self)
+        # proccess
+        self.sampler.resume_simulation()
 
         return self
 
     def stop(self):
-        """
-        Simülasyonu durdurur.
-
-        Returns:
-            Simulation: Güncellenmiş simülasyon örneği.
-        """
-        self.is_running = False
-        self.is_paused = False
+        # state
         self.simulation_status = SimulationStatus.stopped
+        # trigger
+        if self.simulation_event_function:
+            self.simulation_event_function(self)
+        # proccess
+        self.sampler.stop_simulation()
+
         return self
 
-    def pause(self):
-        """
-        Simülasyonu duraklatır.
-
-        Returns:
-            Simulation: Güncellenmiş simülasyon örneği.
-        """
-        self.is_paused = True
-        self.simulation_status = SimulationStatus.paused
+    def trigger_simulation(self, event_function):
+        self.simulation_event_function = event_function
         return self
 
-    def continues(self):
-        """
-        Duraklatılan simülasyonu devam ettirir.
-
-        Returns:
-            Simulation: Güncellenmiş simülasyon örneği.
-        """
-        self.is_paused = False
-        self.simulation_status = SimulationStatus.continues
+    def trigger_sampler(self, event_function):
+        self.sampler_event_function = event_function
         return self
 
-    def status(self):
-        """
-        Simülasyon durumunu döndürür.
-
-        Returns:
-            SimulationStatus: Simülasyon durumu.
-        """
+    def trigger_instance(self, event_function):
+        self.instance_event_function = event_function
         return self
 
 
@@ -170,12 +220,15 @@ simulation = Simulation()
 
 if __name__ == "__main__":
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
+    lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı
     simulation_type = SimulationType.Particles  # Simulaston türü
 
     def simulation_signal(simulation):
         simulation.status()
+
+    def sampler_signal(sampler):
+        sampler.status()
 
     def instance_signal(instance):
         instance.status()
@@ -185,5 +238,16 @@ if __name__ == "__main__":
         lifetime_seconds=lifetime_seconds,
         lifecycle=lifecycle,
         simulation_type=simulation_type,
-    ).sampler.trigger_event(simulation_signal).trigger_event_instance(instance_signal)
+    ).trigger_simulation(simulation_signal).trigger_sampler(
+        sampler_signal
+    ).trigger_instance(instance_signal)
     simulation.start()
+
+    time.sleep(2)
+    simulation.pause()
+
+    time.sleep(2)
+    simulation.continues()
+
+    time.sleep(2)
+    simulation.stop()
