@@ -195,7 +195,7 @@ simulation.trigger_simulation(simulation_signal).trigger_sampler(
 if __name__ == "__main__":
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 1  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 1000  # oluşturulacak örnek sayısı
+    number_of_instance = 3  # oluşturulacak örnek sayısı
     simulation_type = SimulationType.Particles  # Simulaston türü
 
     simulation.start(
