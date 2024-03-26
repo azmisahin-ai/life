@@ -1,16 +1,12 @@
 # src/web/controller/simulation.py
 
-import logging
-import os
-import time
 
-import colorlog
+import time
+from src.package.logger import Logger
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
 from src.web.controller.core_simulation import CoreSimulation
 from src.web.controller.particle_simulation import ParticleSimulation
-
-DATA_FOLDER = ""
 
 
 class Simulation:
@@ -25,46 +21,10 @@ class Simulation:
         # state
         self.simulation_status = SimulationStatus.stopped
         self.sampler = None
-
         # Log ayarlarını yapılandırma
-        self.logger = logging.getLogger("Simulation.__Life__")
-        self._configure_logging()
-
-    def _configure_logging(self):
-        log_file_path = f"{DATA_FOLDER}logs/Simulation.log"
-
-        if not os.path.exists(os.path.dirname(log_file_path)):
-            os.makedirs(os.path.dirname(log_file_path))
-
-        file_handler = logging.FileHandler(log_file_path)
-        file_handler.setLevel(logging.DEBUG)
-
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(
-            logging.INFO
-        )  # Konsola sadece INFO ve üstü seviyelerde mesaj gönderelim
-
-        formatter = colorlog.ColoredFormatter(
-            "%(asctime)s\t%(log_color)s%(name)s\t%(levelname)s\t%(reset)s%(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-            log_colors={
-                "DEBUG": "cyan",
-                "INFO": "green",
-                "WARNING": "yellow",
-                "ERROR": "red",
-                "CRITICAL": "red,bg_white",
-            },
-        )
-        file_formatter = logging.Formatter(
-            "%(asctime)s\t%(name)s\t%(levelname)s\t%(message)s"
-        )
-
-        file_handler.setFormatter(file_formatter)
-        console_handler.setFormatter(formatter)
-
-        self.logger.addHandler(file_handler)
-        self.logger.addHandler(console_handler)
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = Logger(
+            name="Simulation.__Life__", log_to_file=False, log_to_console=True
+        ).get_logger()
 
     def to_json(self):
         """
@@ -105,7 +65,7 @@ class Simulation:
     def status(self):
         message = "{}\t{}\t{}\t{}".format(  # noqa: F524
             self.simulation_status.value,
-            "Simulation",
+            "Simulation.__Life__",
             self.simulation_type,
             self.number_of_instance,
         )

@@ -1,14 +1,11 @@
 # src/web/controller/core_simulation.py
 
-import logging
-import os
+
 import threading
 import time
 
-import colorlog
+from src.package.logger import Logger
 from src.life.particles.core import Core
-
-DATA_FOLDER = ""
 
 
 class CoreSimulation:
@@ -47,44 +44,9 @@ class CoreSimulation:
         self._resumed = False
         self._exit_flag = False
         # Log ayarlarını yapılandırma
-        self.logger = logging.getLogger(name)
-        self._configure_logging()
-
-    def _configure_logging(self):
-        log_file_path = f"{DATA_FOLDER}logs/{self.name}.log"
-
-        if not os.path.exists(os.path.dirname(log_file_path)):
-            os.makedirs(os.path.dirname(log_file_path))
-
-        file_handler = logging.FileHandler(log_file_path)
-        file_handler.setLevel(logging.DEBUG)
-
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(
-            logging.INFO
-        )  # Konsola sadece INFO ve üstü seviyelerde mesaj gönderelim
-
-        formatter = colorlog.ColoredFormatter(
-            "%(asctime)s\t%(log_color)s%(name)s\t%(levelname)s\t%(reset)s%(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-            log_colors={
-                "DEBUG": "cyan",
-                "INFO": "green",
-                "WARNING": "yellow",
-                "ERROR": "red",
-                "CRITICAL": "red,bg_white",
-            },
-        )
-        file_formatter = logging.Formatter(
-            "%(asctime)s\t%(name)s\t%(levelname)s\t%(message)s"
-        )
-
-        file_handler.setFormatter(file_formatter)
-        console_handler.setFormatter(formatter)
-
-        self.logger.addHandler(file_handler)
-        self.logger.addHandler(console_handler)
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = Logger(
+            name=name, log_to_file=False, log_to_console=True
+        ).get_logger()
 
     def to_json(self) -> dict:
         return {
