@@ -27,7 +27,10 @@ class SimulationStartTest(unittest.TestCase):
             raise Exception(f"Failed to set up the test environment: {e}")
 
     def tearDown(self):
-        pass  # Clean up if needed
+        try:
+            self.client.get("/api/v1/simulation/stop")
+        finally:
+            self.client = None
 
     def test_simulation_start_endpoint(self):
         # request
