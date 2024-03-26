@@ -51,7 +51,7 @@ def create_app():
             "environment": APP_ENV,
             "paths": paths,
         }
-        io.emit("api_signal", response)
+        io.emit("home", response)
         return response
 
     @app.route("/socket/v1/simulation/status", methods=["GET"])
@@ -63,7 +63,7 @@ def create_app():
             response = simulation.to_json()
 
         # send signal
-        io.emit("simulation_signal", response)
+        io.emit("simulation_status", response)
 
         return jsonify(response)
 
@@ -96,7 +96,7 @@ def create_app():
             response = simulation.to_json()
 
         # send signal
-        io.emit("simulation_signal", response)
+        io.emit("simulation_status", response)
 
         return jsonify(response)
 
@@ -109,7 +109,7 @@ def create_app():
             response = simulation.to_json()
 
         # send signal
-        io.emit("simulation_signal", response)
+        io.emit("simulation_status", response)
 
         return jsonify(response)
 
@@ -122,7 +122,7 @@ def create_app():
             response = simulation.to_json()
 
         # send signal
-        io.emit("simulation_signal", response)
+        io.emit("simulation_status", response)
 
         return jsonify(response)
 
@@ -135,7 +135,7 @@ def create_app():
             response = simulation.to_json()
 
         # send signal
-        io.emit("simulation_signal", response)
+        io.emit("simulation_status", response)
 
         return jsonify(response)
 
