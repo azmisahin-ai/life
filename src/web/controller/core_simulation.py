@@ -45,7 +45,7 @@ class CoreSimulation:
         self._exit_flag = False
         # Log ayarlarını yapılandırma
         self.logger = Logger(
-            name=name, log_to_file=False, log_to_console=True
+            name=name, log_to_file=True, log_to_console=True
         ).get_logger()
 
     def to_json(self) -> dict:

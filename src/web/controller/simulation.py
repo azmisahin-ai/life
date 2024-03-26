@@ -22,7 +22,7 @@ class Simulation:
         self.sampler = None
         # Log ayarlarını yapılandırma
         self.logger = Logger(
-            name="Simulation.__Life__", log_to_file=False, log_to_console=True
+            name="Simulation.__Life__", log_to_file=True, log_to_console=True
         ).get_logger()
 
     def to_json(self):
@@ -193,7 +193,7 @@ simulation.trigger_simulation(simulation_signal).trigger_sampler(
 
 if __name__ == "__main__":
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
+    lifecycle = 60 / 1  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 1000  # oluşturulacak örnek sayısı
     simulation_type = SimulationType.Particles  # Simulaston türü
 

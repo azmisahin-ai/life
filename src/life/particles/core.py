@@ -43,7 +43,7 @@ class Core(threading.Thread):
         self._resumed = False
         # Log ayarlarını yapılandırma
         self.logger = Logger(
-            name=name, log_to_file=False, log_to_console=True
+            name=f"/_/{name}", log_to_file=True, log_to_console=True
         ).get_logger()
         # Created durumunu tetikle
         self.trigger_event(self)
