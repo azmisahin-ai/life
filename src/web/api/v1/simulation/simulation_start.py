@@ -6,7 +6,7 @@ from flask_socketio import SocketIO
 
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
-from src.web.controller import simulation
+from src.web.controller.simulation import simulation
 
 
 app = Flask(__name__)
