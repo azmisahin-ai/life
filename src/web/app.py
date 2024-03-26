@@ -44,7 +44,8 @@ def create_app():
             if isinstance(simulation, Simulation):
                 simulation.status()
                 # send simulation_status signal
-                io.emit("simulation_status", simulation.to_json())
+                args = simulation.to_json()
+                io.emit("simulation_status", args)
 
             else:
                 raise RuntimeWarning("A new unknown simulation")
@@ -56,11 +57,13 @@ def create_app():
             if isinstance(sampler, ParticleSimulation):
                 sampler.status()
                 # send simulation_sampler_status signal
-                io.emit("simulation_sampler_status", sampler.to_json())
+                args = sampler.to_json()
+                io.emit("simulation_sampler_status", args)
             elif isinstance(sampler, CoreSimulation):
                 sampler.status()
                 # send simulation_sampler_status signal
-                io.emit("simulation_sampler_status", sampler.to_json())
+                args = sampler.to_json()
+                io.emit("simulation_sampler_status", args)
             else:
                 raise RuntimeWarning("A new unknown sampler")
         except Exception as e:
@@ -71,11 +74,13 @@ def create_app():
             if isinstance(instance, Particle):
                 instance.status()
                 # send simulation_instance_status signal
-                io.emit("simulation_instance_status", instance.to_json())
+                args = instance.to_json()
+                io.emit("simulation_instance_status", args)
             elif isinstance(instance, Core):
                 instance.status()
                 # send simulation_instance_status signal
-                io.emit("simulation_instance_status", instance.to_json())
+                args = instance.to_json()
+                io.emit("simulation_instance_status", args)
             else:
                 raise RuntimeWarning("A new unknown instance")
         except Exception as e:
