@@ -57,7 +57,7 @@ class CoreSimulation:
             "number_of_instance_created": self.number_of_instance_created,
         }
 
-    def instance_signal(self, instance):
+    def instance_status(self, instance):
         if self.event_function_instance:
             self.event_function_instance(instance)  # Event işlevini çağır
 
@@ -69,7 +69,7 @@ class CoreSimulation:
             name=instance_name,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
-        ).trigger_event(self.instance_signal)
+        ).trigger_event(self.instance_status)
 
     def run_simulation(self):
         try:
@@ -195,10 +195,10 @@ if __name__ == "__main__":
     lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı
 
-    def sampler_signal(sampler):
+    def simulation_sampler_status(sampler):
         sampler.status()
 
-    def instance_signal(instance):
+    def simulation_instance_status(instance):
         instance.status()
 
     sampler = (
@@ -208,8 +208,8 @@ if __name__ == "__main__":
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
         )
-        .trigger_event(sampler_signal)
-        .trigger_event_instance(instance_signal)
+        .trigger_event(simulation_sampler_status)
+        .trigger_event_instance(simulation_instance_status)
     )
 
     # örnekleyiciyi başlat

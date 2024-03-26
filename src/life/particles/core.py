@@ -168,7 +168,7 @@ if __name__ == "__main__":
     instance_created_counter = 0
 
     def create_instance(name, lifetime_seconds, lifecycle):
-        def instance_signal(instance):
+        def simulation_instance_status(instance):
             instance.status()
 
         global instance_created_counter
@@ -181,7 +181,7 @@ if __name__ == "__main__":
                 lifetime_seconds=lifetime_seconds,
                 lifecycle=lifecycle,
             )
-            .trigger_event(instance_signal)
+            .trigger_event(simulation_instance_status)
             .start()
         )
 
