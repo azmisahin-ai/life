@@ -13,16 +13,17 @@ class Simulation:
     Simülasyon işlemlerini yöneten sınıf.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, name: str) -> None:
         """
         Particle simulasyonunu oluştur.
         """
+        self.name = name
         # state
         self.simulation_status = SimulationStatus.stopped
         self.sampler = None
         # Log ayarlarını yapılandırma
         self.logger = Logger(
-            name="Simulation.__Life__", log_to_file=True, log_to_console=True
+            name=f"/simulation/{name}", log_to_file=True, log_to_console=True
         ).get_logger()
 
     def to_json(self):
@@ -46,14 +47,14 @@ class Simulation:
         """
         if simulation_type == SimulationType.Core:
             return CoreSimulation(
-                name="Simulation.Core",
+                name=f"{self.name}.core",
                 number_of_instance=number_of_instance,
                 lifetime_seconds=lifetime_seconds,
                 lifecycle=lifecycle,
             )
         elif simulation_type == SimulationType.Particles:
             return ParticleSimulation(
-                name="Simulation.Particles",
+                name=f"{self.name}.particles",
                 number_of_instance=number_of_instance,
                 lifetime_seconds=lifetime_seconds,
                 lifecycle=lifecycle,
@@ -64,7 +65,7 @@ class Simulation:
     def status(self):
         message = "{}\t{}\t{}\t{}".format(  # noqa: F524
             self.simulation_status.value,
-            "Simulation.__Life__",
+            self.name,
             self.simulation_type,
             self.number_of_instance,
         )
@@ -172,7 +173,7 @@ class Simulation:
         return self
 
 
-simulation = Simulation()
+simulation = Simulation("life")
 
 
 def simulation_signal(simulation):

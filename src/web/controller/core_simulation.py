@@ -45,7 +45,7 @@ class CoreSimulation:
         self._exit_flag = False
         # Log ayarlarını yapılandırma
         self.logger = Logger(
-            name=name, log_to_file=True, log_to_console=True
+            name=f"/sampler/{name}", log_to_file=True, log_to_console=True
         ).get_logger()
 
     def to_json(self) -> dict:
@@ -190,39 +190,39 @@ class CoreSimulation:
 
 # Example Usage
 if __name__ == "__main__":
-    name = "Cycle"  # Parçacığın adı.
+    name = "core"  # Parçacığın adı.
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı
 
-    def simulation_signal(simulation):
-        simulation.status()
+    def sampler_signal(sampler):
+        sampler.status()
 
     def instance_signal(instance):
         instance.status()
 
-    simulation = (
+    sampler = (
         CoreSimulation(
             name=name,
             number_of_instance=number_of_instance,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
         )
-        .trigger_event(simulation_signal)
+        .trigger_event(sampler_signal)
         .trigger_event_instance(instance_signal)
     )
 
-    # Simülasyonu başlat
-    simulation.start_simulation()
+    # örnekleyiciyi başlat
+    sampler.start_simulation()
 
-    # Simülasyonu duraklat
+    # örnekleyiciyi duraklat
     time.sleep(2)
-    simulation.pause_simulation()
+    sampler.pause_simulation()
 
-    # Simülasyonu devam ettir
+    # örnekleyiciyi devam ettir
     time.sleep(2)
-    simulation.resume_simulation()
+    sampler.resume_simulation()
 
-    # Simülasyonu durdur
+    # örnekleyiciyi durdur
     time.sleep(2)
-    simulation.stop_simulation()
+    sampler.stop_simulation()

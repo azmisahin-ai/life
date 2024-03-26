@@ -43,7 +43,7 @@ class Core(threading.Thread):
         self._resumed = False
         # Log ayarlarını yapılandırma
         self.logger = Logger(
-            name=f"/_/{name}", log_to_file=True, log_to_console=True
+            name=f"/core/{name}", log_to_file=True, log_to_console=True
         ).get_logger()
         # Created durumunu tetikle
         self.trigger_event(self)
@@ -160,7 +160,7 @@ class Core(threading.Thread):
 
 # Example Usage
 if __name__ == "__main__":
-    name = "Cycle"  # Parçacığın adı.
+    name = "core"  # Parçacığın adı.
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı

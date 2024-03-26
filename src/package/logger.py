@@ -3,6 +3,8 @@ import logging
 import os
 import colorlog
 
+APP_ENV = os.environ.get("APP_ENV")
+
 
 class Logger:
     def __init__(
@@ -16,7 +18,7 @@ class Logger:
         self.logger.setLevel(logging.DEBUG)
 
         if log_to_file:
-            log_file_path = f"logs/{self.logger.name}.log"
+            log_file_path = f"logs/{APP_ENV}/{self.logger.name}.log"
             if not os.path.exists(os.path.dirname(log_file_path)):
                 os.makedirs(os.path.dirname(log_file_path))
             file_handler = logging.FileHandler(log_file_path)
