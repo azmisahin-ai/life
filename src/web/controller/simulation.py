@@ -155,9 +155,9 @@ class Simulation:
         # trigger
         if self.simulation_event_function:
             self.simulation_event_function(self)
-        # proccess
-        self.sampler.stop_simulation()
-
+        # process
+        if self.sampler:
+            self.sampler.stop_simulation()
         return self
 
     def trigger_simulation(self, event_function):
