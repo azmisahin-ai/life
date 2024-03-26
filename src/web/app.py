@@ -43,6 +43,7 @@ def create_app():
         try:
             if isinstance(simulation, Simulation):
                 simulation.status()
+                # send simulation_status signal
                 io.emit("simulation_status", simulation.to_json())
 
             else:
@@ -54,9 +55,11 @@ def create_app():
         try:
             if isinstance(sampler, ParticleSimulation):
                 sampler.status()
+                # send simulation_sampler_status signal
                 io.emit("simulation_sampler_status", sampler.to_json())
             elif isinstance(sampler, CoreSimulation):
                 sampler.status()
+                # send simulation_sampler_status signal
                 io.emit("simulation_sampler_status", sampler.to_json())
             else:
                 raise RuntimeWarning("A new unknown sampler")
@@ -67,9 +70,11 @@ def create_app():
         try:
             if isinstance(instance, Particle):
                 instance.status()
+                # send simulation_instance_status signal
                 io.emit("simulation_instance_status", instance.to_json())
             elif isinstance(instance, Core):
                 instance.status()
+                # send simulation_instance_status signal
                 io.emit("simulation_instance_status", instance.to_json())
             else:
                 raise RuntimeWarning("A new unknown instance")
@@ -99,7 +104,7 @@ def create_app():
             "environment": APP_ENV,
             "paths": paths,
         }
-        io.emit("home", response)
+
         return response
 
     @app.route("/socket/v1/simulation/status", methods=["GET"])
@@ -143,9 +148,6 @@ def create_app():
         if simulation.sampler:
             response = simulation.to_json()
 
-        # send signal
-        io.emit("simulation_status", response)
-
         return jsonify(response)
 
     @app.route("/socket/v1/simulation/pause", methods=["GET"])
@@ -155,9 +157,6 @@ def create_app():
 
         if simulation.sampler:
             response = simulation.to_json()
-
-        # send signal
-        io.emit("simulation_status", response)
 
         return jsonify(response)
 
@@ -169,9 +168,6 @@ def create_app():
         if simulation.sampler:
             response = simulation.to_json()
 
-        # send signal
-        io.emit("simulation_status", response)
-
         return jsonify(response)
 
     @app.route("/socket/v1/simulation/stop", methods=["GET"])
@@ -181,9 +177,6 @@ def create_app():
 
         if simulation.sampler:
             response = simulation.to_json()
-
-        # send signal
-        io.emit("simulation_status", response)
 
         return jsonify(response)
 
