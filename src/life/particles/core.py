@@ -88,13 +88,13 @@ class Core(threading.Thread):
         Eşleştirme sırasında test ediliyor.
         Test eşleri uyumluysa süreleri artıyor.
         """
-        message = "{}\t{}\t{}\t{}".format(  # noqa: F524
-            "ping",
-            self.name,
-            code,
-            self.elapsed_lifespan,
-        )
-        self.logger.warning(message)
+        # message = "{}\t{}\t{}\t{}".format(  # noqa: F524
+        #     "ping",
+        #     self.name,
+        #     code,
+        #     self.elapsed_lifespan,
+        # )
+        # self.logger.warning(message)
 
     def run(self):
         """

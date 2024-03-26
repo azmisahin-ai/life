@@ -3,8 +3,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 
-from .api import blueprint as api_blueprint
-from .socket import initialize
+from src.web.api import blueprint as api_blueprint
+from src.web.socket import initialize
 
 from src.web.config import APP_ENV, APP_NAME, HOST_IP, httpPortNumber, DEBUG
 from src.web.controller.simulation_status import SimulationStatus

@@ -91,6 +91,43 @@ class Particle(Core):
             "wave_function": self.wave_function.to_json(),
         }
 
+    # Parçacığın spin özelliklerini güncelleme
+    def calculate_new_spin(self, current_spin):
+        # Spin'i rastgele bir miktar değiştirerek güncelle
+        return current_spin + random.uniform(-0.1, 0.1)
+
+    # Parçacığın kütle özelliklerini güncelleme
+    def calculate_new_mass(self, current_mass):
+        # Kütle değişimini rastgele bir miktar artırarak güncelle
+        return current_mass * random.uniform(0.9, 1.1)
+
+    # Parçacığın yükünü güncelleme
+    def calculate_new_charge(self, current_charge):
+        # Yük değişimini rastgele bir miktar artırarak güncelle
+        return current_charge * random.uniform(0.9, 1.1)
+
+    # Parçacığın enerjisini güncelleme
+    def calculate_new_energy(self, current_energy):
+        # Enerjiyi rastgele bir miktar artırarak güncelle
+        return current_energy + random.uniform(0, 1)
+
+    # Parçacığın enerjisini güncelleme
+    def calculate_new_position(self):
+        # Parçacığın yeni hızını ve konumunu belirlemek için güncellenmiş bir kuvvet fonksiyonu.
+        random_force = Vector(
+            random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)
+        )
+        time_step = random.uniform(0.0001, 0.001)
+        self.update(force=random_force, time_step=time_step)
+
+    # Parçacığın özelliklerini güncelleme
+    def update_properties(self):
+        self.energy = self.calculate_new_energy(self.energy)
+        self.charge = self.calculate_new_charge(self.charge)
+        self.mass = self.calculate_new_mass(self.mass)
+        self.spin = self.calculate_new_spin(self.spin)
+        self.calculate_new_position()
+
     def ping(self, code: bytearray):
         """
         Parçacığın konumunu, hızını ve momentumunu belirli bir yörüngede hareket ettirir.
@@ -98,13 +135,8 @@ class Particle(Core):
         :param code: Ping kodu.
         """
         super().ping(code=code)
-
-        # Parçacığın yeni hızını ve konumunu belirlemek için güncellenmiş bir kuvvet fonksiyonu.
-        random_force = Vector(
-            random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)
-        )
-        time_step = random.uniform(0.0001, 0.001)
-        self.update(force=random_force, time_step=time_step)
+        # Parçacığın özelliklerini güncelle
+        self.update_properties()
 
     def signal(self, time_step: float) -> None:
         """
