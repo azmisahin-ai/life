@@ -8,14 +8,14 @@ from src.web.controller.particle_simulation import ParticleSimulation
 class TestParticleSimulation(unittest.TestCase):
     def setUp(self):
         self.simulation = ParticleSimulation(
-            name="Simulation.Particle.test",
+            name="test",
             number_of_instance=3,
             lifetime_seconds=float("inf"),
             lifecycle=60 / 70,
         )
 
     def test_simulation_creation(self):
-        self.assertEqual(self.simulation.name, "Simulation.Particle.test")
+        self.assertEqual(self.simulation.name, "test")
         self.assertEqual(self.simulation.number_of_instance, 3)
         self.assertEqual(self.simulation.lifetime_seconds, float("inf"))
         self.assertEqual(self.simulation.lifecycle, 60 / 70)

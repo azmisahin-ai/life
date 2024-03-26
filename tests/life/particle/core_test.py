@@ -8,12 +8,12 @@ class TestCore(unittest.TestCase):
     def setUp(self):
         # Core sınıfından bir örnek oluşturuluyor ve her test öncesinde kullanılıyor
         self.core_instance = Core(
-            name="Cycle.test", lifetime_seconds=10, lifecycle=60 / 70
+            name="test", lifetime_seconds=10, lifecycle=60 / 70
         )
 
     def test_initialization(self):
         # Core sınıfının başlangıç değerlerinin doğru ayarlandığını kontrol eder
-        self.assertEqual(self.core_instance.name, "Cycle.test")
+        self.assertEqual(self.core_instance.name, "test")
         self.assertEqual(self.core_instance.lifetime_seconds, 10)
         self.assertIsNone(self.core_instance.life_start_time)
         self.assertEqual(self.core_instance.elapsed_lifespan, 0)

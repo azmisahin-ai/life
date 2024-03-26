@@ -56,7 +56,7 @@ class ParticleSimulation(CoreSimulation):
             velocity=Vector(0, 0, 0),
             momentum=Vector(0, 0, 0),
             wave_function=self.force_function(0.1),
-        ).trigger_event(self.instance_signal)
+        ).trigger_event(self.instance_status)
 
 
 # Example Usage

@@ -8,22 +8,22 @@ from src.web.controller.core_simulation import CoreSimulation
 class TestCoreSimulation(unittest.TestCase):
     def setUp(self):
         self.simulation = CoreSimulation(
-            name="Simulation.test",
+            name="test",
             number_of_instance=3,
             lifetime_seconds=float("inf"),
             lifecycle=60 / 70,
         )
 
     def test_simulation_creation(self):
-        self.assertEqual(self.simulation.name, "Simulation.test")
+        self.assertEqual(self.simulation.name, "test")
         self.assertEqual(self.simulation.number_of_instance, 3)
         self.assertEqual(self.simulation.lifetime_seconds, float("inf"))
         self.assertEqual(self.simulation.lifecycle, 60 / 70)
 
     def test_instance_creation(self):
-        instance = self.simulation.create_instance("Instance.test", 10, 1)
+        instance = self.simulation.create_instance("test", 10, 1)
         self.assertIsNotNone(instance)
-        self.assertEqual(instance.name, "Instance.test_1")
+        self.assertEqual(instance.name, "test_1")
 
     def test_trigger_event(self):
         event_function = MagicMock()
