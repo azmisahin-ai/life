@@ -1,34 +1,20 @@
 # src/web/app.py
-import logging
-import os
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from .api import blueprint as api_blueprint
-from .socket import initialize
 
-from dotenv import load_dotenv
+from src.web.api import blueprint as api_blueprint
+from src.web.socket import initialize
 
-load_dotenv()  # take environment variables from .env.
-
-# Get environment variables
-APP_ENV = os.environ.get("APP_ENV")
-APP_NAME = os.environ.get("APP_NAME")
-HOST_IP = os.environ.get("HOST_IP")
-HTTP_PORT = os.environ.get("HTTP_PORT")
-HTTPS_PORT = os.environ.get("HTTPS_PORT")
-TCP_PORT = os.environ.get("TCP_PORT")
-SOCKET_PORT = os.environ.get("SOCKET_PORT")
-DEBUG = os.environ.get("SWICH_TRACKING_DEBUG")
-
-httpPortNumber = int(HTTP_PORT)
-httpsPortNumber = int(HTTPS_PORT)
-tcpPortNumber = int(TCP_PORT)
-socketPortNumber = int(SOCKET_PORT)
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from src.web.config import APP_ENV, APP_NAME, HOST_IP, httpPortNumber, DEBUG
+from src.web.controller.simulation_status import SimulationStatus
+from src.web.controller.simulation_type import SimulationType
+from src.web.controller.simulation import simulation, Simulation
+from src.life.particles.core import Core
+from src.life.particles.particle import Particle
+from src.web.controller.core_simulation import CoreSimulation
+from src.web.controller.particle_simulation import ParticleSimulation
+from src.package.logger import logger
 
 
 def create_app():
@@ -51,7 +37,64 @@ def create_app():
         if rule.endpoint.startswith("api.")
     ]
 
-    _ = initialize(app, paths)  # Call initialize and assign the SocketIO instance
+    io = initialize(app, paths)  # Call initialize and assign the SocketIO instance
+
+    def simulation_status(simulation):
+        try:
+            if isinstance(simulation, Simulation):
+                simulation.status()
+                # send simulation_status signal
+                args = simulation.to_json()
+                io.emit("simulation_status", args)
+
+            else:
+                raise RuntimeWarning("A new unknown simulation")
+        except Exception as e:
+            logger.exception("An error occurred: %s", e)
+
+    def simulation_sampler_status(sampler):
+        try:
+            if isinstance(sampler, ParticleSimulation):
+                sampler.status()
+                # send simulation_sampler_status signal
+                args = sampler.to_json()
+                io.emit("simulation_sampler_status", args)
+            elif isinstance(sampler, CoreSimulation):
+                sampler.status()
+                # send simulation_sampler_status signal
+                args = sampler.to_json()
+                io.emit("simulation_sampler_status", args)
+            else:
+                raise RuntimeWarning("A new unknown sampler")
+        except Exception as e:
+            logger.exception("An error occurred: %s", e)
+
+    def simulation_instance_status(instance):
+        try:
+            if isinstance(instance, Particle):
+                instance.status()
+                # send simulation_instance_status signal
+                args = instance.to_json()
+                io.emit("simulation_instance_status", args)
+            elif isinstance(instance, Core):
+                instance.status()
+                # send simulation_instance_status signal
+                args = instance.to_json()
+                io.emit("simulation_instance_status", args)
+            else:
+                raise RuntimeWarning("A new unknown instance")
+        except Exception as e:
+            logger.exception("An error occurred: %s", e)
+
+    # setup simulation
+    simulation.trigger_simulation(simulation_status).trigger_sampler(
+        simulation_sampler_status
+    ).trigger_instance(simulation_instance_status)
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        logger.exception("An error occurred: %s", e)
+        return jsonify({"error": "Internal Server Error"}), 500
 
     @app.route("/")
     def home():
@@ -60,21 +103,101 @@ def create_app():
         Returns:
             dict: JSON response containing welcome message, application name, and environment.
         """
-        return {
+        response = {
             "message": "Welcome to the API Gateway!",
             "application": APP_NAME,
             "environment": APP_ENV,
             "paths": paths,
         }
 
-    logger.debug(
-        "Application Start: %s",
-        {
-            "APP_ENV": APP_ENV,
-            "HOST_IP": HOST_IP,
-            "httpPortNumber": httpPortNumber,
-        },
+        return response
+
+    @app.route("/socket/v1/simulation/status", methods=["GET"])
+    def get_status():
+        try:
+            simulation.status()
+            if simulation.sampler:
+                response = simulation.to_json()
+            return jsonify(response)
+        except AttributeError as e:
+            # Sadece 'AttributeError' hatasını loglayalım
+            logger.error("An 'AttributeError' occurred: %s", e)
+            # Hata yanıtı döndürelim
+            return jsonify({"error": "Internal Server Error"}), 500
+
+    @app.route("/socket/v1/simulation/start", methods=["POST"])
+    def post_start():
+        # get request
+        data = request.json
+        # request
+        number_of_instance = data.get("number_of_instance", 1)
+        lifetime_seconds = data.get("lifetime_seconds", float("inf"))
+        lifecycle = data.get("lifecycle", 60 / 1)
+        simulation_type_string = data.get("simulation_type", "Core")
+        simulation_type = SimulationType(simulation_type_string)
+
+        # Check if lifetime_seconds is None and assign float('inf') instead
+        if lifetime_seconds is None:
+            lifetime_seconds = float("inf")
+        # Check if lifetime_seconds is provided
+        if lifetime_seconds < 0:
+            return jsonify({"error": "Lifetime seconds cannot be negative"}), 400
+        # proccess
+        simulation.start(
+            number_of_instance=number_of_instance,
+            lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
+            simulation_type=simulation_type,
+        )
+
+        # default response
+        response = {
+            "simulation_type": simulation_type.value,
+            "simulation_status": SimulationStatus.stopped.value,
+        }
+
+        if simulation.sampler:
+            response = simulation.to_json()
+
+        return jsonify(response)
+
+    @app.route("/socket/v1/simulation/pause", methods=["GET"])
+    def get_pause():
+        # proccess
+        simulation.pause()
+
+        if simulation.sampler:
+            response = simulation.to_json()
+
+        return jsonify(response)
+
+    @app.route("/socket/v1/simulation/continue", methods=["GET"])
+    def get_continue():
+        # proccess
+        simulation.continues()
+
+        if simulation.sampler:
+            response = simulation.to_json()
+
+        return jsonify(response)
+
+    @app.route("/socket/v1/simulation/stop", methods=["GET"])
+    def get_stop():
+        # proccess
+        simulation.stop()
+
+        if simulation.sampler:
+            response = simulation.to_json()
+
+        return jsonify(response)
+
+    message = "{}\t{}\t{}\t{}".format(  # noqa: F524
+        "started",
+        APP_ENV,
+        HOST_IP,
+        httpPortNumber,
     )
+    logger.info(message)
 
     return app
 
