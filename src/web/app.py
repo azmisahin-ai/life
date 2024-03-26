@@ -136,6 +136,12 @@ def create_app():
         simulation_type_string = data.get("simulation_type", "Core")
         simulation_type = SimulationType(simulation_type_string)
 
+        # Check if lifetime_seconds is None and assign float('inf') instead
+        if lifetime_seconds is None:
+            lifetime_seconds = float("inf")
+        # Check if lifetime_seconds is provided
+        if lifetime_seconds < 0:
+            return jsonify({"error": "Lifetime seconds cannot be negative"}), 400
         # proccess
         simulation.start(
             number_of_instance=number_of_instance,

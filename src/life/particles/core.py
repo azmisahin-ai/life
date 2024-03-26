@@ -54,9 +54,10 @@ class Core(threading.Thread):
 
         :return: JSON formatında nesne.
         """
+        lifetime_seconds = "infinity" if self.lifetime_seconds == float('inf') else self.lifetime_seconds
         return {
             "name": self.name,
-            "lifetime_seconds": self.lifetime_seconds,
+            "lifetime_seconds": lifetime_seconds,
             # created information
             "life_created_time": self.life_created_time,
             "life_start_time": self.life_start_time,

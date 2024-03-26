@@ -49,10 +49,11 @@ class CoreSimulation:
         ).get_logger()
 
     def to_json(self) -> dict:
+        lifetime_seconds = "infinity" if self.lifetime_seconds == float('inf') else self.lifetime_seconds
         return {
             "name": self.name,
             "number_of_instance": self.number_of_instance,
-            "lifetime_seconds": self.lifetime_seconds,
+            "lifetime_seconds": lifetime_seconds,
             "lifecycle": self.lifecycle,
             "number_of_instance_created": self.number_of_instance_created,
         }
