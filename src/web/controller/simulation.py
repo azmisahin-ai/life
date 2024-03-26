@@ -204,5 +204,6 @@ if __name__ == "__main__":
         lifecycle=lifecycle,
         simulation_type=simulation_type,
     )
-
+    simulation.pause()
+    simulation.continues()
     simulation.stop()
