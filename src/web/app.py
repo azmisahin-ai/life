@@ -10,10 +10,7 @@ from src.web.config import APP_ENV, APP_NAME, HOST_IP, httpPortNumber, DEBUG
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
 from src.web.controller.simulation import simulation
-from src.package import Logger
-
-# Log ayarlarını yapılandırma
-logger = Logger(name="application", log_to_file=True, log_to_console=True).get_logger()
+from src.package.logger import logger
 
 
 def create_app():
@@ -37,6 +34,11 @@ def create_app():
     ]
 
     io = initialize(app, paths)  # Call initialize and assign the SocketIO instance
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        logger.exception("An error occurred: %s", e)
+        return jsonify({"error": "Internal Server Error"}), 500
 
     @app.route("/")
     def home():

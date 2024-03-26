@@ -1,7 +1,7 @@
 # src/web/controller/simulation.py
 
 
-from src.package import Logger
+from src.package.logger import Logger, logger
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
 from src.web.controller.core_simulation import CoreSimulation
@@ -12,28 +12,37 @@ from src.life.particles.particle import Particle
 
 
 def simulation_status(simulation):
-    if isinstance(simulation, Simulation):
-        simulation.status()
-    else:
-        raise RuntimeWarning("A new unknown simulation")
+    try:
+        if isinstance(simulation, Simulation):
+            simulation.status()
+        else:
+            raise RuntimeWarning("A new unknown simulation")
+    except Exception as e:
+        logger.exception("An error occurred: %s", e)
 
 
 def simulation_sampler_status(sampler):
-    if isinstance(sampler, ParticleSimulation):
-        sampler.status()
-    elif isinstance(sampler, CoreSimulation):
-        sampler.status()
-    else:
-        raise RuntimeWarning("A new unknown sampler")
+    try:
+        if isinstance(sampler, ParticleSimulation):
+            sampler.status()
+        elif isinstance(sampler, CoreSimulation):
+            sampler.status()
+        else:
+            raise RuntimeWarning("A new unknown sampler")
+    except Exception as e:
+        logger.exception("An error occurred: %s", e)
 
 
 def simulation_instance_status(instance):
-    if isinstance(instance, Particle):
-        instance.status()
-    elif isinstance(instance, Core):
-        instance.status()
-    else:
-        raise RuntimeWarning("A new unknown instance")
+    try:
+        if isinstance(instance, Particle):
+            instance.status()
+        elif isinstance(instance, Core):
+            instance.status()
+        else:
+            raise RuntimeWarning("A new unknown instance")
+    except Exception as e:
+        logger.exception("An error occurred: %s", e)
 
 
 class Simulation:

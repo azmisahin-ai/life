@@ -48,3 +48,7 @@ class Logger:
 
     def get_logger(self):
         return self.logger
+
+
+# Log ayarlarını yapılandırma
+logger = Logger(name="application", log_to_file=True, log_to_console=True).get_logger()
