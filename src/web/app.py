@@ -58,16 +58,17 @@ def create_app():
 
     @app.route("/socket/v1/simulation/status", methods=["GET"])
     def get_status():
-        # proccess
-        simulation.status()
-
-        if simulation.sampler:
-            response = simulation.to_json()
-
-        # send signal
-        io.emit("simulation_status", response)
-
-        return jsonify(response)
+        try:
+            simulation.status()
+            if simulation.sampler:
+                response = simulation.to_json()
+            io.emit("simulation_status", response)
+            return jsonify(response)
+        except AttributeError as e:
+            # Sadece 'AttributeError' hatasını loglayalım
+            logger.error("An 'AttributeError' occurred: %s", e)
+            # Hata yanıtı döndürelim
+            return jsonify({"error": "Internal Server Error"}), 500
 
     @app.route("/socket/v1/simulation/start", methods=["POST"])
     def post_start():
