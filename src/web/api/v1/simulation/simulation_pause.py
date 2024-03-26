@@ -14,8 +14,13 @@ io = SocketIO(app)
 class SimulationPause(Resource):
     @app.route("/pause", methods=["GET"])
     def get(self):
-        paused = simulation.pause()
-        return jsonify(paused.to_json())
+        # proccess
+        simulation.pause()
+
+        if simulation.sampler:
+            response = simulation.to_json()
+
+        return jsonify(response)
 
 
 if __name__ == "__main__":

@@ -14,8 +14,13 @@ io = SocketIO(app)
 class SimulationContinue(Resource):
     @app.route("/continue", methods=["GET"])
     def get(self):
-        continued = simulation.continues()
-        return jsonify(continued.to_json())
+        # proccess
+        simulation.continues()
+
+        if simulation.sampler:
+            response = simulation.to_json()
+
+        return jsonify(response)
 
 
 if __name__ == "__main__":

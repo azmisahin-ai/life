@@ -4,12 +4,10 @@ from flask import Flask, jsonify, request
 from flask_restx import Api, Resource
 from flask_socketio import SocketIO
 
-from src.life.particles.core import Core
-from src.life.particles.particle import Particle
-from src.web.controller.simulation import simulation
+from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
-from src.web.controller.core_simulation import CoreSimulation
-from src.web.controller.particle_simulation import ParticleSimulation
+from src.web.controller import simulation
+
 
 app = Flask(__name__)
 api = Api(app)
@@ -19,50 +17,33 @@ io = SocketIO(app)
 class SimulationStart(Resource):
     @app.route("/start", methods=["POST"])
     def post(self):
+        # get request
         data = request.json
-        simulation_time_step = data.get("simulation_time_step", 1)
-        simulation_type_str = data.get(
-            "simulation_type", "LifeCycle"
-        )  # Öntanımlı değer olarak dize kullanılabilir
-        simulation_type = SimulationType(simulation_type_str)  # Dizeyi Enum'a dönüştür
+        # request
+        number_of_instance = data.get("number_of_instance", 1)
+        lifetime_seconds = data.get("lifetime_seconds", float("inf"))
+        lifecycle = data.get("lifecycle", 60 / 1)
+        simulation_type_string = data.get("simulation_type", "Core")
+        simulation_type = SimulationType(simulation_type_string)
 
-        number_of_instance = data.get("number_of_instance", 2)
-        lifetime_seconds = data.get("lifetime_seconds", 5)
-
-        started = simulation.start(
-            simulation_time_step=simulation_time_step,
-            simulation_type=simulation_type,
+        # proccess
+        simulation.start(
             number_of_instance=number_of_instance,
             lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
+            simulation_type=simulation_type,
         )
 
-        # RED = "\033[91m"
-        # GREEN = "\033[92m"
-        YELLOW = "\033[93m"
-        BLUE = "\033[94m"
-        # CYAN = "\033[96m"
-        RESET = "\033[0m"  # Renkleri sıfırlamak için kullanılır
+        # default response
+        response = {
+            "simulation_type": simulation_type.value,
+            "simulation_status": SimulationStatus.stopped.value,
+        }
 
-        # Event status
-        def simulation_event_item(inst):
-            # print(f"{GREEN}simulation_event_item{RESET}", inst)
-            if issubclass(type(inst), Core):
-                print(f"{BLUE}simulation_event_event{RESET}", inst.name)
-            elif isinstance(inst, Particle):
-                print(f"{BLUE}simulation_event_event{RESET}", inst.name)
+        if simulation.sampler:
+            response = simulation.to_json()
 
-        # Simulation status
-        def simulation_event(inst):
-            print(f"{YELLOW}simulation_event_inst{RESET}", inst)
-            if issubclass(type(inst), CoreSimulation):
-                inst.last_item.trigger_event(simulation_event_item)
-            elif isinstance(inst, ParticleSimulation):
-                inst.last_item.trigger_event(simulation_event_item)
-
-        if started.instance:
-            started.instance.trigger(simulation_event)
-
-        return jsonify(started.to_json())
+        return jsonify(response)
 
 
 if __name__ == "__main__":

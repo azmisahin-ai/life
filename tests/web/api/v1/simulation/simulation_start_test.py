@@ -3,6 +3,7 @@
 import os
 import unittest
 from src.web.app import create_app
+from src.web.controller.simulation_type import SimulationType
 
 # Ensure that create_app returns the app instance directly
 app = create_app()
@@ -29,15 +30,20 @@ class SimulationStartTest(unittest.TestCase):
         pass  # Clean up if needed
 
     def test_simulation_start_endpoint(self):
-        # Test the simulation_start endpoint
-        test_data = {
-            "simulation_time_step": 1,
-            "simulation_type": "LifeCycle",
-            "number_of_instance": 2,
-            "lifetime_seconds": 5,
+        # request
+        number_of_instance = 3  # oluşturulacak örnek sayısı
+        lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+        lifecycle = 60 / 1  # Parçacığın saniyedeki yaşam döngüsü.
+        simulation_type = SimulationType.Particles  # Simulaston türü
+        # init data
+        data = {
+            "number_of_instance": number_of_instance,
+            "lifetime_seconds": lifetime_seconds,
+            "lifecycle": lifecycle,
+            "simulation_type": simulation_type.value,
         }
 
-        response = self.client.post("/api/v1/simulation/start", json=test_data)
+        response = self.client.post("/api/v1/simulation/start", json=data)
         response_data = response.get_json()
 
         self.assertEqual(response.status_code, 200)
