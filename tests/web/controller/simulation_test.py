@@ -3,9 +3,9 @@
 import unittest
 from src.web.controller.simulation import (
     Simulation,
-    simulation_signal,
-    sampler_signal,
-    instance_signal,
+    simulation_status,
+    simulation_sampler_status,
+    simulation_instance_status,
 )
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
@@ -13,12 +13,12 @@ from src.web.controller.simulation_type import SimulationType
 
 class TestSimulation(unittest.TestCase):
     def setUp(self):
-        self.simulation = Simulation("test_simulation")
+        self.simulation = Simulation("test")
         # önce trigger_simulation ile gerekli işlevi tanımlayın
-        self.simulation.trigger_simulation(simulation_signal)
+        self.simulation.trigger_simulation(simulation_status)
         # aynı şekilde trigger_sampler ve trigger_instance ile diğer işlevleri tanımlayın
-        self.simulation.trigger_sampler(sampler_signal)
-        self.simulation.trigger_instance(instance_signal)
+        self.simulation.trigger_sampler(simulation_sampler_status)
+        self.simulation.trigger_instance(simulation_instance_status)
 
     def tearDown(self):
         try:

@@ -11,29 +11,29 @@ from src.life.particles.core import Core
 from src.life.particles.particle import Particle
 
 
-def simulation_signal(simulation):
+def simulation_status(simulation):
     if isinstance(simulation, Simulation):
         simulation.status()
     else:
-        raise RuntimeWarning("A new unknown class")
+        raise RuntimeWarning("A new unknown simulation")
 
 
-def sampler_signal(sampler):
+def simulation_sampler_status(sampler):
     if isinstance(sampler, ParticleSimulation):
         sampler.status()
     elif isinstance(sampler, CoreSimulation):
         sampler.status()
     else:
-        raise RuntimeWarning("A new unknown class")
+        raise RuntimeWarning("A new unknown sampler")
 
 
-def instance_signal(instance):
+def simulation_instance_status(instance):
     if isinstance(instance, Particle):
         instance.status()
     elif isinstance(instance, Core):
         instance.status()
     else:
-        raise RuntimeWarning("A new unknown class")
+        raise RuntimeWarning("A new unknown instance")
 
 
 class Simulation:
@@ -205,9 +205,9 @@ class Simulation:
 simulation = Simulation("life")
 
 # setup simulation
-simulation.trigger_simulation(simulation_signal).trigger_sampler(
-    sampler_signal
-).trigger_instance(instance_signal)
+simulation.trigger_simulation(simulation_status).trigger_sampler(
+    simulation_sampler_status
+).trigger_instance(simulation_instance_status)
 
 # Example usage
 if __name__ == "__main__":
