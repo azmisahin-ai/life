@@ -70,7 +70,6 @@ class Particle(Core):
             "life_start_time": self.life_start_time,
             # cycle information
             "elapsed_lifespan": self.elapsed_lifespan,
-            "lifecycle_rate_per_minute": self.lifecycle_rate_per_minute,
             "lifecycle": self.lifecycle,
             # status information
             "life_status": self.status(),
