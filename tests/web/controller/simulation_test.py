@@ -1,14 +1,14 @@
 # tests/web/controller/simulation_test.py
 
 import unittest
-from src.web.controller.simulation import Simulation
-from src.web.controller.simulation_status import SimulationStatus
-from src.web.controller.simulation_type import SimulationType
-from src.web.controller.signals import (
+from src.web.controller.simulation import (
+    Simulation,
     simulation_signal,
     sampler_signal,
     instance_signal,
 )
+from src.web.controller.simulation_status import SimulationStatus
+from src.web.controller.simulation_type import SimulationType
 
 
 class TestSimulation(unittest.TestCase):
@@ -21,9 +21,11 @@ class TestSimulation(unittest.TestCase):
         self.simulation.trigger_instance(instance_signal)
 
     def tearDown(self):
-        # tearDown() metodunda gerekli temizlik işlemleri
-        self.simulation.stop()
-        self.simulation = None
+        try:
+            # tearDown() metodunda gerekli temizlik işlemleri
+            self.simulation.stop()
+        finally:
+            self.simulation = None
 
     def test_start_simulation(self):
         self.simulation.start(

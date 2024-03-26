@@ -7,6 +7,34 @@ from src.web.controller.simulation_type import SimulationType
 from src.web.controller.core_simulation import CoreSimulation
 from src.web.controller.particle_simulation import ParticleSimulation
 
+from src.life.particles.core import Core
+from src.life.particles.particle import Particle
+
+
+def simulation_signal(simulation):
+    if isinstance(simulation, Simulation):
+        simulation.status()
+    else:
+        raise RuntimeWarning("A new unknown class")
+
+
+def sampler_signal(sampler):
+    if isinstance(sampler, ParticleSimulation):
+        sampler.status()
+    elif isinstance(sampler, CoreSimulation):
+        sampler.status()
+    else:
+        raise RuntimeWarning("A new unknown class")
+
+
+def instance_signal(instance):
+    if isinstance(instance, Particle):
+        instance.status()
+    elif isinstance(instance, Core):
+        instance.status()
+    else:
+        raise RuntimeWarning("A new unknown class")
+
 
 class Simulation:
     """
@@ -173,31 +201,22 @@ class Simulation:
         return self
 
 
+# create simulation
 simulation = Simulation("life")
 
-
-def simulation_signal(simulation):
-    simulation.status()
-
-
-def sampler_signal(sampler):
-    sampler.status()
-
-
-def instance_signal(instance):
-    instance.status()
-
-
+# setup simulation
 simulation.trigger_simulation(simulation_signal).trigger_sampler(
     sampler_signal
 ).trigger_instance(instance_signal)
 
+# Example usage
 if __name__ == "__main__":
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 1  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı
     simulation_type = SimulationType.Particles  # Simulaston türü
 
+    # start simulation
     simulation.start(
         number_of_instance=number_of_instance,
         lifetime_seconds=lifetime_seconds,
