@@ -102,7 +102,25 @@ class Simulation:
         else:
             return None
 
-    def setup(
+    def status(self):
+        message = "{}\t{}\t{}\t{}".format(  # noqa: F524
+            self.simulation_status.value,
+            "Simulation",
+            self.simulation_type,
+            self.number_of_instance,
+        )
+        if self.simulation_status == SimulationStatus.paused:
+            self.logger.warning(message)
+        elif self.simulation_status == SimulationStatus.continues:
+            self.logger.info(message)
+        elif self.simulation_status == SimulationStatus.stopped:
+            self.logger.warning(message)
+        else:
+            self.logger.info(message)
+
+        return self.simulation_status
+
+    def start(
         self,
         number_of_instance: int,
         lifetime_seconds: float,
@@ -136,27 +154,6 @@ class Simulation:
             simulation_type=self.simulation_type,
         )
 
-        return self
-
-    def status(self):
-        message = "{}\t{}\t{}\t{}".format(  # noqa: F524
-            self.simulation_status.value,
-            "Simulation",
-            self.simulation_type,
-            self.number_of_instance,
-        )
-        if self.simulation_status == SimulationStatus.paused:
-            self.logger.warning(message)
-        elif self.simulation_status == SimulationStatus.continues:
-            self.logger.info(message)
-        elif self.simulation_status == SimulationStatus.stopped:
-            self.logger.warning(message)
-        else:
-            self.logger.info(message)
-
-        return self.simulation_status
-
-    def start(self):
         # state
         self.simulation_status = SimulationStatus.started
         # trigger
@@ -218,30 +215,35 @@ class Simulation:
 
 simulation = Simulation()
 
+
+def simulation_signal(simulation):
+    simulation.status()
+
+
+def sampler_signal(sampler):
+    sampler.status()
+
+
+def instance_signal(instance):
+    instance.status()
+
+
+simulation.trigger_simulation(simulation_signal).trigger_sampler(
+    sampler_signal
+).trigger_instance(instance_signal)
+
 if __name__ == "__main__":
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı
     simulation_type = SimulationType.Particles  # Simulaston türü
 
-    def simulation_signal(simulation):
-        simulation.status()
-
-    def sampler_signal(sampler):
-        sampler.status()
-
-    def instance_signal(instance):
-        instance.status()
-
-    simulation.setup(
+    simulation.start(
         number_of_instance=number_of_instance,
         lifetime_seconds=lifetime_seconds,
         lifecycle=lifecycle,
         simulation_type=simulation_type,
-    ).trigger_simulation(simulation_signal).trigger_sampler(
-        sampler_signal
-    ).trigger_instance(instance_signal)
-    simulation.start()
+    )
 
     time.sleep(2)
     simulation.pause()

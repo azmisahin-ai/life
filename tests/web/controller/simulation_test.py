@@ -2,22 +2,9 @@
 
 import unittest
 from src.web.controller.simulation import simulation
-from src.web.controller.simulation_status import SimulationStatus
-from src.web.controller.simulation_type import SimulationType
 
 
 class TestSimulation(unittest.TestCase):
-    def test_setup(self):
-        # Parametreleri doğru şekilde ayarlayarak simülasyonu başlatma
-        simulation.setup(
-            number_of_instance=3,
-            lifetime_seconds=float("inf"),
-            lifecycle=60 / 60,
-            simulation_type=SimulationType.Particles,
-        )
-        self.assertEqual(simulation.simulation_status, SimulationStatus.stopped)
-        self.assertIsNotNone(simulation.sampler)
-
     def test_trigger_functions(self):
         # Tetikleyici fonksiyonların çalışıp çalışmadığını kontrol etme
         def simulation_signal(simulation):
