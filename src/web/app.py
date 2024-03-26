@@ -9,7 +9,11 @@ from .socket import initialize
 from src.web.config import APP_ENV, APP_NAME, HOST_IP, httpPortNumber, DEBUG
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
-from src.web.controller.simulation import simulation
+from src.web.controller.simulation import simulation, Simulation
+from src.life.particles.core import Core
+from src.life.particles.particle import Particle
+from src.web.controller.core_simulation import CoreSimulation
+from src.web.controller.particle_simulation import ParticleSimulation
 from src.package.logger import logger
 
 
@@ -34,6 +38,48 @@ def create_app():
     ]
 
     io = initialize(app, paths)  # Call initialize and assign the SocketIO instance
+
+    def simulation_status(simulation):
+        try:
+            if isinstance(simulation, Simulation):
+                simulation.status()
+                io.emit("simulation_status", simulation.to_json())
+
+            else:
+                raise RuntimeWarning("A new unknown simulation")
+        except Exception as e:
+            logger.exception("An error occurred: %s", e)
+
+    def simulation_sampler_status(sampler):
+        try:
+            if isinstance(sampler, ParticleSimulation):
+                sampler.status()
+                io.emit("simulation_sampler_status", sampler.to_json())
+            elif isinstance(sampler, CoreSimulation):
+                sampler.status()
+                io.emit("simulation_sampler_status", sampler.to_json())
+            else:
+                raise RuntimeWarning("A new unknown sampler")
+        except Exception as e:
+            logger.exception("An error occurred: %s", e)
+
+    def simulation_instance_status(instance):
+        try:
+            if isinstance(instance, Particle):
+                instance.status()
+                io.emit("simulation_instance_status", instance.to_json())
+            elif isinstance(instance, Core):
+                instance.status()
+                io.emit("simulation_instance_status", instance.to_json())
+            else:
+                raise RuntimeWarning("A new unknown instance")
+        except Exception as e:
+            logger.exception("An error occurred: %s", e)
+
+    # setup simulation
+    simulation.trigger_simulation(simulation_status).trigger_sampler(
+        simulation_sampler_status
+    ).trigger_instance(simulation_instance_status)
 
     @app.errorhandler(Exception)
     def handle_exception(e):
@@ -62,7 +108,6 @@ def create_app():
             simulation.status()
             if simulation.sampler:
                 response = simulation.to_json()
-            io.emit("simulation_status", response)
             return jsonify(response)
         except AttributeError as e:
             # Sadece 'AttributeError' hatasını loglayalım
