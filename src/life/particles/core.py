@@ -54,7 +54,11 @@ class Core(threading.Thread):
 
         :return: JSON formatında nesne.
         """
-        lifetime_seconds = "infinity" if self.lifetime_seconds == float('inf') else self.lifetime_seconds
+        lifetime_seconds = (
+            "infinity"
+            if self.lifetime_seconds == float("inf")
+            else self.lifetime_seconds
+        )
         return {
             "name": self.name,
             "lifetime_seconds": lifetime_seconds,
@@ -77,6 +81,21 @@ class Core(threading.Thread):
         self.event_function = event_function
         return self
 
+    def ping(self, code: bytearray):
+        """
+        Çoğalmaya başlıyor.
+        Çocuklarıda çoğalıyor.
+        Eşleştirme sırasında test ediliyor.
+        Test eşleri uyumluysa süreleri artıyor.
+        """
+        message = "{}\t{}\t{}\t{}".format(  # noqa: F524
+            "ping",
+            self.name,
+            code,
+            self.elapsed_lifespan,
+        )
+        self.logger.warning(message)
+
     def run(self):
         """
         Parçacığın yaşam döngüsünü işler.
@@ -88,6 +107,8 @@ class Core(threading.Thread):
         ):
             if not self._paused:
                 self.elapsed_lifespan = time.time() - self.life_start_time
+                # MOV
+                self.ping(code=b"\x89\xe5")
                 if self.event_function:
                     self.event_function(self)
                 time.sleep(self.lifecycle)

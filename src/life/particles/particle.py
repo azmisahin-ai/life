@@ -1,5 +1,6 @@
 # src/life/particles/particle.py
 
+import random
 import time
 from src.life.particles.vector import Vector
 from src.life.particles.core import Core
@@ -62,7 +63,11 @@ class Particle(Core):
         :return: JSON formatında parçacık verisi.
         :rtype: dict
         """
-        lifetime_seconds = "infinity" if self.lifetime_seconds == float('inf') else self.lifetime_seconds
+        lifetime_seconds = (
+            "infinity"
+            if self.lifetime_seconds == float("inf")
+            else self.lifetime_seconds
+        )
         return {
             "name": self.name,
             "lifetime_seconds": lifetime_seconds,
@@ -86,6 +91,21 @@ class Particle(Core):
             "wave_function": self.wave_function.to_json(),
         }
 
+    def ping(self, code: bytearray):
+        """
+        Parçacığın konumunu, hızını ve momentumunu belirli bir yörüngede hareket ettirir.
+
+        :param code: Ping kodu.
+        """
+        super().ping(code=code)
+
+        # Parçacığın yeni hızını ve konumunu belirlemek için güncellenmiş bir kuvvet fonksiyonu.
+        random_force = Vector(
+            random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)
+        )
+        time_step = random.uniform(0.0001, 0.001)
+        self.update(force=random_force, time_step=time_step)
+
     def signal(self, time_step: float) -> None:
         """
         Parçacığın sinyalini gönderir.
@@ -93,6 +113,8 @@ class Particle(Core):
         :param time_step: Zaman adımı.
         :type time_step: float
         """
+        if time_step is None:
+            time_step = random.uniform(0.0001, 0.001)
         self.update(force=self.wave_function, time_step=time_step)
 
     def update(self, force: Vector, time_step: float) -> None:
