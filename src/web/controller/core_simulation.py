@@ -4,7 +4,7 @@
 import threading
 import time
 
-from src.package.logger import Logger
+from src.package import Logger
 from src.life.particles.core import Core
 
 

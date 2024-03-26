@@ -3,7 +3,7 @@
 import threading
 import time
 
-from src.package.logger import Logger
+from src.package import Logger
 
 
 class Core(threading.Thread):

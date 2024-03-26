@@ -5,5 +5,6 @@ package package
 """
 
 from .tracking import Tracking
+from .logger import Logger
 
-__all__ = ["Tracking"]  # List of exposed modules
+__all__ = ["Tracking", "Logger"]  # List of exposed modules

@@ -1,8 +1,7 @@
 # src/web/controller/simulation.py
 
 
-import time
-from src.package.logger import Logger
+from src.package import Logger
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
 from src.web.controller.core_simulation import CoreSimulation
@@ -195,7 +194,7 @@ simulation.trigger_simulation(simulation_signal).trigger_sampler(
 if __name__ == "__main__":
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 3  # oluşturulacak örnek sayısı
+    number_of_instance = 1000  # oluşturulacak örnek sayısı
     simulation_type = SimulationType.Particles  # Simulaston türü
 
     simulation.start(
@@ -205,11 +204,4 @@ if __name__ == "__main__":
         simulation_type=simulation_type,
     )
 
-    time.sleep(2)
-    simulation.pause()
-
-    time.sleep(2)
-    simulation.continues()
-
-    time.sleep(2)
     simulation.stop()
