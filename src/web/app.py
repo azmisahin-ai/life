@@ -52,7 +52,7 @@ def create_app():
             "paths": paths,
         }
         io.emit("api_signal", response)
-        return
+        return response
 
     @app.route("/socket/v1/simulation/status", methods=["GET"])
     def get_status():
