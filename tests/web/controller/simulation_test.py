@@ -1,28 +1,72 @@
 # tests/web/controller/simulation_test.py
 
 import unittest
-from src.web.controller.simulation import simulation
+from src.web.controller.simulation import Simulation
+from src.web.controller.simulation_status import SimulationStatus
+from src.web.controller.simulation_type import SimulationType
 
 
 class TestSimulation(unittest.TestCase):
-    def test_trigger_functions(self):
-        # Tetikleyici fonksiyonların çalışıp çalışmadığını kontrol etme
-        def simulation_signal(simulation):
-            pass
+    def setUp(self):
+        self.simulation = Simulation("test_simulation")
 
-        def sampler_signal(sampler):
-            pass
+    def test_start_simulation(self):
+        self.simulation.start(
+            number_of_instance=3,
+            lifetime_seconds=float("inf"),
+            lifecycle=60 / 1,
+            simulation_type=SimulationType.Particles,
+        )
+        self.assertEqual(self.simulation.simulation_status, SimulationStatus.started)
 
-        def instance_signal(instance):
-            pass
+    def test_pause_simulation(self):
+        self.simulation.start(
+            number_of_instance=3,
+            lifetime_seconds=float("inf"),
+            lifecycle=60 / 1,
+            simulation_type=SimulationType.Particles,
+        )
+        self.simulation.pause()
+        self.assertEqual(self.simulation.simulation_status, SimulationStatus.paused)
 
-        simulation.trigger_simulation(simulation_signal)
-        simulation.trigger_sampler(sampler_signal)
-        simulation.trigger_instance(instance_signal)
+    def test_continue_simulation(self):
+        self.simulation.start(
+            number_of_instance=3,
+            lifetime_seconds=float("inf"),
+            lifecycle=60 / 1,
+            simulation_type=SimulationType.Particles,
+        )
+        self.simulation.pause()
+        self.simulation.continues()
+        self.assertEqual(self.simulation.simulation_status, SimulationStatus.continues)
 
-        self.assertEqual(simulation.simulation_event_function, simulation_signal)
-        self.assertEqual(simulation.sampler_event_function, sampler_signal)
-        self.assertEqual(simulation.instance_event_function, instance_signal)
+    def test_stop_simulation(self):
+        self.simulation.start(
+            number_of_instance=3,
+            lifetime_seconds=float("inf"),
+            lifecycle=60 / 1,
+            simulation_type=SimulationType.Particles,
+        )
+        self.simulation.stop()
+        self.assertEqual(self.simulation.simulation_status, SimulationStatus.stopped)
+
+    def test_invalid_simulation_type(self):
+        with self.assertRaises(ValueError):
+            self.simulation.start(
+                number_of_instance=3,
+                lifetime_seconds=float("inf"),
+                lifecycle=60 / 1,
+                simulation_type="InvalidType",
+            )
+
+    def test_negative_lifetime(self):
+        with self.assertRaises(ValueError):
+            self.simulation.start(
+                number_of_instance=3,
+                lifetime_seconds=-10,
+                lifecycle=60 / 1,
+                simulation_type=SimulationType.Particles,
+            )
 
 
 if __name__ == "__main__":
