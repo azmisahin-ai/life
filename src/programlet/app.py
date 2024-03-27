@@ -49,21 +49,30 @@ class Application(QMainWindow):
         self.app = MainProgram()
 
     def start_simulation(self):
-        # Görselleştirme
+        """
+        Simülasyon Fitness Değeri:
+        Bu, algoritmanın kendi içinde bir döngüde veya iterasyonda nasıl performans gösterdiğini ölçmek için kullanılır.
+        Aalgoritmanın her bir iterasyonunda veya jenerasyonunda elde edilen fitness değerlerinin ortalamasıdır.
+        Bu, algoritmanın zamanla nasıl geliştiğini veya değiştiğini görmek için kullanılır.
+        """
         fitness_history = self.app.start_simulation()
         plt.plot(fitness_history)
         plt.xlabel("Iterations")
-        plt.ylabel("Average Fitness")
-        plt.title("Fitness Progression")
+        plt.ylabel("Average Simulation Fitness")
+        plt.title("Fitness Simulation Progression")
         plt.show()
 
     def start_test(self):
-        # Görselleştirme
+        """
+        Test Fitness Değeri:
+        Bu, algoritmanın performansını ölçmek için kullanılır.
+        Test fitness değeri, algoritmanın belirli bir görevi ne kadar iyi gerçekleştirebildiğini gösterir.
+        """
         fitness_history = self.app.start_test()
         plt.plot(fitness_history)
         plt.xlabel("Iterations")
-        plt.ylabel("Average Fitness")
-        plt.title("Fitness Progression")
+        plt.ylabel("Average Test Fitness")
+        plt.title("Fitness Test Progression")
         plt.show()
 
 
