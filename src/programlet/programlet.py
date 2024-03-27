@@ -33,11 +33,11 @@ class Programlet:
     def __init__(self, fitness):
         self.fitness = fitness
 
-    def mutate(self):
+    def mutate(self, mutation_rate):
         """
         Programcıkların çoğalma ve adaptasyon süreçlerine uygun algoritmalar.
         """
-        self.fitness += random.uniform(-0.1, 0.1)
+        self.fitness += random.uniform(-mutation_rate, mutation_rate)
 
 
 class MainProgram:
@@ -46,45 +46,59 @@ class MainProgram:
     programcıkların çoğalmasını, istatistiksel analizleri, müdahale kabiliyetini ve test süreçlerini yönetir.
     """
 
-    def start_simulation(self):
-        num_programlets = 20
-        iterations = 50
-        programlets = [Programlet(random.random()) for _ in range(num_programlets)]
-        fitness_history = []
+    def __init__(self):
+        self.iterations = 50
+        self.num_programlets = 20
+        self.mutation_rate = 0.1  # Başlangıç mutasyon oranı
 
-        for i in range(iterations):
+    def start_simulation(self):
+        programlets = [Programlet(random.random()) for _ in range(self.num_programlets)]
+        fitness_history = []
+        mutation_rates = []
+
+        for i in range(self.iterations):
             new_programlets = []
-            for j in range(num_programlets):
-                partner_index = random.randint(0, num_programlets - 1)
+            for j in range(self.num_programlets):
+                partner_index = random.randint(0, self.num_programlets - 1)
                 if j != partner_index:
                     avg_fitness = (
                         programlets[j].fitness + programlets[partner_index].fitness
                     ) / 2
                     new_programlet = Programlet(avg_fitness)
-                    new_programlet.mutate()
+                    new_programlet.mutate(self.mutation_rate)
                     new_programlets.append(new_programlet)
 
             # Programletlerin güncellenmesi
             programlets.extend(new_programlets)
             programlets.sort(key=lambda x: x.fitness, reverse=True)
-            programlets = programlets[:num_programlets]
+            programlets = programlets[: self.num_programlets]
 
             # Fitness geçmişine değer ekleme
             avg_fitness = np.mean([p.fitness for p in programlets])
             fitness_history.append(avg_fitness)
 
-        return fitness_history
+            # Mutasyon oranlarını izleme
+            mutation_rates.append(self.mutation_rate)
+
+            # Mutasyon oranını güncelleme
+            self.update_mutation_rate(avg_fitness)
+
+        return fitness_history, mutation_rates
+
+    def update_mutation_rate(self, avg_fitness):
+        # Mutasyon oranını güncelleme mantığı buraya eklenecek
+        # Örneğin: Eğer ortalama fitness artarsa mutasyon oranını azaltabiliriz, düşerse artırabiliriz.
+        pass
 
     def start_test(self):
-        num_programlets = 20
-        programlets = [Programlet(random.random()) for _ in range(num_programlets)]
+        programlets = [Programlet(random.random()) for _ in range(self.num_programlets)]
         fitness_history = []
 
         # Rasgele bir test senaryosu oluştur
-        test_scenario = [random.uniform(0, 1) for _ in range(num_programlets)]
+        test_scenario = [random.uniform(0, 1) for _ in range(self.num_programlets)]
 
         for _ in range(50):  # Her bir test için 50 iterasyon yapalım
-            for i in range(num_programlets):
+            for i in range(self.num_programlets):
                 programlets[i].fitness *= test_scenario[i]
 
             # Fitness geçmişine değer ekleme
