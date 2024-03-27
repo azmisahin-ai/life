@@ -50,6 +50,7 @@ class MainProgram:
         self.iterations = 50
         self.num_programlets = 20
         self.mutation_rate = 0.1  # Başlangıç mutasyon oranı
+        self.target_fitness = 1.0  # Hedef fitness değeri
 
     def start_simulation(self):
         programlets = [Programlet(random.random()) for _ in range(self.num_programlets)]
@@ -86,9 +87,16 @@ class MainProgram:
         return fitness_history, mutation_rates
 
     def update_mutation_rate(self, avg_fitness):
-        # Mutasyon oranını güncelleme mantığı buraya eklenecek
-        # Örneğin: Eğer ortalama fitness artarsa mutasyon oranını azaltabiliriz, düşerse artırabiliriz.
-        pass
+        # Eğer ortalama fitness artarsa, mutasyon oranını azaltmak için bir faktör uygula
+        if avg_fitness > self.target_fitness:
+            self.mutation_rate *= (
+                0.9  # Örneğin, mevcut mutasyon oranını %10 azaltabiliriz
+            )
+        # Eğer ortalama fitness düşerse, mutasyon oranını artırmak için bir faktör uygula
+        else:
+            self.mutation_rate *= (
+                1.1  # Örneğin, mevcut mutasyon oranını %10 artırabiliriz
+            )
 
     def start_test(self):
         programlets = [Programlet(random.random()) for _ in range(self.num_programlets)]
