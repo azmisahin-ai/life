@@ -5,7 +5,7 @@ import numpy as np
 
 class TestModule:
     """
-    Performansını test etmek ve istatistiksel analizleri
+    Performansını test etmek ve istatistiksel analizleri yapmak için kullanılır.
     """
 
     @staticmethod
@@ -35,7 +35,7 @@ class Programlet:
 
     def mutate(self, mutation_rate):
         """
-        Programcıkların çoğalma ve adaptasyon süreçlerine uygun algoritmalar.
+        Programcıkların çoğalma ve adaptasyon süreçlerine uygun algoritmaları gerçekleştirir.
         """
         self.fitness += random.uniform(-mutation_rate, mutation_rate)
 
@@ -105,7 +105,7 @@ class MainProgram:
         # Rasgele bir test senaryosu oluştur
         test_scenario = [random.uniform(0, 1) for _ in range(self.num_programlets)]
 
-        for _ in range(self.iterations):  # Her bir test için belirli bir yapalım
+        for _ in range(self.iterations):  # Her bir test için belirli bir yapıyı uygula
             for i in range(self.num_programlets):
                 programlets[i].fitness *= test_scenario[i]
 
