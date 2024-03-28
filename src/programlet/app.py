@@ -17,10 +17,14 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QVBoxLayout,
     QWidget,
+    QGraphicsView,
+    QGraphicsScene,
     QLabel,
     QLineEdit,
     QDoubleSpinBox,
 )
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 from programlet import MainProgram
 
@@ -35,24 +39,24 @@ class Application(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Program Simulation")
-        self.setGeometry(100, 100, 400, 300)
+        self.setGeometry(100, 100, 800, 600)
 
         layout = QVBoxLayout()
 
         # Iterasyonlar için giriş kutusu
-        self.iterations_label = QLabel("Iterations:")
+        self.iterations_label = QLabel("Iterations (e.g., 50):")
         self.iterations_input = QLineEdit()
         layout.addWidget(self.iterations_label)
         layout.addWidget(self.iterations_input)
 
-        # Programlet sayısı için kaydırıcı
-        self.programlets_label = QLabel("Number of Programlets:")
+        # Programlet sayısı için giriş kutusu
+        self.programlets_label = QLabel("Number of Programlets (e.g., 20):")
         self.programlets_input = QLineEdit()
         layout.addWidget(self.programlets_label)
         layout.addWidget(self.programlets_input)
 
         # Mutasyon oranı için kaydırıcı
-        self.mutation_rate_label = QLabel("Mutation Rate:")
+        self.mutation_rate_label = QLabel("Mutation Rate (between 0.0 and 1.0):")
         self.mutation_rate_input = QDoubleSpinBox()
         self.mutation_rate_input.setMinimum(0.0)
         self.mutation_rate_input.setMaximum(1.0)
@@ -61,7 +65,7 @@ class Application(QMainWindow):
         layout.addWidget(self.mutation_rate_input)
 
         # Hedef fitness değeri için kaydırıcı
-        self.target_fitness_label = QLabel("Target Fitness:")
+        self.target_fitness_label = QLabel("Target Fitness (e.g., 1.0):")
         self.target_fitness_input = QDoubleSpinBox()
         self.target_fitness_input.setMinimum(0.0)
         self.target_fitness_input.setMaximum(1000.0)
@@ -78,36 +82,30 @@ class Application(QMainWindow):
         self.start_test_button.clicked.connect(self.start_test)
         layout.addWidget(self.start_test_button)
 
-        self.central_widget = QWidget()
-        self.central_widget.setLayout(layout)
-        self.setCentralWidget(self.central_widget)
+        self.graph_view = QGraphicsView()
+        layout.addWidget(self.graph_view)
+
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
 
     def start_simulation(self):
-        """
-        # Simülasyon Fitness
-
-        Bu, algoritmanın kendi içinde bir döngüde veya iterasyonda nasıl performans gösterdiğini ölçmek için kullanılır.
-        Aalgoritmanın her bir iterasyonunda veya jenerasyonunda elde edilen fitness değerlerinin ortalamasıdır.
-        Bu, algoritmanın zamanla nasıl geliştiğini veya değiştiğini görmek için kullanılır.
-        """
-        # Kullanıcının girdiği değerleri al
         iterations = int(self.iterations_input.text())
         num_programlets = int(self.programlets_input.text())
         mutation_rate = float(self.mutation_rate_input.value())
         target_fitness = float(self.target_fitness_input.value())
 
-        # MainProgram instance'ı oluştururken kullanıcı girişlerini kullan
         self.app = MainProgram(
             iterations, num_programlets, mutation_rate, target_fitness
         )
 
-        # Simülasyonu başlat
         fitness_history = self.app.start_simulation()
-        plt.plot(fitness_history)
-        plt.xlabel("Simulation Iterations")
-        plt.ylabel("Average Simulation Fitness")
-        plt.title("Fitness Simulation Progression")
-        plt.show()
+        self.plot_graph(
+            fitness_history,
+            "Simulation Iterations",
+            "Average Simulation Fitness",
+            "Fitness Simulation Progression",
+        )
 
     def start_test(self):
         """
@@ -123,18 +121,49 @@ class Application(QMainWindow):
         mutation_rate = float(self.mutation_rate_input.value())
         target_fitness = float(self.target_fitness_input.value())
 
-        # MainProgram instance'ı oluştururken kullanıcı girişlerini kullan
+        # Girişlerin kontrolü
+        if iterations <= 0 or num_programlets <= 0:
+            print("Iterations and number of programlets must be positive integers.")
+            return
+        if num_programlets <= 0 or num_programlets <= 0:
+            print(
+                "num_programlets and number of programlets must be positive integers."
+            )
+            return
+        if mutation_rate <= 0 or num_programlets <= 0:
+            print("mutation_rate and number of programlets must be positive float.")
+            return
+        if target_fitness <= 0 or num_programlets <= 0:
+            print("target_fitness and number of programlets must be positive float.")
+            return
+
         self.app = MainProgram(
             iterations, num_programlets, mutation_rate, target_fitness
         )
 
-        # Testi başlat
         fitness_history = self.app.start_test()
-        plt.plot(fitness_history)
-        plt.xlabel("Test Iterations")
-        plt.ylabel("Average Test Fitness")
-        plt.title("Fitness Test Progression")
-        plt.show()
+        self.plot_graph(
+            fitness_history,
+            "Test Iterations",
+            "Average Test Fitness",
+            "Fitness Test Progression",
+        )
+
+    def plot_graph(self, data, x_label, y_label, title):
+        scene = QGraphicsScene()
+        scene.setSceneRect(0, 0, 800, 400)
+
+        figure = Figure()
+        canvas = FigureCanvas(figure)
+        ax = figure.add_subplot(111)
+
+        ax.plot(data)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        ax.set_title(title)
+
+        scene.addWidget(canvas)
+        self.graph_view.setScene(scene)
 
 
 if __name__ == "__main__":
