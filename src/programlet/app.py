@@ -25,8 +25,6 @@ class Application(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.app = MainProgram()
-
         self.setWindowTitle("Program Simulation")
         self.setGeometry(100, 100, 400, 300)
 
@@ -46,7 +44,11 @@ class Application(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         # app
-        self.app = MainProgram()
+        self.iterations = 50
+        self.num_programlets = 20
+        self.mutation_rate = 0.1  # Başlangıç mutasyon oranı
+        self.target_fitness = 1.0  # Hedef fitness değeri
+        self.app = MainProgram(self.iterations, self.num_programlets, self.mutation_rate, self.target_fitness)
 
     def start_simulation(self):
         """
@@ -57,7 +59,7 @@ class Application(QMainWindow):
         """
         fitness_history = self.app.start_simulation()
         plt.plot(fitness_history)
-        plt.xlabel("Iterations")
+        plt.xlabel("Simulation Iterations")
         plt.ylabel("Average Simulation Fitness")
         plt.title("Fitness Simulation Progression")
         plt.show()
@@ -70,14 +72,14 @@ class Application(QMainWindow):
         """
         fitness_history = self.app.start_test()
         plt.plot(fitness_history)
-        plt.xlabel("Iterations")
+        plt.xlabel("Test Iterations")
         plt.ylabel("Average Test Fitness")
         plt.title("Fitness Test Progression")
         plt.show()
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    application = QApplication(sys.argv)
     window = Application()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(application.exec_())

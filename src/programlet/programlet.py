@@ -46,11 +46,11 @@ class MainProgram:
     programcıkların çoğalmasını, istatistiksel analizleri, müdahale kabiliyetini ve test süreçlerini yönetir.
     """
 
-    def __init__(self):
-        self.iterations = 50
-        self.num_programlets = 20
-        self.mutation_rate = 0.1  # Başlangıç mutasyon oranı
-        self.target_fitness = 1.0  # Hedef fitness değeri
+    def __init__(self, iterations, num_programlets, mutation_rate, target_fitness):
+        self.iterations = iterations
+        self.num_programlets = num_programlets
+        self.mutation_rate = mutation_rate  # Başlangıç mutasyon oranı
+        self.target_fitness = target_fitness  # Hedef fitness değeri
 
     def start_simulation(self):
         programlets = [Programlet(random.random()) for _ in range(self.num_programlets)]
@@ -105,7 +105,7 @@ class MainProgram:
         # Rasgele bir test senaryosu oluştur
         test_scenario = [random.uniform(0, 1) for _ in range(self.num_programlets)]
 
-        for _ in range(50):  # Her bir test için 50 iterasyon yapalım
+        for _ in range(self.iterations):  # Her bir test için belirli bir yapalım
             for i in range(self.num_programlets):
                 programlets[i].fitness *= test_scenario[i]
 
@@ -117,7 +117,11 @@ class MainProgram:
 
 
 if __name__ == "__main__":
-    main = MainProgram()
+    iterations = 50
+    num_programlets = 20
+    mutation_rate = 0.1  # Başlangıç mutasyon oranı
+    target_fitness = 1.0  # Hedef fitness değeri
+    main = MainProgram(iterations, num_programlets, mutation_rate, target_fitness)
     test_fitness_history = main.start_test()
     main_fitness_history = main.start_simulation()
     print("test_fitness_history", test_fitness_history)
