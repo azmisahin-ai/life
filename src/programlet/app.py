@@ -10,7 +10,6 @@ yapay yaşam ve evrimsel algoritmaların bir kombinasyonunu kullanarak karmaşı
 """
 
 import sys
-import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -90,8 +89,16 @@ class Application(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def start_simulation(self):
-        iterations = int(self.iterations_input.text())
-        num_programlets = int(self.programlets_input.text())
+        iterations_text = self.iterations_input.text()
+        programlets_text = self.programlets_input.text()
+
+        # Giriş kutularının boş olup olmadığını kontrol et
+        if not iterations_text or not programlets_text:
+            print("Please enter both iterations and number of programlets.")
+            return
+
+        iterations = int(iterations_text)
+        num_programlets = int(programlets_text)
         mutation_rate = float(self.mutation_rate_input.value())
         target_fitness = float(self.target_fitness_input.value())
 
@@ -115,27 +122,18 @@ class Application(QMainWindow):
         Test fitness değeri, algoritmanın belirli bir görevi ne kadar iyi gerçekleştirebildiğini gösterir.
 
         """
-        # Kullanıcının girdiği değerleri al
-        iterations = int(self.iterations_input.text())
-        num_programlets = int(self.programlets_input.text())
+        iterations_text = self.iterations_input.text()
+        programlets_text = self.programlets_input.text()
+
+        # Giriş kutularının boş olup olmadığını kontrol et
+        if not iterations_text or not programlets_text:
+            print("Please enter both iterations and number of programlets.")
+            return
+
+        iterations = int(iterations_text)
+        num_programlets = int(programlets_text)
         mutation_rate = float(self.mutation_rate_input.value())
         target_fitness = float(self.target_fitness_input.value())
-
-        # Girişlerin kontrolü
-        if iterations <= 0 or num_programlets <= 0:
-            print("Iterations and number of programlets must be positive integers.")
-            return
-        if num_programlets <= 0 or num_programlets <= 0:
-            print(
-                "num_programlets and number of programlets must be positive integers."
-            )
-            return
-        if mutation_rate <= 0 or num_programlets <= 0:
-            print("mutation_rate and number of programlets must be positive float.")
-            return
-        if target_fitness <= 0 or num_programlets <= 0:
-            print("target_fitness and number of programlets must be positive float.")
-            return
 
         self.app = MainProgram(
             iterations, num_programlets, mutation_rate, target_fitness
