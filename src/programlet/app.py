@@ -91,6 +91,9 @@ class Application(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def start_simulation(self):
+        """
+        Simülasyonu başlatır ve sonuçları görselleştirir.
+        """
         iterations_text = self.iterations_input.text()
         programlets_text = self.programlets_input.text()
 
@@ -104,11 +107,11 @@ class Application(QMainWindow):
         mutation_rate = float(self.mutation_rate_input.value())
         target_fitness = float(self.target_fitness_input.value())
 
-        self.app = MainProgram(
+        main_program = MainProgram(
             iterations, num_programlets, mutation_rate, target_fitness
         )
 
-        fitness_history = self.app.start_simulation()
+        fitness_history, _ = main_program.start_simulation()
         self.plot_graph(
             fitness_history,
             "Simulation Iterations",
@@ -118,11 +121,7 @@ class Application(QMainWindow):
 
     def start_test(self):
         """
-        # Test Fitness
-
-        Bu, algoritmanın performansını ölçmek için kullanılır.
-        Test fitness değeri, algoritmanın belirli bir görevi ne kadar iyi gerçekleştirebildiğini gösterir.
-
+        Testi başlatır ve sonuçları görselleştirir.
         """
         iterations_text = self.iterations_input.text()
         programlets_text = self.programlets_input.text()
@@ -137,11 +136,11 @@ class Application(QMainWindow):
         mutation_rate = float(self.mutation_rate_input.value())
         target_fitness = float(self.target_fitness_input.value())
 
-        self.app = MainProgram(
+        main_program = MainProgram(
             iterations, num_programlets, mutation_rate, target_fitness
         )
 
-        fitness_history = self.app.start_test()
+        fitness_history = main_program.start_test()
         self.plot_graph(
             fitness_history,
             "Test Iterations",
@@ -150,6 +149,15 @@ class Application(QMainWindow):
         )
 
     def plot_graph(self, data, x_label, y_label, title):
+        """
+        Verilen verileri görselleştirir.
+
+        Args:
+            data (list): Grafiğe eklenecek veri listesi.
+            x_label (str): X ekseni etiketi.
+            y_label (str): Y ekseni etiketi.
+            title (str): Grafik başlığı.
+        """
         scene = QGraphicsScene()
         scene.setSceneRect(0, 0, 800, 400)
 
