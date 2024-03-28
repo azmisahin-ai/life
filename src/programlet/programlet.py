@@ -11,7 +11,8 @@ class TestModule:
     @staticmethod
     def run_test(programlets):
         """
-        Verilen programletler listesini kullanarak bir test senaryosu oluşturur ve her bir programletin performansını değerlendirir.
+        Verilen programletler listesini kullanarak bir test senaryosu oluşturur
+        ve her bir programletin performansını değerlendirir.
 
         Args:
             programlets (list): Test edilecek programletlerin listesi.
@@ -60,7 +61,8 @@ class Programlet:
 
 class MainProgram:
     """
-    Ana program, programcıkların çoğalmasını, istatistiksel analizleri, müdahale kabiliyetini ve test süreçlerini yönetir.
+    Ana program, programcıkların çoğalmasını, istatistiksel analizleri, müdahale kabiliyetini
+    ve test süreçlerini yönetir.
 
     Özellikler:
     - iterations: Simülasyonun kaç kez çalıştırılacağı.
@@ -89,37 +91,49 @@ class MainProgram:
         Programın ana simülasyonunu başlatır.
 
         Returns:
-            tuple: (fitness_history, mutation_rates) tuple'ı. fitness_history: her iterasyonda ortalama fitness değerlerinin listesi, mutation_rates: her iterasyonda mutasyon oranlarının listesi.
+            tuple: (fitness_history, mutation_rates) tuple'ı.
+            fitness_history: her iterasyonda ortalama fitness değerlerinin listesi,
+            mutation_rates: her iterasyonda mutasyon oranlarının listesi.
         """
+        # Başlangıçta rastgele programletler oluşturulur
         programlets = [Programlet(random.random()) for _ in range(self.num_programlets)]
-        fitness_history = []
-        mutation_rates = []
+        fitness_history = []  # Fitness geçmişi için boş bir liste oluşturulur
+        mutation_rates = []  # Mutasyon oranları geçmişi için boş bir liste oluşturulur
 
+        # Ana simülasyon döngüsü başlar
         for i in range(self.iterations):
-            new_programlets = []
+            new_programlets = []  # Her iterasyonda oluşturulan yeni programletler için boş bir liste oluşturulur
+            # Her bir programlet için çiftleşme işlemi yapılır
             for j in range(self.num_programlets):
-                partner_index = random.randint(0, self.num_programlets - 1)
-                if j != partner_index:
+                partner_index = random.randint(
+                    0, self.num_programlets - 1
+                )  # Rastgele bir partner seçilir
+                if j != partner_index:  # Aynı programletle çiftleşme yapılmaz
+                    # Seçilen iki programletin fitness değerlerinin ortalaması alınarak yeni bir programlet oluşturulur
                     avg_fitness = (
                         programlets[j].fitness + programlets[partner_index].fitness
                     ) / 2
                     new_programlet = Programlet(avg_fitness)
+                    # Yeni programlet mutasyona uğratılır
                     new_programlet.mutate(self.mutation_rate)
-                    new_programlets.append(new_programlet)
+                    new_programlets.append(
+                        new_programlet
+                    )  # Oluşturulan yeni programlet listeye eklenir
 
-            # Programletlerin güncellenmesi
+            # Yeni programletler populasyona eklenir
             programlets.extend(new_programlets)
+            # Populasyon sıralanır ve en iyi programletler seçilir
             programlets.sort(key=lambda x: x.fitness, reverse=True)
             programlets = programlets[: self.num_programlets]
 
-            # Fitness geçmişine değer ekleme
+            # Fitness geçmişine ortalama fitness değeri eklenir
             avg_fitness = np.mean([p.fitness for p in programlets])
             fitness_history.append(avg_fitness)
 
-            # Mutasyon oranlarını izleme
+            # Mutasyon oranları geçmişine mevcut mutasyon oranı eklenir
             mutation_rates.append(self.mutation_rate)
 
-            # Mutasyon oranını güncelleme
+            # Mutasyon oranı güncellenir
             self.update_mutation_rate(avg_fitness)
 
         return fitness_history, mutation_rates
