@@ -55,7 +55,9 @@ class Application(QMainWindow):
         layout.addWidget(self.programlets_input)
 
         # Mutasyon oranı için kaydırıcı
-        self.mutation_rate_label = QLabel("Mutation Rate (between 0.0 and 1.0):")
+        self.mutation_rate_label = QLabel(
+            "Mutation Rate (between 0.0 and 1.0)(e.g., 0.1):"
+        )
         self.mutation_rate_input = QDoubleSpinBox()
         self.mutation_rate_input.setMinimum(0.0)
         self.mutation_rate_input.setMaximum(1.0)
@@ -64,7 +66,7 @@ class Application(QMainWindow):
         layout.addWidget(self.mutation_rate_input)
 
         # Hedef fitness değeri için kaydırıcı
-        self.target_fitness_label = QLabel("Target Fitness (e.g., 1.0):")
+        self.target_fitness_label = QLabel("Target Fitness (e.g., 1.0)(e.g., 1.0:")
         self.target_fitness_input = QDoubleSpinBox()
         self.target_fitness_input.setMinimum(0.0)
         self.target_fitness_input.setMaximum(1000.0)
