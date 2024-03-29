@@ -1,7 +1,6 @@
 # src/life/particles/particle.py
 
 import random
-import time
 from src.life.particles.vector import Vector
 from src.life.particles.core import Core
 
@@ -79,6 +78,7 @@ class Particle(Core):
             "lifecycle": self.lifecycle,
             # status information
             "life_status": self.status(),
+            "codes": list(self.codes),
             # particle information
             "charge": self.charge,
             "mass": self.mass,
@@ -128,26 +128,16 @@ class Particle(Core):
         self.spin = self.calculate_new_spin(self.spin)
         self.calculate_new_position()
 
-    def ping(self, code: bytearray):
-        """
-        Parçacığın konumunu, hızını ve momentumunu belirli bir yörüngede hareket ettirir.
+    def evolve(self):
+        super().evolve()
 
-        :param code: Ping kodu.
-        """
-        super().ping(code=code)
         # Parçacığın özelliklerini güncelle
         self.update_properties()
 
-    def signal(self, time_step: float) -> None:
-        """
-        Parçacığın sinyalini gönderir.
-
-        :param time_step: Zaman adımı.
-        :type time_step: float
-        """
-        if time_step is None:
-            time_step = random.uniform(0.0001, 0.001)
-        self.update(force=self.wave_function, time_step=time_step)
+    def mesure(self):
+        base_mesure = super().mesure()
+        new_mesure = base_mesure
+        return new_mesure
 
     def update(self, force: Vector, time_step: float) -> None:
         """
@@ -223,17 +213,17 @@ if __name__ == "__main__":
     name = "particle"  # Parçacığın adı.
     lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 10  # oluşturulacak örnek sayısı
+    number_of_instance = 3  # oluşturulacak örnek sayısı
 
-    instance_created_counter = 0
+    number_of_instance_created = 0
 
     def create_instance(name, lifetime_seconds, lifecycle):
         def instance_signal(instance):
             instance.status()
 
-        global instance_created_counter
-        instance_created_counter += 1
-        instance_name = f"{name}_{instance_created_counter}"
+        global number_of_instance_created
+        number_of_instance_created += 1
+        instance_name = f"{name}_{number_of_instance_created}"
 
         def force_function(t):
             return Vector(t**0.1, t**0.1, t**0.1)
@@ -268,20 +258,16 @@ if __name__ == "__main__":
             )
             instances.append(instance)
 
-        # Tüm işlemleri burada kontrol edebilirsiniz
-        time.sleep(2)  #
         # örnekleri duraklatma
         for instance in instances:
             if instance.name == f"{name}_1":
                 instance.pause()
 
-        time.sleep(2)  #
         # öernekleri devam ettirme
         for instance in instances:
             if instance.name == f"{name}_1":
                 instance.resume()
 
-        time.sleep(2)  #
         # Thread'leri durdurma
         for instance in instances:
             instance.stop()

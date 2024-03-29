@@ -1,7 +1,5 @@
 # src/web/controller/particle_simulation.py
 
-import time
-
 from src.life.particles.vector import Vector
 from src.life.particles.particle import Particle
 from src.web.controller.core_simulation import CoreSimulation
@@ -87,13 +85,10 @@ if __name__ == "__main__":
     sampler.start_simulation()
 
     # örnekleyiciyi duraklat
-    time.sleep(2)
     sampler.pause_simulation()
 
     # örnekleyiciyi devam ettir
-    time.sleep(2)
     sampler.resume_simulation()
 
     # örnekleyiciyi durdur
-    time.sleep(2)
     sampler.stop_simulation()

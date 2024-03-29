@@ -1,5 +1,5 @@
 # src/life/particles/core.py
-
+import random
 import threading
 import time
 
@@ -20,6 +20,10 @@ class Core(threading.Thread):
         :param lifecycle: Parçacığın saniyedeki yaşam döngüsü.
         """
         super().__init__()
+
+        self.codes = (
+            bytearray()
+        )  # Bytearray'i saklamak için boş bir bytearray oluşturulur
 
         if name is None:
             raise ValueError("Name cannot be None.")
@@ -70,6 +74,7 @@ class Core(threading.Thread):
             "lifecycle": self.lifecycle,
             # status information
             "life_status": self.status(),
+            "codes": list(self.codes),
         }
 
     def trigger_event(self, event_function):
@@ -81,20 +86,21 @@ class Core(threading.Thread):
         self.event_function = event_function
         return self
 
-    def ping(self, code: bytearray):
+    def evolve(self):
         """
-        Çoğalmaya başlıyor.
-        Çocuklarıda çoğalıyor.
-        Eşleştirme sırasında test ediliyor.
-        Test eşleri uyumluysa süreleri artıyor.
+        Her seferinde 1 byte'lık rasgele bir ASCII karakter ekler.
         """
-        # message = "{}\t{}\t{}\t{}".format(  # noqa: F524
-        #     "ping",
-        #     self.name,
-        #     code,
-        #     self.elapsed_lifespan,
-        # )
-        # self.logger.warning(message)
+        self.code = bytes([random.randint(0, 255)])  # Rasgele bir byte oluştur
+        # sys.maxsize
+        self.codes.extend(self.code)  # Oluşturulan byte'ı self.code bytearray'ına ekler
+
+    def measure(self):
+        """
+        Belirli bir özelliğini ölçer ve sonucu döndürür.
+
+        """
+        # Çekirdek kodu
+        return list(self.codes)
 
     def run(self):
         """
@@ -107,8 +113,8 @@ class Core(threading.Thread):
         ):
             if not self._paused:
                 self.elapsed_lifespan = time.time() - self.life_start_time
-                # MOV
-                self.ping(code=b"\x89\xe5")
+                # Zamana bağlı evrim
+                self.evolve()
                 if self.event_function:
                     self.event_function(self)
                 time.sleep(self.lifecycle)
@@ -161,12 +167,7 @@ class Core(threading.Thread):
             else:
                 state = "Running"
 
-        message = "{}\t{}\t{}\t{}".format(  # noqa: F524
-            state,
-            self.name,
-            self.life_created_time,
-            self.life_start_time,
-        )
+        message = "{:<7}\t{}".format(state, self.elapsed_lifespan)
         if state == "Created":
             self.logger.info(message)
         elif state == "Running":
@@ -187,15 +188,15 @@ if __name__ == "__main__":
     lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı
 
-    instance_created_counter = 0
+    number_of_instance_created = 0
 
     def create_instance(name, lifetime_seconds, lifecycle):
         def simulation_instance_status(instance):
             instance.status()
 
-        global instance_created_counter
-        instance_created_counter += 1
-        instance_name = f"{name}_{instance_created_counter}"
+        global number_of_instance_created
+        number_of_instance_created += 1
+        instance_name = f"{name}_{number_of_instance_created}"
 
         return (
             Core(
@@ -219,20 +220,16 @@ if __name__ == "__main__":
             )
             instances.append(instance)
 
-        # Tüm işlemleri burada kontrol edebilirsiniz
-        time.sleep(2)  #
         # örnekleri duraklatma
         for instance in instances:
             if instance.name == f"{name}_1":
                 instance.pause()
 
-        time.sleep(2)  #
         # öernekleri devam ettirme
         for instance in instances:
             if instance.name == f"{name}_1":
                 instance.resume()
 
-        time.sleep(2)  #
         # Thread'leri durdurma
         for instance in instances:
             instance.stop()

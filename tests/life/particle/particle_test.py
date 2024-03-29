@@ -70,7 +70,7 @@ class TestParticle(unittest.TestCase):
     def test_schrodinger_eq(self):
         # Schrödinger denkleminin hesaplanmasını kontrol etme
         wave_function_before = self.particle_1.wave_function
-        self.particle_1.signal(time_step=1)
+        self.particle_1.evolve()
         self.assertNotAlmostEqual(
             self.particle_1.wave_function.x, wave_function_before.x
         )

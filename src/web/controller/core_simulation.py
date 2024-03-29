@@ -2,7 +2,6 @@
 
 
 import threading
-import time
 
 from src.package import Logger
 from src.life.particles.core import Core
@@ -49,7 +48,11 @@ class CoreSimulation:
         ).get_logger()
 
     def to_json(self) -> dict:
-        lifetime_seconds = "infinity" if self.lifetime_seconds == float('inf') else self.lifetime_seconds
+        lifetime_seconds = (
+            "infinity"
+            if self.lifetime_seconds == float("inf")
+            else self.lifetime_seconds
+        )
         return {
             "name": self.name,
             "number_of_instance": self.number_of_instance,
@@ -171,9 +174,8 @@ class CoreSimulation:
         else:
             state = "Running"
 
-        message = "{}\t{}\t{}\t{}".format(  # noqa: F524
+        message = "{:<7}\t{}/{}".format(
             state,
-            self.name,
             self.number_of_instance_created,
             self.number_of_instance,
         )
@@ -217,13 +219,10 @@ if __name__ == "__main__":
     sampler.start_simulation()
 
     # örnekleyiciyi duraklat
-    time.sleep(2)
     sampler.pause_simulation()
 
     # örnekleyiciyi devam ettir
-    time.sleep(2)
     sampler.resume_simulation()
 
     # örnekleyiciyi durdur
-    time.sleep(2)
     sampler.stop_simulation()

@@ -100,12 +100,7 @@ class Simulation:
             return None
 
     def status(self):
-        message = "{}\t{}\t{}\t{}".format(  # noqa: F524
-            self.simulation_status.value,
-            self.name,
-            self.simulation_type,
-            self.number_of_instance,
-        )
+        message = "{:.7s}\t{}".format(self.simulation_status.value, self.simulation_type)
         if self.simulation_status == SimulationStatus.paused:
             self.logger.warning(message)
         elif self.simulation_status == SimulationStatus.continues:
