@@ -94,6 +94,23 @@ class Core(threading.Thread):
         # sys.maxsize
         self.codes.extend(self.code)  # Oluşturulan byte'ı self.code bytearray'ına ekler
 
+    # Fitness fonksiyonu: Yaşam süresi ve evrim hızı
+    def calculate_fitness(self):
+        if self.lifetime_seconds == float("inf"):
+            self.mutation_rate = len(self.codes) / self.elapsed_lifespan
+
+            # Genel fitness değeri: Evrim hızı
+            self.general_fitness = self.mutation_rate
+
+        else:
+            self.lifetime_fitness = self.lifetime_seconds / self.elapsed_lifespan
+            self.mutation_rate = len(self.codes) / self.elapsed_lifespan
+
+            # Genel fitness değeri: Yaşam süresi ve evrim hızının bir kombinasyonu
+            self.general_fitness = (self.lifetime_fitness + self.mutation_rate) / 2
+
+        return self.general_fitness
+
     def measure(self):
         """
         Belirli bir özelliğini ölçer ve sonucu döndürür.
@@ -118,6 +135,10 @@ class Core(threading.Thread):
                 if self.event_function:
                     self.event_function(self)
                 time.sleep(self.lifecycle)
+        # Yaşam döngüsü sona erdi
+        self._stop_event.set()  # stopped
+        if self.event_function:
+            self.event_function(self)
 
     def pause(self):
         """
@@ -167,7 +188,7 @@ class Core(threading.Thread):
             else:
                 state = "Running"
 
-        message = "{:<7}\t{}".format(state, self.elapsed_lifespan)
+        message = "{:.7s}\t{}\t{}".format(state, self.elapsed_lifespan, ''.join(format(byte, '02x') for byte in self.codes))
         if state == "Created":
             self.logger.info(message)
         elif state == "Running":
@@ -184,16 +205,45 @@ class Core(threading.Thread):
 # Example Usage
 if __name__ == "__main__":
     name = "core"  # Parçacığın adı.
-    lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 3  # oluşturulacak örnek sayısı
+    lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifecycle = 60 / 100  # Parçacığın saniyedeki yaşam döngüsü.
+    number_of_instance = 20  # oluşturulacak örnek sayısı
 
-    number_of_instance_created = 0
+    number_of_instance_created = 0  # oluşturulan örnek sayısı
+
+    instances = []  # örnek havuzu
+
+    fitness_values = {}  # Fitness değerlerini
+
+    new_cores = []  # Her iterasyonda oluşturulan yeni core için boş bir liste oluşturulur
+
+    def simulation_instance_status(instance):
+        state = instance.status()
+        if state == "Running":
+            fitness_values[instance] = instance.calculate_fitness()
+
+        if state == "Stopped":
+            # Fitness değerlerine göre parçacıkları sıralama
+            sorted_instances = sorted(
+                instances, key=lambda x: fitness_values.get(x, 0), reverse=True
+            )
+            # En iyi olanları seç
+            for index, instance in enumerate(sorted_instances[:3]):
+                best_firness = fitness_values.get(
+                    instance,
+                    0,  # "Fitness değeri bulunamadı"
+                )
+                general_fitness = instance.general_fitness
+                mutation_rate = instance.mutation_rate
+                # yeiden başlatılıyor
+
+                if instance.status() == "Stopped":
+                    print(instance.name, best_firness)
+                    instance._stop_event = threading.Event()
+                    instance.lifetime_seconds += 1
+                    instance.run()
 
     def create_instance(name, lifetime_seconds, lifecycle):
-        def simulation_instance_status(instance):
-            instance.status()
-
         global number_of_instance_created
         number_of_instance_created += 1
         instance_name = f"{name}_{number_of_instance_created}"
@@ -208,31 +258,26 @@ if __name__ == "__main__":
             .start()
         )
 
-    instances = []
+    # Örnek yönetimi
+    for _ in range(number_of_instance):
+        instance = create_instance(
+            name=name,
+            lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
+        )
+        instances.append(instance)
 
-    def main():
-        # Örnek yönetimi
-        for _ in range(number_of_instance):
-            instance = create_instance(
-                name=name,
-                lifetime_seconds=lifetime_seconds,
-                lifecycle=lifecycle,
-            )
-            instances.append(instance)
+    # # örnekleri duraklatma
+    # for instance in instances:
+    #     if instance.name == f"{name}_1":
+    #         instance.pause()
 
-        # örnekleri duraklatma
-        for instance in instances:
-            if instance.name == f"{name}_1":
-                instance.pause()
+    # # öernekleri devam ettirme
+    # for instance in instances:
+    #     if instance.name == f"{name}_1":
+    #         instance.resume()
 
-        # öernekleri devam ettirme
-        for instance in instances:
-            if instance.name == f"{name}_1":
-                instance.resume()
-
-        # Thread'leri durdurma
-        for instance in instances:
-            instance.stop()
-            instance.join()
-
-    main()
+    # # Thread'leri durdurma
+    # for instance in instances:
+    #     instance.stop()
+    #     instance.join()
