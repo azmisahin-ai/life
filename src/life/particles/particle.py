@@ -220,7 +220,18 @@ if __name__ == "__main__":
 
     def create_instance(name, lifetime_seconds, lifecycle):
         def instance_signal(instance):
-            instance.status()
+            state = instance.status()
+            if state == "Running":
+                pass
+
+            if state == "Paused":
+                pass
+
+            if state == "Resumed":
+                pass
+
+            if state == "Stopped":
+                pass
 
         global number_of_instance_created
         number_of_instance_created += 1

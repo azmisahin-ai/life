@@ -22,7 +22,7 @@ class Simulation:
         """
         self.name = name
         # state
-        self.simulation_status = SimulationStatus.stopped
+        self.simulation_status = SimulationStatus.Stopped
         self.sampler = None
         # Log ayarlarını yapılandırma
         self.logger = Logger(
@@ -69,11 +69,11 @@ class Simulation:
         message = "{:.7s}\t{}".format(
             self.simulation_status.value, self.simulation_type
         )
-        if self.simulation_status == SimulationStatus.paused:
+        if self.simulation_status == SimulationStatus.Paused:
             self.logger.warning(message)
-        elif self.simulation_status == SimulationStatus.continues:
+        elif self.simulation_status == SimulationStatus.Resumed:
             self.logger.info(message)
-        elif self.simulation_status == SimulationStatus.stopped:
+        elif self.simulation_status == SimulationStatus.Stopped:
             self.logger.warning(message)
         else:
             self.logger.info(message)
@@ -115,7 +115,7 @@ class Simulation:
         )
 
         # state
-        self.simulation_status = SimulationStatus.started
+        self.simulation_status = SimulationStatus.Running
         # trigger
         if self.simulation_event_function:
             self.simulation_event_function(self)
@@ -129,7 +129,7 @@ class Simulation:
 
     def pause(self):
         # state
-        self.simulation_status = SimulationStatus.paused
+        self.simulation_status = SimulationStatus.Paused
         # trigger
         if self.simulation_event_function:
             self.simulation_event_function(self)
@@ -138,9 +138,9 @@ class Simulation:
 
         return self
 
-    def continues(self):
+    def resume(self):
         # state
-        self.simulation_status = SimulationStatus.continues
+        self.simulation_status = SimulationStatus.Resumed
         # trigger
         if self.simulation_event_function:
             self.simulation_event_function(self)
@@ -151,7 +151,7 @@ class Simulation:
 
     def stop(self):
         # state
-        self.simulation_status = SimulationStatus.stopped
+        self.simulation_status = SimulationStatus.Stopped
         # trigger
         if self.simulation_event_function:
             self.simulation_event_function(self)
@@ -180,7 +180,18 @@ simulation = Simulation("life")
 def simulation_status(simulation):
     try:
         if isinstance(simulation, Simulation):
-            simulation.status()
+            state = simulation.status()
+            if state == SimulationStatus.Running:
+                pass
+
+            if state == SimulationStatus.Paused:
+                pass
+
+            if state == SimulationStatus.Resumed:
+                pass
+
+            if state == SimulationStatus.Stopped:
+                pass
         else:
             raise RuntimeWarning("A new unknown simulation")
     except Exception as e:
@@ -190,9 +201,31 @@ def simulation_status(simulation):
 def simulation_sampler_status(sampler):
     try:
         if isinstance(sampler, ParticleSimulation):
-            sampler.status()
+            state = sampler.status()
+            if state == "Running":
+                pass
+
+            if state == "Paused":
+                pass
+
+            if state == "Resumed":
+                pass
+
+            if state == "Stopped":
+                pass
         elif isinstance(sampler, CoreSimulation):
-            sampler.status()
+            state = sampler.status()
+            if state == "Running":
+                pass
+
+            if state == "Paused":
+                pass
+
+            if state == "Resumed":
+                pass
+
+            if state == "Stopped":
+                pass
         else:
             raise RuntimeWarning("A new unknown sampler")
     except Exception as e:
@@ -202,9 +235,31 @@ def simulation_sampler_status(sampler):
 def simulation_instance_status(instance):
     try:
         if isinstance(instance, Particle):
-            instance.status()
+            state = instance.status()
+            if state == "Running":
+                pass
+
+            if state == "Paused":
+                pass
+
+            if state == "Resumed":
+                pass
+
+            if state == "Stopped":
+                pass
         elif isinstance(instance, Core):
-            instance.status()
+            state = instance.status()
+            if state == "Running":
+                pass
+
+            if state == "Paused":
+                pass
+
+            if state == "Resumed":
+                pass
+
+            if state == "Stopped":
+                pass
         else:
             raise RuntimeWarning("A new unknown instance")
     except Exception as e:
@@ -231,5 +286,5 @@ if __name__ == "__main__":
         simulation_type=simulation_type,
     )
     simulation.pause()
-    simulation.continues()
+    simulation.resume()
     simulation.stop()

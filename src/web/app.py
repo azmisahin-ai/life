@@ -43,16 +43,16 @@ def create_app():
         try:
             if isinstance(simulation, Simulation):
                 state = simulation.status()
-                if state == "started":
+                if state == SimulationStatus.Running:
                     pass
 
-                if state == "paused":
+                if state == SimulationStatus.Paused:
                     pass
 
-                if state == "continues":
+                if state == SimulationStatus.Resumed:
                     pass
 
-                if state == "stopped":
+                if state == SimulationStatus.Stopped:
                     pass
                 # send simulation_status signal
                 args = simulation.to_json()
@@ -229,7 +229,7 @@ def create_app():
     @app.route("/socket/v1/simulation/continue", methods=["GET"])
     def get_continue():
         # proccess
-        simulation.continues()
+        simulation.resume()
 
         if simulation.sampler:
             response = simulation.to_json()

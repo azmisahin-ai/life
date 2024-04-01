@@ -15,7 +15,7 @@ class SimulationContinue(Resource):
     @app.route("/continue", methods=["GET"])
     def get(self):
         # proccess
-        simulation.continues()
+        simulation.resume()
 
         if simulation.sampler:
             response = simulation.to_json()

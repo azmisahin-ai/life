@@ -65,10 +65,32 @@ if __name__ == "__main__":
     number_of_instance = 3  # oluşturulacak örnek sayısı
 
     def simulation_sampler_status(sampler):
-        sampler.status()
+        state = sampler.status()
+        if state == "Running":
+            pass
+
+        if state == "Paused":
+            pass
+
+        if state == "Resumed":
+            pass
+
+        if state == "Stopped":
+            pass
 
     def simulation_instance_status(instance):
-        instance.status()
+        state = instance.status()
+        if state == "Running":
+            pass
+
+        if state == "Paused":
+            pass
+
+        if state == "Resumed":
+            pass
+
+        if state == "Stopped":
+            pass
 
     sampler = (
         CoreSimulation(

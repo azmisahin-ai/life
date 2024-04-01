@@ -227,6 +227,12 @@ if __name__ == "__main__":
         if state == "Running":
             fitness_values[instance] = instance.calculate_fitness()
 
+        if state == "Paused":
+            pass
+
+        if state == "Resumed":
+            pass
+
         if state == "Stopped":
             # Fitness değerlerine göre parçacıkları sıralama
             sorted_instances = sorted(
