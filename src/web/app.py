@@ -42,7 +42,18 @@ def create_app():
     def simulation_status(simulation):
         try:
             if isinstance(simulation, Simulation):
-                simulation.status()
+                state = simulation.status()
+                if state == "started":
+                    pass
+
+                if state == "paused":
+                    pass
+
+                if state == "continues":
+                    pass
+
+                if state == "stopped":
+                    pass
                 # send simulation_status signal
                 args = simulation.to_json()
                 io.emit("simulation_status", args)
@@ -55,12 +66,34 @@ def create_app():
     def simulation_sampler_status(sampler):
         try:
             if isinstance(sampler, ParticleSimulation):
-                sampler.status()
+                state = sampler.status()
+                if state == "Running":
+                    pass
+
+                if state == "Paused":
+                    pass
+
+                if state == "Resumed":
+                    pass
+
+                if state == "Stopped":
+                    pass
                 # send simulation_sampler_status signal
                 args = sampler.to_json()
                 io.emit("simulation_sampler_status", args)
             elif isinstance(sampler, CoreSimulation):
-                sampler.status()
+                state = sampler.status()
+                if state == "Running":
+                    pass
+
+                if state == "Paused":
+                    pass
+
+                if state == "Resumed":
+                    pass
+
+                if state == "Stopped":
+                    pass
                 # send simulation_sampler_status signal
                 args = sampler.to_json()
                 io.emit("simulation_sampler_status", args)
@@ -72,12 +105,34 @@ def create_app():
     def simulation_instance_status(instance):
         try:
             if isinstance(instance, Particle):
-                instance.status()
+                state = instance.status()
+                if state == "Running":
+                    pass
+
+                if state == "Paused":
+                    pass
+
+                if state == "Resumed":
+                    pass
+
+                if state == "Stopped":
+                    pass
                 # send simulation_instance_status signal
                 args = instance.to_json()
                 io.emit("simulation_instance_status", args)
             elif isinstance(instance, Core):
-                instance.status()
+                state = instance.status()
+                if state == "Running":
+                    pass
+
+                if state == "Paused":
+                    pass
+
+                if state == "Resumed":
+                    pass
+
+                if state == "Stopped":
+                    pass
                 # send simulation_instance_status signal
                 args = instance.to_json()
                 io.emit("simulation_instance_status", args)
