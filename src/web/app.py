@@ -242,7 +242,7 @@ def create_app():
         # default response
         response = {
             "simulation_type": simulation_type.value,
-            "simulation_status": SimulationStatus.stopped.value,
+            "simulation_status": SimulationStatus.Stopped.value,
         }
 
         if simulation.sampler:
