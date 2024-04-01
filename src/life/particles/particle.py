@@ -79,6 +79,7 @@ class Particle(Core):
             # status information
             "life_status": self.status(),
             "codes": list(self.codes),
+            "generation": self.generation,
             # particle information
             "charge": self.charge,
             "mass": self.mass,

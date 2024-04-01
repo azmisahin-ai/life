@@ -11,40 +11,6 @@ from src.life.particles.core import Core
 from src.life.particles.particle import Particle
 
 
-def simulation_status(simulation):
-    try:
-        if isinstance(simulation, Simulation):
-            simulation.status()
-        else:
-            raise RuntimeWarning("A new unknown simulation")
-    except Exception as e:
-        logger.exception("An error occurred: %s", e)
-
-
-def simulation_sampler_status(sampler):
-    try:
-        if isinstance(sampler, ParticleSimulation):
-            sampler.status()
-        elif isinstance(sampler, CoreSimulation):
-            sampler.status()
-        else:
-            raise RuntimeWarning("A new unknown sampler")
-    except Exception as e:
-        logger.exception("An error occurred: %s", e)
-
-
-def simulation_instance_status(instance):
-    try:
-        if isinstance(instance, Particle):
-            instance.status()
-        elif isinstance(instance, Core):
-            instance.status()
-        else:
-            raise RuntimeWarning("A new unknown instance")
-    except Exception as e:
-        logger.exception("An error occurred: %s", e)
-
-
 class Simulation:
     """
     Simülasyon işlemlerini yöneten sınıf.
@@ -100,7 +66,9 @@ class Simulation:
             return None
 
     def status(self):
-        message = "{:.7s}\t{}".format(self.simulation_status.value, self.simulation_type)
+        message = "{:.7s}\t{}".format(
+            self.simulation_status.value, self.simulation_type
+        )
         if self.simulation_status == SimulationStatus.paused:
             self.logger.warning(message)
         elif self.simulation_status == SimulationStatus.continues:
@@ -207,6 +175,41 @@ class Simulation:
 
 # create simulation
 simulation = Simulation("life")
+
+
+def simulation_status(simulation):
+    try:
+        if isinstance(simulation, Simulation):
+            simulation.status()
+        else:
+            raise RuntimeWarning("A new unknown simulation")
+    except Exception as e:
+        logger.exception("An error occurred: %s", e)
+
+
+def simulation_sampler_status(sampler):
+    try:
+        if isinstance(sampler, ParticleSimulation):
+            sampler.status()
+        elif isinstance(sampler, CoreSimulation):
+            sampler.status()
+        else:
+            raise RuntimeWarning("A new unknown sampler")
+    except Exception as e:
+        logger.exception("An error occurred: %s", e)
+
+
+def simulation_instance_status(instance):
+    try:
+        if isinstance(instance, Particle):
+            instance.status()
+        elif isinstance(instance, Core):
+            instance.status()
+        else:
+            raise RuntimeWarning("A new unknown instance")
+    except Exception as e:
+        logger.exception("An error occurred: %s", e)
+
 
 # setup simulation
 simulation.trigger_simulation(simulation_status).trigger_sampler(

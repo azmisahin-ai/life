@@ -20,7 +20,7 @@ class Core(threading.Thread):
         :param lifecycle: Parçacığın saniyedeki yaşam döngüsü.
         """
         super().__init__()
-
+        self.generation = 1
         self.codes = (
             bytearray()
         )  # Bytearray'i saklamak için boş bir bytearray oluşturulur
@@ -75,6 +75,7 @@ class Core(threading.Thread):
             # status information
             "life_status": self.status(),
             "codes": list(self.codes),
+            "generation": self.generation,
         }
 
     def trigger_event(self, event_function):
@@ -188,7 +189,11 @@ class Core(threading.Thread):
             else:
                 state = "Running"
 
-        message = "{:.7s}\t{}\t{}".format(state, self.elapsed_lifespan, ''.join(format(byte, '02x') for byte in self.codes))
+        message = "{:.7s}\t{}\t{}".format(
+            state,
+            self.elapsed_lifespan,
+            "".join(format(byte, "02x") for byte in self.codes),
+        )
         if state == "Created":
             self.logger.info(message)
         elif state == "Running":
@@ -229,18 +234,19 @@ if __name__ == "__main__":
             )
             # En iyi olanları seç
             for index, instance in enumerate(sorted_instances[:3]):
-                best_firness = fitness_values.get(
+                best_fitness = fitness_values.get(
                     instance,
                     0,  # "Fitness değeri bulunamadı"
                 )
-                general_fitness = instance.general_fitness
-                mutation_rate = instance.mutation_rate
+                # general_fitness = instance.general_fitness
+                # mutation_rate = instance.mutation_rate
                 # yeiden başlatılıyor
 
                 if instance.status() == "Stopped":
-                    print(instance.name, best_firness)
+                    print(f"{instance.name} [{instance.generation}]", best_fitness)
                     instance._stop_event = threading.Event()
                     instance.lifetime_seconds += 1
+                    instance.generation += 1
                     instance.run()
 
     def create_instance(name, lifetime_seconds, lifecycle):
