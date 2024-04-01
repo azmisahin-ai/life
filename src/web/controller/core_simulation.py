@@ -34,7 +34,8 @@ class CoreSimulation:
         self.lifecycle = lifecycle
         #
         self.number_of_instance_created = 0
-        self.instances = []
+        self.instances = []  # örnek havuzu
+        self.fitness_values = {}  # Fitness değerlerini
         # events
         self.event_function = None
         self.event_function_instance = None
@@ -126,6 +127,8 @@ class CoreSimulation:
         Simülasyonu duraklatır.
         """
         self._paused = True
+        if self.event_function:
+            self.event_function(self)  # Event işlevini çağır
         self.status()
         for instance in self.instances:
             instance.pause()
@@ -136,6 +139,8 @@ class CoreSimulation:
         """
         self._paused = False
         self._resumed = True
+        if self.event_function:
+            self.event_function(self)  # Event işlevini çağır
         self.status()
         for instance in self.instances:
             instance.resume()
@@ -146,6 +151,8 @@ class CoreSimulation:
         """
         self._paused = False
         self._stop_event.set()  # _stop_event'i ayarlayın
+        if self.event_function:
+            self.event_function(self)  # Event işlevini çağır
         self.status()
         for instance in self.instances:
             instance.stop()
@@ -199,10 +206,32 @@ if __name__ == "__main__":
     number_of_instance = 3  # oluşturulacak örnek sayısı
 
     def simulation_sampler_status(sampler):
-        sampler.status()
+        state = sampler.status()
+        if state == "Running":
+            pass
+
+        if state == "Paused":
+            pass
+
+        if state == "Resumed":
+            pass
+
+        if state == "Stopped":
+            pass
 
     def simulation_instance_status(instance):
-        instance.status()
+        state = instance.status()
+        if state == "Running":
+            pass
+
+        if state == "Paused":
+            pass
+
+        if state == "Resumed":
+            pass
+
+        if state == "Stopped":
+            pass
 
     sampler = (
         CoreSimulation(
