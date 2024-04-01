@@ -1,4 +1,5 @@
 # src/web/app.py
+import threading
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
@@ -67,6 +68,7 @@ def create_app():
         try:
             if isinstance(sampler, ParticleSimulation):
                 state = sampler.status()
+
                 if state == "Running":
                     pass
 
@@ -102,11 +104,20 @@ def create_app():
         except Exception as e:
             logger.exception("An error occurred: %s", e)
 
+    fitness_values = {}
+    instances = []
+    best_number_of_samples_to_choose = 20
+
     def simulation_instance_status(instance):
         try:
             if isinstance(instance, Particle):
                 state = instance.status()
+                if state == "Created":
+                    instances.append(instance)
+                    pass
+
                 if state == "Running":
+                    fitness_values[instance] = instance.calculate_fitness()
                     pass
 
                 if state == "Paused":
@@ -116,7 +127,30 @@ def create_app():
                     pass
 
                 if state == "Stopped":
-                    pass
+                    # Fitness değerlerine göre parçacıkları sıralama
+                    sorted_instances = sorted(
+                        instances, key=lambda x: fitness_values.get(x, 0), reverse=True
+                    )
+                    # En iyi olanları seç
+                    for index, instance in enumerate(
+                        sorted_instances[:best_number_of_samples_to_choose]
+                    ):
+                        best_fitness = fitness_values.get(
+                            instance,
+                            0,  # "Fitness değeri bulunamadı"
+                        )
+                        # general_fitness = instance.general_fitness
+                        # mutation_rate = instance.mutation_rate
+                        # yeiden başlatılıyor
+
+                        if instance.status() == "Stopped":
+                            print(
+                                f"{instance.name} [{instance.generation}]", best_fitness
+                            )
+                            instance._stop_event = threading.Event()
+                            instance.lifetime_seconds += 1
+                            instance.generation += 1
+                            instance.run()
                 # send simulation_instance_status signal
                 args = instance.to_json()
                 io.emit("simulation_instance_status", args)

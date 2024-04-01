@@ -236,6 +236,9 @@ def simulation_instance_status(instance):
     try:
         if isinstance(instance, Particle):
             state = instance.status()
+            if state == "Created":
+                pass
+
             if state == "Running":
                 pass
 
