@@ -211,6 +211,10 @@ def io_event(
 
 
 def simulation_status(simulation):
+    # send simulation_status signal
+    if io_simulation_status_function is not None:
+        io_simulation_status_function(simulation)  # Simülasyon durumu sinyalini gönder
+
     try:
         if isinstance(simulation, Simulation):
             state = simulation.status()
@@ -226,12 +230,6 @@ def simulation_status(simulation):
             if state == SimulationStatus.Stopped:
                 pass
 
-            # send simulation_status signal
-            if io_simulation_status_function is not None:
-                io_simulation_status_function(
-                    simulation
-                )  # Simülasyon durumu sinyalini gönder
-
         else:
             raise RuntimeWarning("A new unknown simulation")
     except Exception as e:
@@ -239,6 +237,11 @@ def simulation_status(simulation):
 
 
 def simulation_sampler_status(sampler):
+    # send simulation_sampler_status signal
+    if io_simulation_sampler_status_function is not None:
+        io_simulation_sampler_status_function(
+            sampler
+        )  # sampler durumu sinyalini gönder
     try:
         if isinstance(sampler, ParticleSimulation):
             state = sampler.status()
@@ -269,11 +272,6 @@ def simulation_sampler_status(sampler):
             if state == "Stopped":
                 pass
 
-            # send simulation_sampler_status signal
-            if io_simulation_sampler_status_function is not None:
-                io_simulation_sampler_status_function(
-                    sampler
-                )  # sampler durumu sinyalini gönder
         else:
             raise RuntimeWarning("A new unknown sampler")
     except Exception as e:
@@ -281,6 +279,12 @@ def simulation_sampler_status(sampler):
 
 
 def simulation_instance_status(instance):
+    # send simulation_instance_status signal
+    if io_simulation_instance_status_function is not None:
+        io_simulation_instance_status_function(
+            instance
+        )  # sampler durumu sinyalini gönder
+
     try:
         if isinstance(instance, Particle):
             state = instance.status()
@@ -320,11 +324,6 @@ def simulation_instance_status(instance):
             if state == "Stopped":
                 pass
 
-            # send simulation_instance_status signal
-            if io_simulation_sampler_status_function is not None:
-                io_simulation_sampler_status_function(
-                    instance
-                )  # sampler durumu sinyalini gönder
         else:
             raise RuntimeWarning("A new unknown instance")
     except Exception as e:
