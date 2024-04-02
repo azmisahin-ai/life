@@ -1,6 +1,6 @@
 # src/web/controller/simulation.py
 
-
+import threading
 from src.package.logger import Logger, logger
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
@@ -173,8 +173,42 @@ class Simulation:
         return self
 
 
+# Global değişkenlerin başlatılması
+
 # create simulation
 simulation = Simulation("life")
+# simulation data
+fitness_values = {}
+instances = []
+best_number_of_samples_to_choose = 20
+
+# event
+io_simulation_status_function = None
+io_simulation_sampler_status_function = None
+io_simulation_instance_status_function = None
+
+
+def io_event(
+    status_function,
+    sampler_status_function,
+    instance_status_function,
+):
+    """
+    Bu fonksiyon, olay işleme işlevlerini (event functions) global değişkenlere atar.
+
+    Args:
+        status_function (function): Simülasyon durumunu işleyen fonksiyon.
+        sampler_status_function (function): Simülasyon örnekleyicisinin durumunu işleyen fonksiyon (varsa).
+        instance_status_function (function): Simülasyon örneğinin durumunu işleyen fonksiyon (varsa).
+    """
+
+    global \
+        io_simulation_status_function, \
+        io_simulation_sampler_status_function, \
+        io_simulation_instance_status_function
+    io_simulation_status_function = status_function
+    io_simulation_sampler_status_function = sampler_status_function
+    io_simulation_instance_status_function = instance_status_function
 
 
 def simulation_status(simulation):
@@ -192,6 +226,13 @@ def simulation_status(simulation):
 
             if state == SimulationStatus.Stopped:
                 pass
+
+            # send simulation_status signal
+            if io_simulation_status_function is not None:
+                io_simulation_status_function(
+                    simulation
+                )  # Simülasyon durumu sinyalini gönder
+
         else:
             raise RuntimeWarning("A new unknown simulation")
     except Exception as e:
@@ -202,6 +243,7 @@ def simulation_sampler_status(sampler):
     try:
         if isinstance(sampler, ParticleSimulation):
             state = sampler.status()
+
             if state == "Running":
                 pass
 
@@ -213,6 +255,7 @@ def simulation_sampler_status(sampler):
 
             if state == "Stopped":
                 pass
+
         elif isinstance(sampler, CoreSimulation):
             state = sampler.status()
             if state == "Running":
@@ -226,6 +269,12 @@ def simulation_sampler_status(sampler):
 
             if state == "Stopped":
                 pass
+
+            # send simulation_sampler_status signal
+            if io_simulation_sampler_status_function is not None:
+                io_simulation_sampler_status_function(
+                    sampler
+                )  # sampler durumu sinyalini gönder
         else:
             raise RuntimeWarning("A new unknown sampler")
     except Exception as e:
@@ -237,9 +286,11 @@ def simulation_instance_status(instance):
         if isinstance(instance, Particle):
             state = instance.status()
             if state == "Created":
+                instances.append(instance)
                 pass
 
             if state == "Running":
+                fitness_values[instance] = instance.calculate_fitness()
                 pass
 
             if state == "Paused":
@@ -249,7 +300,29 @@ def simulation_instance_status(instance):
                 pass
 
             if state == "Stopped":
-                pass
+                # Fitness değerlerine göre parçacıkları sıralama
+                sorted_instances = sorted(
+                    instances, key=lambda x: fitness_values.get(x, 0), reverse=True
+                )
+                # En iyi olanları seç
+                for index, instance in enumerate(
+                    sorted_instances[:best_number_of_samples_to_choose]
+                ):
+                    best_fitness = fitness_values.get(
+                        instance,
+                        0,  # "Fitness değeri bulunamadı"
+                    )
+                    # general_fitness = instance.general_fitness
+                    # mutation_rate = instance.mutation_rate
+                    # yeiden başlatılıyor
+
+                    if instance.status() == "Stopped":
+                        print(f"{instance.name} [{instance.generation}]", best_fitness)
+                        instance._stop_event = threading.Event()
+                        instance.lifetime_seconds += 1
+                        instance.generation += 1
+                        instance.run()
+
         elif isinstance(instance, Core):
             state = instance.status()
             if state == "Running":
@@ -263,6 +336,12 @@ def simulation_instance_status(instance):
 
             if state == "Stopped":
                 pass
+
+            # send simulation_instance_status signal
+            if io_simulation_sampler_status_function is not None:
+                io_simulation_sampler_status_function(
+                    instance
+                )  # sampler durumu sinyalini gönder
         else:
             raise RuntimeWarning("A new unknown instance")
     except Exception as e:
@@ -273,6 +352,7 @@ def simulation_instance_status(instance):
 simulation.trigger_simulation(simulation_status).trigger_sampler(
     simulation_sampler_status
 ).trigger_instance(simulation_instance_status)
+
 
 # Example usage
 if __name__ == "__main__":
