@@ -1,6 +1,5 @@
 # src/web/controller/simulation.py
 
-import threading
 from src.package.logger import Logger, logger
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
@@ -285,6 +284,7 @@ def simulation_instance_status(instance):
     try:
         if isinstance(instance, Particle):
             state = instance.status()
+
             if state == "Created":
                 instances.append(instance)
                 pass
@@ -300,31 +300,14 @@ def simulation_instance_status(instance):
                 pass
 
             if state == "Stopped":
-                # Fitness değerlerine göre parçacıkları sıralama
-                sorted_instances = sorted(
-                    instances, key=lambda x: fitness_values.get(x, 0), reverse=True
-                )
-                # En iyi olanları seç
-                for index, instance in enumerate(
-                    sorted_instances[:best_number_of_samples_to_choose]
-                ):
-                    best_fitness = fitness_values.get(
-                        instance,
-                        0,  # "Fitness değeri bulunamadı"
-                    )
-                    # general_fitness = instance.general_fitness
-                    # mutation_rate = instance.mutation_rate
-                    # yeiden başlatılıyor
-
-                    if instance.status() == "Stopped":
-                        print(f"{instance.name} [{instance.generation}]", best_fitness)
-                        instance._stop_event = threading.Event()
-                        instance.lifetime_seconds += 1
-                        instance.generation += 1
-                        instance.run()
+                pass
 
         elif isinstance(instance, Core):
             state = instance.status()
+
+            if state == "Created":
+                pass
+
             if state == "Running":
                 pass
 
@@ -357,14 +340,23 @@ simulation.trigger_simulation(simulation_status).trigger_sampler(
 # Example usage
 if __name__ == "__main__":
     lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 1  # Parçacığın saniyedeki yaşam döngüsü.
+    lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı
     simulation_type = SimulationType.Particles  # Simulaston türü
 
-    # start simulation
+    # simulasyonu başlat
     simulation.start(
         number_of_instance=number_of_instance,
         lifetime_seconds=lifetime_seconds,
         lifecycle=lifecycle,
         simulation_type=simulation_type,
     )
+
+    # # simulasyonu duraklat
+    # simulation.pause()
+
+    # # simulasyonu devam ettir
+    # simulation.resume()
+
+    # # simulasyonu durdur
+    # simulation.stop()

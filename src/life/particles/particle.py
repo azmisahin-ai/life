@@ -212,8 +212,8 @@ class Particle(Core):
 # Example Usage
 if __name__ == "__main__":
     name = "particle"  # Parçacığın adı.
-    lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
+    lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı
 
     number_of_instance_created = 0
@@ -221,6 +221,10 @@ if __name__ == "__main__":
     def create_instance(name, lifetime_seconds, lifecycle):
         def instance_signal(instance):
             state = instance.status()
+
+            if state == "Created":
+                pass
+
             if state == "Running":
                 pass
 

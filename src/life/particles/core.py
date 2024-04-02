@@ -211,8 +211,8 @@ class Core(threading.Thread):
 if __name__ == "__main__":
     name = "core"  # Parçacığın adı.
     lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 60 / 100  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 20  # oluşturulacak örnek sayısı
+    lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
+    number_of_instance = 3  # oluşturulacak örnek sayısı
 
     number_of_instance_created = 0  # oluşturulan örnek sayısı
 
@@ -224,6 +224,9 @@ if __name__ == "__main__":
 
     def simulation_instance_status(instance):
         state = instance.status()
+        if state == "Created":
+            pass
+
         if state == "Running":
             fitness_values[instance] = instance.calculate_fitness()
 

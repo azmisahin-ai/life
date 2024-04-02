@@ -63,6 +63,27 @@ class CoreSimulation:
         }
 
     def instance_status(self, instance):
+        state = instance.status()
+        if state == "Created":
+            self.instances.append(instance)
+
+        if state == "Running":
+            self.fitness_values[instance] = instance.calculate_fitness()
+
+        if state == "Paused":
+            pass
+
+        if state == "Resumed":
+            pass
+
+        if state == "Stopped":
+            # Fitness değerlerine göre parçacıkları sıralama
+            self.sorted_instances = sorted(
+                self.instances,
+                key=lambda x: self.fitness_values.get(x, 0),
+                reverse=True,
+            )
+
         if self.event_function_instance:
             self.event_function_instance(instance)  # Event işlevini çağır
 
@@ -201,8 +222,8 @@ class CoreSimulation:
 # Example Usage
 if __name__ == "__main__":
     name = "core"  # Parçacığın adı.
-    lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
+    lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı
 
     def simulation_sampler_status(sampler):
@@ -221,6 +242,8 @@ if __name__ == "__main__":
 
     def simulation_instance_status(instance):
         state = instance.status()
+        if state == "Created":
+            pass
         if state == "Running":
             pass
 
@@ -244,14 +267,14 @@ if __name__ == "__main__":
         .trigger_event_instance(simulation_instance_status)
     )
 
-    # örnekleyiciyi başlat
+    # # örnekleyiciyi başlat
     sampler.start_simulation()
 
-    # örnekleyiciyi duraklat
-    sampler.pause_simulation()
+    # # örnekleyiciyi duraklat
+    # sampler.pause_simulation()
 
-    # örnekleyiciyi devam ettir
-    sampler.resume_simulation()
+    # # örnekleyiciyi devam ettir
+    # sampler.resume_simulation()
 
-    # örnekleyiciyi durdur
-    sampler.stop_simulation()
+    # # örnekleyiciyi durdur
+    # sampler.stop_simulation()
