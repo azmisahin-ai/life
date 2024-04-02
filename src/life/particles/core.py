@@ -2,6 +2,7 @@
 import random
 import threading
 import time
+import uuid
 
 from src.package import Logger
 
@@ -11,16 +12,42 @@ class Core(threading.Thread):
     Life sınıfı, parçacıkların yaşam döngüsünü yönetir.
     """
 
-    def __init__(self, name: str, lifetime_seconds: float, lifecycle: float) -> None:
+    core_count = 0  # Toplam çekirdek sayısı
+    generation_map = {}  # Çekirdek ID'sini generation değeriyle eşleştiren sözlük
+
+    def __init__(
+        self,
+        name: str,
+        lifetime_seconds: float,
+        lifecycle: float,
+        parent_id: int = 0,
+        max_generation: int = 1,
+        max_replicas: int = 1,
+    ) -> None:
         """
         Life Oluşturulur.
 
         :param name: Parçacığın adı.
         :param lifetime_seconds: Parçacığın yaşam süresi saniye cinsinden.
         :param lifecycle: Parçacığın saniyedeki yaşam döngüsü.
+        :param parent_uid: Üst çekirdek kimliği (varsayılan olarak 0).
+        :param max_generation: Maksimum jenerasyon sayısı
+        :param max_replicas: Maksimum kopya sayısı
         """
         super().__init__()
-        self.generation = 1
+        Core.core_count += 1
+        self.uid = str(uuid.uuid4())  # Benzersiz kimlik
+        self.id = Core.core_count  # Otomatik artan benzersiz kimlik
+        self.parent_id = parent_id if parent_id else 0  # Üst çekirdek kimliği
+        self.max_generation = max_generation  # Maksimum jenerasyon sayısı
+        self.max_replicas = max_replicas  # Maksimum kopya sayısı
+
+        self.generation = (
+            Core.generation_map[parent_id] + 1 if parent_id else 1
+        )  # Generation değeri
+        Core.generation_map[self.id] = self.generation  # Generation değerini eşleştir
+
+        #
         self.codes = (
             bytearray()
         )  # Bytearray'i saklamak için boş bir bytearray oluşturulur
@@ -33,6 +60,8 @@ class Core(threading.Thread):
             raise ValueError("Lifecycle must be a positive value.")
         self.lifetime_seconds = lifetime_seconds
         self.name = name
+        # yeni version
+        self.version = f"v_{self.parent_id}_{self.generation}_{self.id}"
         # created information
         self.life_created_time = time.time()  # Just information
         self.life_start_time = None  # Henüz başlamadı
@@ -47,7 +76,7 @@ class Core(threading.Thread):
         self._resumed = False
         # Log ayarlarını yapılandırma
         self.logger = Logger(
-            name=f"/core/{name}", log_to_file=True, log_to_console=True
+            name=f"/{self.name}/{self.version}", log_to_file=True, log_to_console=True
         ).get_logger()
         # Created durumunu tetikle
         self.trigger_event(self)
@@ -126,16 +155,24 @@ class Core(threading.Thread):
         """
         self.life_start_time = time.time()
         while (
+            # süre sonunda  otomatik durdurmayı tetikler
             time.time() - self.life_start_time < self.lifetime_seconds
             and not self._stop_event.is_set()
         ):
+            # eğer paused konumunda ise işlem devam ettirilmez
             if not self._paused:
+                # zaman yönetimi için duraklatma önce yapılmalı.
+                time.sleep(self.lifecycle)
+                # geçen süreyi hesaplar
                 self.elapsed_lifespan = time.time() - self.life_start_time
-                # Zamana bağlı evrim
+                # Çekirdeğin evrimsel kodlarını işletir
                 self.evolve()
+                # dış fonksiyonlara sinyal gönderir
                 if self.event_function:
                     self.event_function(self)
-                time.sleep(self.lifecycle)
+                # yeni programcıkları oluştur
+                self.replicate()
+
         # Yaşam döngüsü sona erdi
         self._stop_event.set()  # stopped
         if self.event_function:
@@ -189,9 +226,12 @@ class Core(threading.Thread):
             else:
                 state = "Running"
 
-        message = "{:.7s}\t{}\t{}".format(
+        message = "{:.7s}\t{}\t{}\t{}\t{}\t{}".format(
             state,
             self.elapsed_lifespan,
+            self.parent_id,
+            self.generation,
+            self.id,
             "".join(format(byte, "02x") for byte in self.codes),
         )
         if state == "Created":
@@ -206,20 +246,41 @@ class Core(threading.Thread):
             self.logger.debug(message)
         return state
 
+    def replicate(self):
+        """
+        Eşlenme işlemi gerçekleştiğinde çağrılır ve yeni programcıkların oluşturulmasını sağlar.
+        """
+        if self.generation >= self.max_generation or self.max_replicas <= 0:
+            # Maksimum jenerasyon sayısına ulaşıldıysa veya max_replicas değeri 0 ise, eşleme yapmayı durdur
+            return
+        # Yeni bir programcık oluştur
+        new_core = Core(
+            name=self.name,
+            lifetime_seconds=self.lifetime_seconds,
+            lifecycle=self.lifecycle,
+            parent_id=self.id,  # Yeni çekirdeğin üst çekirdek kimliği, mevcut çekirdeğin kimliği olacak
+            max_generation=self.max_generation,
+            max_replicas=self.max_replicas,
+        ).trigger_event(self.event_function)
+        # Yeni programcık kodlarını kopyala
+        new_core.codes = self.codes[:]
+        # Yeni programcığın nesnesini başlat
+        new_core.start()
+        # Nesne oluşturma bilgisini güncelle
+        self.logger.info(f"Replicated [{new_core.id}]")
+
 
 # Example Usage
 if __name__ == "__main__":
     name = "core"  # Parçacığın adı.
-    lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifetime_seconds = 5  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 3  # oluşturulacak örnek sayısı
-
+    number_of_instance = 1  # oluşturulacak örnek sayısı
+    number_of_replicas = 3  # oluşturulacak kopya sayısı
+    number_of_generation = 2  # jenerasyon derinliği
     number_of_instance_created = 0  # oluşturulan örnek sayısı
-
     instances = []  # örnek havuzu
-
     fitness_values = {}  # Fitness değerlerini
-
     new_cores = []  # Her iterasyonda oluşturulan yeni core için boş bir liste oluşturulur
 
     def simulation_instance_status(instance):
@@ -237,49 +298,32 @@ if __name__ == "__main__":
             pass
 
         if state == "Stopped":
-            # Fitness değerlerine göre parçacıkları sıralama
-            sorted_instances = sorted(
-                instances, key=lambda x: fitness_values.get(x, 0), reverse=True
-            )
-            # En iyi olanları seç
-            for index, instance in enumerate(sorted_instances[:3]):
-                best_fitness = fitness_values.get(
-                    instance,
-                    0,  # "Fitness değeri bulunamadı"
-                )
-                # general_fitness = instance.general_fitness
-                # mutation_rate = instance.mutation_rate
-                # yeiden başlatılıyor
-
-                if instance.status() == "Stopped":
-                    print(f"{instance.name} [{instance.generation}]", best_fitness)
-                    instance._stop_event = threading.Event()
-                    instance.lifetime_seconds += 1
-                    instance.generation += 1
-                    instance.run()
+            pass
 
     def create_instance(name, lifetime_seconds, lifecycle):
         global number_of_instance_created
         number_of_instance_created += 1
-        instance_name = f"{name}_{number_of_instance_created}"
 
-        return (
-            Core(
-                name=instance_name,
-                lifetime_seconds=lifetime_seconds,
-                lifecycle=lifecycle,
-            )
-            .trigger_event(simulation_instance_status)
-            .start()
-        )
+        return Core(
+            name=name,
+            lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
+            # başlangıç değeri
+            parent_id=0,
+            max_generation=number_of_generation,
+            max_replicas=number_of_replicas,
+        ).trigger_event(simulation_instance_status)
 
-    # Örnek yönetimi
+    # Örnek yönetimi oluşturma ve çalıştırma
     for _ in range(number_of_instance):
+        # örnek oluştur
         instance = create_instance(
             name=name,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
         )
+        # örneği çalıştır.
+        instance.start()
         instances.append(instance)
 
     # # örnekleri duraklatma

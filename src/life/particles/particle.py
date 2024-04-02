@@ -239,14 +239,13 @@ if __name__ == "__main__":
 
         global number_of_instance_created
         number_of_instance_created += 1
-        instance_name = f"{name}_{number_of_instance_created}"
 
         def force_function(t):
             return Vector(t**0.1, t**0.1, t**0.1)
 
         return (
             Particle(
-                name=instance_name,
+                name=name,
                 lifetime_seconds=lifetime_seconds,
                 lifecycle=lifecycle,
                 charge=-1.602176634e-19,
