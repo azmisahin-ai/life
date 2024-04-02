@@ -69,6 +69,7 @@ class Particle(Core):
         )
         return {
             "name": self.name,
+            "id": self.id,
             "lifetime_seconds": lifetime_seconds,
             # created information
             "life_created_time": self.life_created_time,
@@ -207,6 +208,35 @@ class Particle(Core):
         :rtype: Vector
         """
         return electric_field * self.charge + magnetic_field * self.charge
+
+    def replicate(self):
+        """
+        Eşlenme işlemi gerçekleştiğinde çağrılır ve yeni programcıkların oluşturulmasını sağlar.
+        """
+        if self.generation >= self.max_generation or self.max_replicas <= 0:
+            # Maksimum jenerasyon sayısına ulaşıldıysa veya max_replicas değeri 0 ise, eşleme yapmayı durdur
+            return
+
+        # # Yeni bir programcık oluştur
+        # new_core = Particle(
+        #     name=self.name,
+        #     lifetime_seconds=self.lifetime_seconds,
+        #     lifecycle=self.lifecycle,
+        #     charge=self.charge,
+        #     mass=self.mass,
+        #     spin=self.spin,
+        #     energy=self.energy,
+        #     position=self.position,
+        #     velocity=self.velocity,
+        #     momentum=self.momentum,
+        #     wave_function=self.wave_function,
+        # ).trigger_event(self.event_function)
+        # # Yeni programcık kodlarını kopyala
+        # new_core.codes = self.codes[:]
+        # # Yeni programcığın nesnesini başlat
+        # new_core.start()
+        # # Nesne oluşturma bilgisini güncelle
+        # self.logger.info(f"Replicated [{new_core.id}]")
 
 
 # Example Usage

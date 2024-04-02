@@ -21,8 +21,8 @@ class Core(threading.Thread):
         lifetime_seconds: float,
         lifecycle: float,
         parent_id: int = 0,
-        max_generation: int = 1,
-        max_replicas: int = 1,
+        max_generation: int = 3,
+        max_replicas: int = 4,
     ) -> None:
         """
         Life Oluşturulur.
@@ -94,6 +94,7 @@ class Core(threading.Thread):
         )
         return {
             "name": self.name,
+            "id": self.id,
             "lifetime_seconds": lifetime_seconds,
             # created information
             "life_created_time": self.life_created_time,
