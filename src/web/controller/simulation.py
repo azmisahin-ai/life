@@ -356,8 +356,8 @@ simulation.trigger_simulation(simulation_status).trigger_sampler(
 
 # Example usage
 if __name__ == "__main__":
-    lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 60 / 1  # Parçacığın saniyedeki yaşam döngüsü.
+    lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifecycle = 1  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 3  # oluşturulacak örnek sayısı
     simulation_type = SimulationType.Particles  # Simulaston türü
 
@@ -368,6 +368,3 @@ if __name__ == "__main__":
         lifecycle=lifecycle,
         simulation_type=simulation_type,
     )
-    simulation.pause()
-    simulation.resume()
-    simulation.stop()
