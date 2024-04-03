@@ -331,6 +331,27 @@ class Core(threading.Thread):
         super().start()
         return self
 
+    def status(self):
+        """
+        Örneğin mevcut durumunu döndürür.
+        """
+        state = "Unknown"
+        if not hasattr(self, "created_printed"):
+            state = "Created"
+            self.created_printed = True  # Created durumu yazıldı
+        else:
+            if self._stop_event.is_set():
+                state = "Stopped"
+            elif self._paused:
+                state = "Paused"
+            elif self._resumed:
+                self._resumed = False
+                state = "Resumed"
+            else:
+                state = "Running"
+
+        return state
+
     def update_state(self):
         state = self.status()
         message = "{:.7s}\t{}\t{}\t{}\t{}\t{}\t{}".format(
@@ -353,27 +374,6 @@ class Core(threading.Thread):
             self.logger.warning(message)
         else:
             self.logger.debug(message)
-        return state
-
-    def status(self):
-        """
-        Örneğin mevcut durumunu döndürür.
-        """
-        state = "Unknown"
-        if not hasattr(self, "created_printed"):
-            state = "Created"
-            self.created_printed = True  # Created durumu yazıldı
-        else:
-            if self._stop_event.is_set():
-                state = "Stopped"
-            elif self._paused:
-                state = "Paused"
-            elif self._resumed:
-                self._resumed = False
-                state = "Resumed"
-            else:
-                state = "Running"
-
         return state
 
     def replicate(self):
@@ -426,7 +426,7 @@ class Core(threading.Thread):
 if __name__ == "__main__":
     name = "core"  # Parçacığın adı.
     lifetime_seconds = 60  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 60 / 120  # Parçacığın saniyedeki yaşam döngüsü.
+    lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 2  # oluşturulacak örnek sayısı
     number_of_replicas = 20  # oluşturulacak kopya sayısı
     number_of_generation = 2  # jenerasyon derinliği
