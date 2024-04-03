@@ -52,7 +52,7 @@ class Core(threading.Thread):
         self.codes = (
             bytearray()
         )  # Bytearray'i saklamak için boş bir bytearray oluşturulur
-
+        self.fitness = 0.0  # Yaşam süresi ve evrim hızı
         if name is None:
             raise ValueError("Name cannot be None.")
         if lifetime_seconds <= 0:
@@ -109,6 +109,7 @@ class Core(threading.Thread):
             "codes": list(self.codes),
             "replicas": self.replicas,
             "generation": self.generation,
+            "fitness": self.fitness,
         }
 
     def trigger_event(self, event_function):
@@ -247,16 +248,16 @@ class Core(threading.Thread):
             self.mutation_rate = len(self.codes) / self.elapsed_lifespan
 
             # Genel fitness değeri: Evrim hızı
-            self.general_fitness = self.mutation_rate
+            self.fitness = self.mutation_rate
 
         else:
             self.lifetime_fitness = self.lifetime_seconds / self.elapsed_lifespan
             self.mutation_rate = len(self.codes) / self.elapsed_lifespan
 
             # Genel fitness değeri: Yaşam süresi ve evrim hızının bir kombinasyonu
-            self.general_fitness = (self.lifetime_fitness + self.mutation_rate) / 2
+            self.fitness = (self.lifetime_fitness + self.mutation_rate) / 2
 
-        return self.general_fitness
+        return self.fitness
 
     def measure(self):
         """
@@ -286,10 +287,12 @@ class Core(threading.Thread):
                 self.evolve()
                 # Kendini Kodlarını test
                 self.test()
-                # dış fonksiyonlara sinyal gönderir
+                # Yaşam süresi ve evrim hızı
+                self.calculate_fitness()
+                # Bilgilerini sinyal olarak gönderir
                 if self.event_function:
                     self.event_function(self)
-                # yeni programcıkları oluştur
+                # Yeni  kopyalar oluştur
                 self.replicate()
 
         # Yaşam döngüsü sona erdi
@@ -432,7 +435,7 @@ if __name__ == "__main__":
             pass
 
         if state == "Running":
-            fitness_values[instance] = instance.calculate_fitness()
+            fitness_values[instance] = instance.fitness
 
         if state == "Paused":
             pass

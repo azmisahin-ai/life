@@ -83,6 +83,7 @@ class Particle(Core):
             "codes": list(self.codes),
             "replicas": self.replicas,
             "generation": self.generation,
+            "fitness": self.fitness,
             # particle information
             "charge": self.charge,
             "mass": self.mass,
