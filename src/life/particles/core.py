@@ -394,8 +394,10 @@ class Core(threading.Thread):
         new_core.start()
         # Nesne oluşturma bilgisini güncelle
         self.logger.info(f"Replicated [{new_core.id}]")
+        # kopya sayısına göre  zamanı (milisaniye ) belirle
+        seconds = self.replicas / 1000
         # Eşlenme işlemi gerçekleştirdikten sonra zamanı azalt
-        self.decrease_lifespan(seconds=0.1)
+        self.decrease_lifespan(seconds=seconds)
 
     def decrease_lifespan(self, seconds):
         """
