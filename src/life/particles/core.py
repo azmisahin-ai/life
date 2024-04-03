@@ -128,8 +128,6 @@ class Core(threading.Thread):
         # sys.maxsize
         self.codes.extend(self.code)  # Oluşturulan byte'ı self.code bytearray'ına ekler
 
-        self.test()
-
     def test(self):
         """
         Oluşturulan kodların belirli bir formata uyup uymadığını kontrol eder.
@@ -286,6 +284,8 @@ class Core(threading.Thread):
                 self.elapsed_lifespan = time.time() - self.life_start_time
                 # Çekirdeğin evrimsel kodlarını işletir
                 self.evolve()
+                # Kendini Kodlarını test
+                self.test()
                 # dış fonksiyonlara sinyal gönderir
                 if self.event_function:
                     self.event_function(self)
