@@ -17,6 +17,8 @@ class CoreSimulation:
         number_of_instance: int,
         lifetime_seconds: float,
         lifecycle: float,
+        max_replicas: int = 2,
+        max_generation: int = 2,
     ) -> None:
         """
         Çekirdek simulasyonunu oluştur.
@@ -30,6 +32,9 @@ class CoreSimulation:
         self.number_of_instance = number_of_instance
         self.lifetime_seconds = lifetime_seconds
         self.lifecycle = lifecycle
+        #
+        self.max_replicas = max_replicas
+        self.max_generation = max_generation
         #
         self.number_of_instance_created = 0
         self.instances = []  # örnek havuzu
@@ -83,7 +88,15 @@ class CoreSimulation:
         if self.event_function_instance:
             self.event_function_instance(instance)  # Event işlevini çağır
 
-    def create_instance(self, name, lifetime_seconds, lifecycle, parent_id: int = 0):
+    def create_instance(
+        self,
+        name: str,
+        lifetime_seconds: float,
+        lifecycle: float,
+        parent_id: int,
+        max_replicas: int,
+        max_generation: int,
+    ):
         """
         Yeni bir çekirdek örneği oluşturur ve döndürür.
 
@@ -97,7 +110,10 @@ class CoreSimulation:
             name=name,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
+            #
             parent_id=parent_id,
+            max_replicas=max_replicas,
+            max_generation=max_generation,
         )
         return instance
 
@@ -111,7 +127,10 @@ class CoreSimulation:
                     name=self.name,  # name değişkenini self.name olarak güncelliyorum
                     lifetime_seconds=self.lifetime_seconds,
                     lifecycle=self.lifecycle,
+                    #
                     parent_id=0,
+                    max_replicas=self.max_replicas,
+                    max_generation=self.max_generation,
                 )
                 # olay dinleyici tetiği yapılandır
                 instance.trigger_event(self.instance_status)
@@ -342,6 +361,8 @@ if __name__ == "__main__":
             number_of_instance=number_of_instance,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
+            max_replicas=number_of_replicas,
+            max_generation=number_of_generation,
         )
         .trigger_event(simulation_sampler_status)
         .trigger_event_instance(simulation_instance_status)
