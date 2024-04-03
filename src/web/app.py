@@ -163,7 +163,7 @@ def create_app():
         data = request.json
         # request
         number_of_instance = data.get("number_of_instance", 2)
-        lifetime_seconds = data.get("lifetime_seconds", float("inf"))
+        lifetime_seconds = data.get("lifetime_seconds", 1)
         lifecycle = data.get("lifecycle", 60 / 60)
         simulation_type_string = data.get("simulation_type", "Core")
         simulation_type = SimulationType(simulation_type_string)
