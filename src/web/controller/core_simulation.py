@@ -11,6 +11,8 @@ class CoreSimulation:
 
     """
 
+    match_count = 0  # toplam eşleşme sayısı
+
     def __init__(
         self,
         name: str,
@@ -65,6 +67,7 @@ class CoreSimulation:
             "lifetime_seconds": lifetime_seconds,
             "lifecycle": self.lifecycle,
             "number_of_instance_created": self.number_of_instance_created,
+            "number_of_instance_matched": CoreSimulation.match_count,
         }
 
     def instance_status(self, instance):
@@ -288,6 +291,8 @@ class CoreSimulation:
             # eşlenme sayaçlarını arttır
             female.match_count += 1
             male.match_count += 1
+            # toplam eşleşme sayısını arttır
+            CoreSimulation.match_count += 1
 
             # cinsiyet tanımlaması yapılabilir?
             # female.sex="f"
@@ -345,6 +350,7 @@ if __name__ == "__main__":
         state = instance.status()
         if state == "Created":
             pass
+
         if state == "Running":
             pass
 

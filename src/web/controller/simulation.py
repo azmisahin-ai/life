@@ -42,7 +42,13 @@ class Simulation:
         return simulation_data
 
     def switch_simulation(
-        self, number_of_instance, lifetime_seconds, lifecycle, simulation_type
+        self,
+        number_of_instance,
+        lifetime_seconds,
+        lifecycle,
+        simulation_type,
+        max_replicas,
+        max_generation,
     ):
         """
         Belirtilen türe göre uygun simülasyon örneğini döndürür.
@@ -53,6 +59,9 @@ class Simulation:
                 number_of_instance=number_of_instance,
                 lifetime_seconds=lifetime_seconds,
                 lifecycle=lifecycle,
+                #
+                max_replicas=max_replicas,
+                max_generation=max_generation,
             )
         elif simulation_type == SimulationType.Particles:
             return ParticleSimulation(
@@ -60,6 +69,9 @@ class Simulation:
                 number_of_instance=number_of_instance,
                 lifetime_seconds=lifetime_seconds,
                 lifecycle=lifecycle,
+                #
+                max_replicas=max_replicas,
+                max_generation=max_generation,
             )
         else:
             return None
@@ -85,6 +97,9 @@ class Simulation:
         lifetime_seconds: float,
         lifecycle: float,
         simulation_type: SimulationType,
+        #
+        max_replicas: int,
+        max_generation: int,
     ):
         """
         Simülasyonu başlatır.
@@ -98,6 +113,9 @@ class Simulation:
         self.lifetime_seconds = lifetime_seconds
         self.lifecycle = lifecycle
         self.simulation_type = simulation_type
+        #
+        self.max_replicas = max_replicas
+        self.max_generation = max_generation
 
         # Geçersiz girişleri kontrol et
         if not isinstance(simulation_type, SimulationType):
@@ -111,6 +129,9 @@ class Simulation:
             lifetime_seconds=self.lifetime_seconds,
             lifecycle=self.lifecycle,
             simulation_type=self.simulation_type,
+            #
+            max_replicas=self.max_replicas,
+            max_generation=self.max_generation,
         )
 
         # state
@@ -176,10 +197,7 @@ class Simulation:
 
 # create simulation
 simulation = Simulation("life")
-# simulation data
-fitness_values = {}
-instances = []
-best_number_of_samples_to_choose = 20
+
 
 # event
 io_simulation_status_function = None
@@ -213,7 +231,8 @@ def io_event(
 def simulation_status(simulation):
     # send simulation_status signal
     if io_simulation_status_function is not None:
-        io_simulation_status_function(simulation)  # Simülasyon durumu sinyalini gönder
+        # Simülasyon durum sinyalini gönder
+        io_simulation_status_function(simulation)
 
     try:
         if isinstance(simulation, Simulation):
@@ -239,9 +258,8 @@ def simulation_status(simulation):
 def simulation_sampler_status(sampler):
     # send simulation_sampler_status signal
     if io_simulation_sampler_status_function is not None:
-        io_simulation_sampler_status_function(
-            sampler
-        )  # sampler durumu sinyalini gönder
+        # sampler durum sinyalini gönder
+        io_simulation_sampler_status_function(sampler)
     try:
         if isinstance(sampler, ParticleSimulation):
             state = sampler.status()
@@ -281,20 +299,17 @@ def simulation_sampler_status(sampler):
 def simulation_instance_status(instance):
     # send simulation_instance_status signal
     if io_simulation_instance_status_function is not None:
-        io_simulation_instance_status_function(
-            instance
-        )  # sampler durumu sinyalini gönder
+        # instance durum sinyalini gönder
+        io_simulation_instance_status_function(instance)
 
     try:
         if isinstance(instance, Particle):
             state = instance.status()
 
             if state == "Created":
-                instances.append(instance)
                 pass
 
             if state == "Running":
-                fitness_values[instance] = instance.calculate_fitness()
                 pass
 
             if state == "Paused":
@@ -338,9 +353,16 @@ simulation.trigger_simulation(simulation_status).trigger_sampler(
 
 # Example usage
 if __name__ == "__main__":
+    name = "particle"  # Parçacığın adı.
     lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 3  # oluşturulacak örnek sayısı
+    number_of_instance = 2  # oluşturulacak örnek sayısı
+    #
+    number_of_instance_created = 0  # oluşturulan örnek sayısı
+    instances = []  # örnek havuzu
+    #
+    number_of_replicas = 2  # oluşturulacak kopya sayısı
+    number_of_generation = 2  # jenerasyon derinliği
     simulation_type = SimulationType.Particles  # Simulaston türü
 
     # simulasyonu başlat
@@ -349,6 +371,9 @@ if __name__ == "__main__":
         lifetime_seconds=lifetime_seconds,
         lifecycle=lifecycle,
         simulation_type=simulation_type,
+        #
+        max_replicas=number_of_replicas,
+        max_generation=number_of_generation
     )
 
     # # simulasyonu duraklat
