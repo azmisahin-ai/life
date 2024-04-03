@@ -41,7 +41,7 @@ class CoreSimulation:
         self._paused = False
         self._resumed = False
         self._exit_flag = False
-        self.perform_crossover_start = False  # perform_crossover_start özelliği eklendi
+        # self.perform_crossover_start = False  # perform_crossover_start özelliği eklendi
         # Log ayarlarını yapılandırma
         self.logger = Logger(
             name=f"/sampler/{name}", log_to_file=True, log_to_console=True
@@ -77,11 +77,7 @@ class CoreSimulation:
 
         if state == "Stopped":
             # Çaprazlama işlemi daha önce yapılmadıysa ve tüm çekirdekler oluşturulduysa
-            if (
-                not self.perform_crossover_start
-                and self.number_of_instance_created == self.number_of_instance
-            ):
-                self.perform_crossover_start = True
+            if self.number_of_instance_created == self.number_of_instance:
                 self.perform_crossover()
 
         if self.event_function_instance:
@@ -267,6 +263,7 @@ class CoreSimulation:
 
             # Eşlenmiş nesneden yeni nesne oluşturulmasını sağlar
             new_core = female.replicate()
+            # replicate sırasında otomatik tetiklenir ve başlatılır.
 
             # logger
             message = "{:.7s}\t{}/{}\t{}\t{}".format(
@@ -278,14 +275,8 @@ class CoreSimulation:
             )
             self.logger.info(message)
 
-            # Olay dinleyici tetiği yapılandır
-            new_core.trigger_event(self.instance_status)
-
             # Yeni core'ları instances listesine ekleyin
             self.instances.append(new_core)
-            # başlatılır
-            # new_core.start()
-            new_core.run()
 
 
 # Example Usage
