@@ -247,11 +247,22 @@ class CoreSimulation:
         # Çift sayısını hesapla
         number_of_pairs = len(compatible_cores) // 2
 
+        # Eşleştirilmiş çekirdek kimliklerini izleyin
+        paired_core_ids = []
+
         # Çiftlerden yeni core'lar oluşturun
         for i in range(number_of_pairs):
             # türler
             female = compatible_cores[i * 2]
             male = compatible_cores[i * 2 + 1]
+
+            # Çekirdeklerden herhangi birinin zaten eşleştirilmiş olup olmadığını kontrol edin
+            if female.id in paired_core_ids or male.id in paired_core_ids:
+                # Çekirdeklerden herhangi biri daha önce eşleştirilmişse eşleştirmeyi atlayın
+                continue
+
+            # Eşleştirilmiş çekirdek kimliklerini listeye ekleyin
+            paired_core_ids.extend([female.id, male.id])
 
             # eşlenme sayaçlarını arttır
             female.match_count += 1
@@ -262,7 +273,8 @@ class CoreSimulation:
             # male.sex="m"
 
             # Eşlenmiş nesneden yeni nesne oluşturulmasını sağlar
-            new_core = female.replicate()
+            # new_core = female.replicate()
+            _ = female.replicate()
             # replicate sırasında otomatik tetiklenir ve başlatılır.
 
             # logger
@@ -276,7 +288,8 @@ class CoreSimulation:
             self.logger.info(message)
 
             # Yeni core'ları instances listesine ekleyin
-            self.instances.append(new_core)
+            # mevcut listele eklemek hataya düşürüyor
+            # self.instances.append(new_core)
 
 
 # Example Usage
