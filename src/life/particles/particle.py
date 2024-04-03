@@ -70,6 +70,7 @@ class Particle(Core):
         return {
             "name": self.name,
             "id": self.id,
+            "parent_id": self.parent_id,
             "lifetime_seconds": lifetime_seconds,
             # created information
             "life_created_time": self.life_created_time,
@@ -80,6 +81,7 @@ class Particle(Core):
             # status information
             "life_status": self.status(),
             "codes": list(self.codes),
+            "replicas": self.replicas,
             "generation": self.generation,
             # particle information
             "charge": self.charge,
