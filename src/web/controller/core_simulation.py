@@ -278,12 +278,13 @@ class CoreSimulation:
             # replicate sırasında otomatik tetiklenir ve başlatılır.
 
             # logger
-            message = "{:.7s}\t{}/{}\t{}\t{}".format(
+            message = "{:.7s}\t{}/{}\t{}\t{}\t{}".format(
                 "crossover",
                 self.number_of_instance_created,
                 self.number_of_instance,
                 female.id,
                 male.id,
+                female.match_count
             )
             self.logger.info(message)
 
