@@ -41,6 +41,7 @@ class CoreSimulation:
         self._paused = False
         self._resumed = False
         self._exit_flag = False
+        self.perform_crossover_start = False  # perform_crossover_start özelliği eklendi
         # Log ayarlarını yapılandırma
         self.logger = Logger(
             name=f"/sampler/{name}", log_to_file=True, log_to_console=True
@@ -75,26 +76,53 @@ class CoreSimulation:
             pass
 
         if state == "Stopped":
-            # Fitness değerlerine göre parçacıkları sıralama
-            self.sorted_instances = sorted(
-                self.instances,
-                key=lambda x: self.fitness_values.get(x.id, 0),
-                reverse=True,
-            )
+            # Çaprazlama işlemi daha önce yapılmadıysa ve tüm çekirdekler oluşturulduysa
+            if (
+                not self.perform_crossover_start
+                and self.number_of_instance_created == self.number_of_instance
+            ):
+                self.perform_crossover_start = True
+                self.perform_crossover()
 
         if self.event_function_instance:
             self.event_function_instance(instance)  # Event işlevini çağır
+
+    def create_instance(
+        self,
+        name,
+        lifetime_seconds,
+        lifecycle,
+        parent_id: int = 0,
+        parent_id_2: int = None,
+    ):
+        """
+        Yeni bir çekirdek örneği oluşturur ve döndürür.
+
+        :param name: Çekirdek örneği adı.
+        :param lifetime_seconds: Örnek yaşam süresi (saniye cinsinden).
+        :param lifecycle: Örnek yaşam döngüsü (saniyedeki adım sayısı).
+        :param parent_id: örneklenen üst id ( default 0).
+        :param parent_id_2: crossover id ( default None).
+        :return: Oluşturulan çekirdek örneği.
+        """
+        instance = Core(
+            name=name,
+            lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
+            parent_id=parent_id,
+        )
+        return instance
 
     def run_simulation(self):
         try:
             condition = self.number_of_instance > self.number_of_instance_created
 
-            # Oluşturulmaya devam edilecekmi?
+            # Oluşturulmaya devam edilecek mi?
             if condition:
-                instance = Core(
-                    name=name,
-                    lifetime_seconds=lifetime_seconds,
-                    lifecycle=lifecycle,
+                instance = self.create_instance(
+                    name=self.name,  # name değişkenini self.name olarak güncelliyorum
+                    lifetime_seconds=self.lifetime_seconds,
+                    lifecycle=self.lifecycle,
                     parent_id=0,
                 )
                 # olay dinleyici tetiği yapılandır
@@ -121,7 +149,7 @@ class CoreSimulation:
         Simülasyon döngüsünü çalıştırır.
         """
         while not self._paused and not self._exit_flag and self.run_simulation():
-            self.perform_crossover()  # Uyumlu core'ların birleşme işlemini gerçekleştir
+            pass
 
     def trigger_event(self, event_function):
         """
@@ -202,7 +230,7 @@ class CoreSimulation:
         else:
             state = "Running"
 
-        message = "{:<7}\t{}/{}".format(
+        message = "{:.7s}\t{}/{}".format(
             state,
             self.number_of_instance_created,
             self.number_of_instance,
@@ -224,7 +252,7 @@ class CoreSimulation:
             core for core in self.instances if core.id in self.fitness_values.keys()
         ]
 
-        print("compatible_cores", len(compatible_cores))
+        # print("compatible_cores", len(compatible_cores))
 
         compatible_cores.sort(
             key=lambda x: self.fitness_values[x.id], reverse=True
@@ -233,19 +261,29 @@ class CoreSimulation:
         # Çift sayısını hesapla
         number_of_pairs = len(compatible_cores) // 2
 
-        print("number_of_pairs", number_of_pairs)
+        # print("number_of_pairs", number_of_pairs)
 
         # Çiftlerden yeni core'lar oluşturun
         for i in range(number_of_pairs):
             parent1 = compatible_cores[i * 2]
             parent2 = compatible_cores[i * 2 + 1]
 
+            message = "{:.7s}\t{}/{}\t{}\t{}".format(
+                "crossover",
+                self.number_of_instance_created,
+                self.number_of_instance,
+                parent1.id,
+                parent2.id,
+            )
+            self.logger.info(message)
+
             # Yeni core oluştur ve ekleyin
-            new_core_name = f"{parent1.id}-{parent2.id}_child"
             new_core = self.create_instance(
-                name=new_core_name,
+                name=self.name,
                 lifetime_seconds=self.lifetime_seconds,
                 lifecycle=self.lifecycle,
+                parent_id=parent1.id,
+                parent_id_2=parent2.id,
             )
 
             # Olay dinleyici tetiği yapılandır
