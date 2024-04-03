@@ -89,10 +89,9 @@ class CoreSimulation:
 
     def create_instance(self, name, lifetime_seconds: float, lifecycle: float) -> Core:
         self.number_of_instance_created += 1
-        instance_name = f"{name}_{self.number_of_instance_created}"
 
         return Core(
-            name=instance_name,
+            name=name,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
         ).trigger_event(self.instance_status)

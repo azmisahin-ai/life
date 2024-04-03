@@ -39,10 +39,9 @@ class ParticleSimulation(CoreSimulation):
         self, name, lifetime_seconds: float, lifecycle: float
     ) -> Particle:
         self.number_of_instance_created += 1
-        instance_name = f"{name}_{self.number_of_instance_created}"
 
         return Particle(
-            name=instance_name,
+            name=name,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
             #
