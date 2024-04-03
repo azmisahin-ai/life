@@ -162,11 +162,14 @@ def create_app():
         # get request
         data = request.json
         # request
-        number_of_instance = data.get("number_of_instance", 1)
+        number_of_instance = data.get("number_of_instance", 2)
         lifetime_seconds = data.get("lifetime_seconds", float("inf"))
-        lifecycle = data.get("lifecycle", 60 / 1)
+        lifecycle = data.get("lifecycle", 60 / 60)
         simulation_type_string = data.get("simulation_type", "Core")
         simulation_type = SimulationType(simulation_type_string)
+        #
+        number_of_replicas = data.get("number_of_replicas", 2)
+        number_of_generation = data.get("number_of_generation", 2)
 
         # Check if lifetime_seconds is None and assign float('inf') instead
         if lifetime_seconds is None:
@@ -180,6 +183,9 @@ def create_app():
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
             simulation_type=simulation_type,
+            #
+            max_replicas=number_of_replicas,
+            max_generation=number_of_generation,
         )
 
         # default response
