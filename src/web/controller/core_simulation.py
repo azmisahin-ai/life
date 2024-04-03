@@ -17,6 +17,7 @@ class CoreSimulation:
         number_of_instance: int,
         lifetime_seconds: float,
         lifecycle: float,
+        #
         max_replicas: int = 2,
         max_generation: int = 2,
     ) -> None:
@@ -93,10 +94,11 @@ class CoreSimulation:
         name: str,
         lifetime_seconds: float,
         lifecycle: float,
+        #
         parent_id: int,
         max_replicas: int,
         max_generation: int,
-    ):
+    ) -> Core:
         """
         Yeni bir çekirdek örneği oluşturur ve döndürür.
 
@@ -147,9 +149,9 @@ class CoreSimulation:
             return condition
 
         except TypeError as e:
-            self.logger.error(f"Core Simulation Error Type : {e}")
+            self.logger.error(f"Sampler Simulation Error Type : {e}")
         except Exception as e:
-            self.logger.error(f"Core Simulation Error      : {e}")
+            self.logger.error(f"Sampler Simulation Error      : {e}")
 
     def _run_simulation_loop(self):
         """
@@ -361,6 +363,7 @@ if __name__ == "__main__":
             number_of_instance=number_of_instance,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
+            #
             max_replicas=number_of_replicas,
             max_generation=number_of_generation,
         )

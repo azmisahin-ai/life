@@ -16,6 +16,9 @@ class ParticleSimulation(CoreSimulation):
         number_of_instance: int,
         lifetime_seconds: float,
         lifecycle: float,
+        #
+        max_replicas: int = 2,
+        max_generation: int = 2,
     ) -> None:
         """
         Particle simulasyonunu oluştur.
@@ -30,20 +33,41 @@ class ParticleSimulation(CoreSimulation):
             number_of_instance=number_of_instance,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
+            #
+            max_replicas=max_replicas,
+            max_generation=max_generation,
         )
 
     def force_function(self, t):
         return Vector(t**0.1, t**0.1, t**0.1)
 
     def create_instance(
-        self, name, lifetime_seconds: float, lifecycle: float
+        self,
+        name,
+        lifetime_seconds: float,
+        lifecycle: float,
+        #
+        parent_id: int,
+        max_replicas: int,
+        max_generation: int,
     ) -> Particle:
-        self.number_of_instance_created += 1
+        """
+        Yeni bir çekirdek örneği oluşturur ve döndürür.
 
-        return Particle(
+        :param name: Çekirdek örneği adı.
+        :param lifetime_seconds: Örnek yaşam süresi (saniye cinsinden).
+        :param lifecycle: Örnek yaşam döngüsü (saniyedeki adım sayısı).
+        :param parent_id: örneklenen üst id ( default 0).
+        :return: Oluşturulan çekirdek örneği.
+        """
+        instance = Particle(
             name=name,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
+            #
+            parent_id=parent_id,
+            max_replicas=max_replicas,
+            max_generation=max_generation,
             #
             charge=-1.6e-19,
             mass=9.1e-31,
@@ -53,7 +77,8 @@ class ParticleSimulation(CoreSimulation):
             velocity=Vector(0, 0, 0),
             momentum=Vector(0, 0, 0),
             wave_function=self.force_function(0.1),
-        ).trigger_event(self.instance_status)
+        )
+        return instance
 
 
 # Example Usage
@@ -61,7 +86,13 @@ if __name__ == "__main__":
     name = "particle"  # Parçacığın adı.
     lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 3  # oluşturulacak örnek sayısı
+    number_of_instance = 2  # oluşturulacak örnek sayısı
+    #
+    number_of_instance_created = 0  # oluşturulan örnek sayısı
+    instances = []  # örnek havuzu
+    #
+    number_of_replicas = 2  # oluşturulacak kopya sayısı
+    number_of_generation = 2  # jenerasyon derinliği
 
     def simulation_sampler_status(sampler):
         state = sampler.status()
@@ -100,6 +131,9 @@ if __name__ == "__main__":
             number_of_instance=number_of_instance,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
+            #
+            max_replicas=number_of_replicas,
+            max_generation=number_of_generation,
         )
         .trigger_event(simulation_sampler_status)
         .trigger_event_instance(simulation_instance_status)
