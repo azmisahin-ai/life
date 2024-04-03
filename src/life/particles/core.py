@@ -381,14 +381,15 @@ class Core(threading.Thread):
         """
         Eşlenme işlemi gerçekleştiğinde çağrılır ve yeni nesneyi oluşturulmasını sağlar.
         """
-        self.replicas += 1
+
         if (
             self.generation >= self.max_generation
             or self.replicas >= self.max_replicas
             or self.lifetime_seconds < 0
         ):
             # Maksimum jenerasyon sayısına ulaşıldıysa veya max_replicas değeri 0 ise, eşleme yapmayı durdur
-            return
+            return None
+
         # Yeni bir nesneyi oluştur
         new_item = Core(
             name=self.name,
@@ -409,11 +410,13 @@ class Core(threading.Thread):
         # Eşlenme işlemi gerçekleştirdikten sonra zamanı azalt
         self.decrease_lifespan(seconds=seconds)
 
+        self.replicas += 1
+
         # replicasyon sinyali
         if self.event_function:
             self.event_function(self)
 
-        return new_item
+        return self
 
     def decrease_lifespan(self, seconds):
         """

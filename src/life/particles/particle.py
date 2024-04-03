@@ -227,14 +227,14 @@ class Particle(Core):
         """
         Eşlenme işlemi gerçekleştiğinde çağrılır ve yeni nesneyi oluşturulmasını sağlar.
         """
-        self.replicas += 1
+
         if (
             self.generation >= self.max_generation
             or self.replicas >= self.max_replicas
             or self.lifetime_seconds < 0
         ):
             # Maksimum jenerasyon sayısına ulaşıldıysa veya max_replicas değeri 0 ise, eşleme yapmayı durdur
-            return
+            return None
 
         # Yeni bir nesne oluştur
         new_item = Particle(
@@ -265,7 +265,13 @@ class Particle(Core):
         # Eşlenme işlemi gerçekleştirdikten sonra zamanı azalt
         self.decrease_lifespan(seconds=seconds)
 
-        return new_item
+        self.replicas += 1
+
+        # replicasyon sinyali
+        if self.event_function:
+            self.event_function(self)
+
+        return self
 
 
 # Example Usage

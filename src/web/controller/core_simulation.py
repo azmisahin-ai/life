@@ -12,6 +12,7 @@ class CoreSimulation:
     """
 
     match_count = 0  # toplam eşleşme sayısı
+    total_replicas = 0  # toplam kopya sayısı
 
     def __init__(
         self,
@@ -68,6 +69,7 @@ class CoreSimulation:
             "lifecycle": self.lifecycle,
             "number_of_instance_created": self.number_of_instance_created,
             "number_of_instance_matched": CoreSimulation.match_count,
+            "number_of_instance_replicated": CoreSimulation.total_replicas,
         }
 
     def instance_status(self, instance):
@@ -300,7 +302,21 @@ class CoreSimulation:
 
             # Eşlenmiş nesneden yeni nesne oluşturulmasını sağlar
             # new_core = female.replicate()
-            _ = female.replicate()
+            try:
+                instance = female.replicate()
+                if instance is not None:
+                    # Yeni öğe başarıyla üretildiyse, işlemi devam ettirin
+                    CoreSimulation.total_replicas += instance.replicas
+                    pass
+                else:
+                    # Eşleme yapılmadıysa, işlemi sonlandırın veya bir hata işleyin
+                    pass
+            except TypeError:
+                # TypeError hatası oluştuğunda burası çalışacak
+                # replicasyon yapılmadı
+                # Hata mesajını göstermek veya başka bir hata işleme stratejisi uygulamak için burayı düzenleyin
+                pass
+
             # replicate sırasında otomatik tetiklenir ve başlatılır.
 
             # logger
@@ -317,6 +333,10 @@ class CoreSimulation:
             # Yeni core'ları instances listesine ekleyin
             # mevcut listele eklemek hataya düşürüyor
             # self.instances.append(new_core)
+
+            # crossover sinyali
+            if self.event_function:
+                self.event_function(self)
 
 
 # Example Usage
