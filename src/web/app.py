@@ -13,7 +13,8 @@ from src.web.controller.simulation import simulation, io_event
 
 from src.package.logger import logger
 
-queue = None  # Başlangıçta None olarak tanımlayalım.
+queue = None  # tekil güncelleme işlemleri.
+queues = None  # toplu güncelleme işlemleri.
 
 
 def create_app():
@@ -52,19 +53,27 @@ def create_app():
         # send simulation_instance_status signal
         args = instance.to_json()
         io.emit("simulation_instance_status", args)
-        state = instance.status()
-        # update proccess
-        global queue
-        if queue is None:  # queue None ise fonksiyondan çık
-            return
 
-        if (
-            state == "Running"
-            and queue.get("id") is not None
-            and instance.id == queue["id"]
-        ):
-            instance.codes = bytearray(queue["codes"], "utf-8")
-            queue = None  # işlem tamamlandığında queue'yu temizle
+        state = instance.status()
+        # update process
+        global queue
+        global queues
+
+        if queue is not None:
+            # Tekil güncelleme
+            if (
+                state == "Running"
+                and queue.get("id") is not None
+                and instance.id == queue["id"]
+            ):
+                instance.codes = bytearray(queue["codes"], "utf-8")
+                queue = None  # İşlem tamamlandığında queue'yu temizle
+
+        if queues is not None:  # ?
+            # Çoğul güncelleme
+            if state == "Running" and queues.get("codes") is not None:
+                instance.codes = bytearray(queues["codes"], "utf-8")
+                queues = None  # İşlem tamamlandığında queues'yu temizle
 
     # Simulation Event Handler
     io_event(
@@ -106,6 +115,25 @@ def create_app():
             logger.error("An 'AttributeError' occurred: %s", e)
             # Hata yanıtı döndürelim
             return jsonify({"error": "Internal Server Error"}), 500
+
+    @app.route("/socket/v1/simulation/update/all", methods=["POST"])
+    def post_update_all():
+        global queues
+        # get request
+        queues = request.json
+        # request
+        codes = queues.get("codes")
+
+        # Check
+        if codes is None:
+            return jsonify({"error": "codes "}), 400
+
+        # proccess
+
+        # default response
+        response = queues
+
+        return jsonify(response)
 
     @app.route("/socket/v1/simulation/update", methods=["POST"])
     def post_update():
