@@ -1,8 +1,6 @@
 # src/web/controller/core_simulation.py
 
-
 import threading
-
 from src.package import Logger
 from src.life.particles.core import Core
 
@@ -87,25 +85,17 @@ class CoreSimulation:
         if self.event_function_instance:
             self.event_function_instance(instance)  # Event işlevini çağır
 
-    def create_instance(self, name, lifetime_seconds: float, lifecycle: float) -> Core:
-        self.number_of_instance_created += 1
-
-        instance = Core(
-            name=name,
-            lifetime_seconds=lifetime_seconds,
-            lifecycle=lifecycle,
-        )
-
-        return instance
-
     def run_simulation(self):
         try:
             condition = self.number_of_instance > self.number_of_instance_created
+
+            # Oluşturulmaya devam edilecekmi?
             if condition:
-                instance = self.create_instance(
-                    name=self.name,
-                    lifetime_seconds=self.lifetime_seconds,
-                    lifecycle=self.lifecycle,
+                instance = Core(
+                    name=name,
+                    lifetime_seconds=lifetime_seconds,
+                    lifecycle=lifecycle,
+                    parent_id=0,
                 )
                 # olay dinleyici tetiği yapılandır
                 instance.trigger_event(self.instance_status)
@@ -113,9 +103,14 @@ class CoreSimulation:
                 self.instances.append(instance)
                 # nesneyi başlat
                 instance.start()
+                # oluşturuldu bilgisini arttır
+                self.number_of_instance_created += 1
+
                 if self.event_function:
                     self.event_function(self)  # Event işlevini çağır
+
             return condition
+
         except TypeError as e:
             self.logger.error(f"Core Simulation Error Type : {e}")
         except Exception as e:
@@ -126,7 +121,7 @@ class CoreSimulation:
         Simülasyon döngüsünü çalıştırır.
         """
         while not self._paused and not self._exit_flag and self.run_simulation():
-            pass
+            self.perform_crossover()  # Uyumlu core'ların birleşme işlemini gerçekleştir
 
     def trigger_event(self, event_function):
         """
@@ -223,13 +218,50 @@ class CoreSimulation:
 
         return state
 
+    def perform_crossover(self):
+        # Uyumlu core çiftlerini seçin
+        compatible_cores = [
+            core for core in self.instances if core.id in self.fitness_values.keys()
+        ]
+
+        print("compatible_cores", len(compatible_cores))
+
+        compatible_cores.sort(
+            key=lambda x: self.fitness_values[x.id], reverse=True
+        )  # Fitness değerlerine göre sırala
+
+        # Çift sayısını hesapla
+        number_of_pairs = len(compatible_cores) // 2
+
+        print("number_of_pairs", number_of_pairs)
+
+        # Çiftlerden yeni core'lar oluşturun
+        for i in range(number_of_pairs):
+            parent1 = compatible_cores[i * 2]
+            parent2 = compatible_cores[i * 2 + 1]
+
+            # Yeni core oluştur ve ekleyin
+            new_core_name = f"{parent1.id}-{parent2.id}_child"
+            new_core = self.create_instance(
+                name=new_core_name,
+                lifetime_seconds=self.lifetime_seconds,
+                lifecycle=self.lifecycle,
+            )
+
+            # Olay dinleyici tetiği yapılandır
+            new_core.trigger_event(self.instance_status)
+
+            # Yeni core'ları instances listesine ekleyin
+            self.instances.append(new_core)
+            new_core.start()
+
 
 # Example Usage
 if __name__ == "__main__":
     name = "core"  # Parçacığın adı.
     lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 3  # oluşturulacak örnek sayısı
+    number_of_instance = 2  # oluşturulacak örnek sayısı
 
     def simulation_sampler_status(sampler):
         state = sampler.status()

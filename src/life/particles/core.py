@@ -295,7 +295,7 @@ class Core(threading.Thread):
                 if self.event_function:
                     self.event_function(self)
                 # Yeni  kopyalar oluştur
-                self.replicate()
+                # self.replicate()
 
         # Yaşam döngüsü sona erdi
         self._stop_event.set()  # stopped
@@ -425,7 +425,7 @@ class Core(threading.Thread):
 # Example Usage
 if __name__ == "__main__":
     name = "core"  # Parçacığın adı.
-    lifetime_seconds = 60  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 2  # oluşturulacak örnek sayısı
     number_of_replicas = 20  # oluşturulacak kopya sayısı
