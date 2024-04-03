@@ -13,6 +13,8 @@ from src.web.controller.simulation import simulation, io_event
 
 from src.package.logger import logger
 
+queue = None  # Başlangıçta None olarak tanımlayalım.
+
 
 def create_app():
     # Create Flask app instance
@@ -50,6 +52,19 @@ def create_app():
         # send simulation_instance_status signal
         args = instance.to_json()
         io.emit("simulation_instance_status", args)
+        state = instance.status()
+        # update proccess
+        global queue
+        if queue is None:  # queue None ise fonksiyondan çık
+            return
+
+        if (
+            state == "Running"
+            and queue.get("id") is not None
+            and instance.id == queue["id"]
+        ):
+            instance.codes = bytearray(queue["codes"], "utf-8")
+            queue = None  # işlem tamamlandığında queue'yu temizle
 
     # Simulation Event Handler
     io_event(
@@ -91,6 +106,28 @@ def create_app():
             logger.error("An 'AttributeError' occurred: %s", e)
             # Hata yanıtı döndürelim
             return jsonify({"error": "Internal Server Error"}), 500
+
+    @app.route("/socket/v1/simulation/update", methods=["POST"])
+    def post_update():
+        global queue
+        # get request
+        queue = request.json
+        # request
+        id = queue.get("id")
+        codes = queue.get("codes")
+
+        # Check
+        if codes is None:
+            return jsonify({"error": "codes "}), 400
+        if id is None:
+            return jsonify({"error": "id "}), 400
+
+        # proccess
+
+        # default response
+        response = queue
+
+        return jsonify(response)
 
     @app.route("/socket/v1/simulation/start", methods=["POST"])
     def post_start():
