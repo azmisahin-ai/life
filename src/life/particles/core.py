@@ -289,6 +289,8 @@ class Core(threading.Thread):
                 self.test()
                 # Yaşam süresi ve evrim hızı
                 self.calculate_fitness()
+                # Durum bilgisini güncelle
+                self.update_state()
                 # Bilgilerini sinyal olarak gönderir
                 if self.event_function:
                     self.event_function(self)
@@ -329,25 +331,8 @@ class Core(threading.Thread):
         super().start()
         return self
 
-    def status(self):
-        """
-        Örneğin mevcut durumunu döndürür.
-        """
-        state = "Unknown"
-        if not hasattr(self, "created_printed"):
-            state = "Created"
-            self.created_printed = True  # Created durumu yazıldı
-        else:
-            if self._stop_event.is_set():
-                state = "Stopped"
-            elif self._paused:
-                state = "Paused"
-            elif self._resumed:
-                self._resumed = False
-                state = "Resumed"
-            else:
-                state = "Running"
-
+    def update_state(self):
+        state = self.status()
         message = "{:.7s}\t{}\t{}\t{}\t{}\t{}\t{}".format(
             state,
             self.elapsed_lifespan,
@@ -368,6 +353,27 @@ class Core(threading.Thread):
             self.logger.warning(message)
         else:
             self.logger.debug(message)
+        return state
+
+    def status(self):
+        """
+        Örneğin mevcut durumunu döndürür.
+        """
+        state = "Unknown"
+        if not hasattr(self, "created_printed"):
+            state = "Created"
+            self.created_printed = True  # Created durumu yazıldı
+        else:
+            if self._stop_event.is_set():
+                state = "Stopped"
+            elif self._paused:
+                state = "Paused"
+            elif self._resumed:
+                self._resumed = False
+                state = "Resumed"
+            else:
+                state = "Running"
+
         return state
 
     def replicate(self):
