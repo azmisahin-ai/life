@@ -389,8 +389,8 @@ class Core(threading.Thread):
         ):
             # Maksimum jenerasyon sayısına ulaşıldıysa veya max_replicas değeri 0 ise, eşleme yapmayı durdur
             return
-        # Yeni bir programcık oluştur
-        new_core = Core(
+        # Yeni bir nesneyi oluştur
+        new_item = Core(
             name=self.name,
             lifetime_seconds=self.lifetime_seconds,
             lifecycle=self.lifecycle,
@@ -398,18 +398,18 @@ class Core(threading.Thread):
             max_generation=self.max_generation,
             max_replicas=self.max_replicas,
         ).trigger_event(self.event_function)
-        # Yeni programcık kodlarını kopyala
-        new_core.codes = self.codes[:]
+        # Yeni nesnenin kodlarını kopyala
+        new_item.codes = self.codes[:]
         # Yeni programcığın nesnesini başlat
-        new_core.start()
+        new_item.start()
         # Nesne oluşturma bilgisini güncelle
-        self.logger.info(f"Replicated [{new_core.id}]")
+        self.logger.info(f"Replicated [{new_item.id}]")
         # kopya sayısına göre  zamanı (milisaniye ) belirle
         seconds = self.replicas / 1000
         # Eşlenme işlemi gerçekleştirdikten sonra zamanı azalt
         self.decrease_lifespan(seconds=seconds)
 
-        return new_core
+        return new_item
 
     def decrease_lifespan(self, seconds):
         """
@@ -431,12 +431,12 @@ if __name__ == "__main__":
     lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 2  # oluşturulacak örnek sayısı
-    number_of_replicas = 20  # oluşturulacak kopya sayısı
-    number_of_generation = 2  # jenerasyon derinliği
+    #
     number_of_instance_created = 0  # oluşturulan örnek sayısı
     instances = []  # örnek havuzu
-    fitness_values = {}  # Fitness değerlerini
-    new_cores = []  # Her iterasyonda oluşturulan yeni core için boş bir liste oluşturulur
+    #
+    number_of_replicas = 2  # oluşturulacak kopya sayısı
+    number_of_generation = 2  # jenerasyon derinliği
 
     def simulation_instance_status(instance):
         state = instance.status()
@@ -444,7 +444,7 @@ if __name__ == "__main__":
             pass
 
         if state == "Running":
-            fitness_values[instance] = instance.fitness
+            pass
 
         if state == "Paused":
             pass
@@ -463,7 +463,7 @@ if __name__ == "__main__":
             name=name,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
-            # başlangıç değeri
+            #
             parent_id=0,
             max_replicas=number_of_replicas,
             max_generation=number_of_generation,

@@ -284,7 +284,7 @@ class CoreSimulation:
                 self.number_of_instance,
                 female.id,
                 male.id,
-                female.match_count
+                female.match_count,
             )
             self.logger.info(message)
 
@@ -299,6 +299,12 @@ if __name__ == "__main__":
     lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
     lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
     number_of_instance = 2  # oluşturulacak örnek sayısı
+    #
+    number_of_instance_created = 0  # oluşturulan örnek sayısı
+    instances = []  # örnek havuzu
+    #
+    number_of_replicas = 2  # oluşturulacak kopya sayısı
+    number_of_generation = 2  # jenerasyon derinliği
 
     def simulation_sampler_status(sampler):
         state = sampler.status()
