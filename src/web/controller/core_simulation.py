@@ -68,7 +68,7 @@ class CoreSimulation:
             self.instances.append(instance)
 
         if state == "Running":
-            self.fitness_values[instance] = instance.calculate_fitness()
+            self.fitness_values[instance.id] = instance.fitness
 
         if state == "Paused":
             pass
@@ -80,7 +80,7 @@ class CoreSimulation:
             # Fitness değerlerine göre parçacıkları sıralama
             self.sorted_instances = sorted(
                 self.instances,
-                key=lambda x: self.fitness_values.get(x, 0),
+                key=lambda x: self.fitness_values.get(x.id, 0),
                 reverse=True,
             )
 
@@ -90,11 +90,13 @@ class CoreSimulation:
     def create_instance(self, name, lifetime_seconds: float, lifecycle: float) -> Core:
         self.number_of_instance_created += 1
 
-        return Core(
+        instance = Core(
             name=name,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
-        ).trigger_event(self.instance_status)
+        )
+
+        return instance
 
     def run_simulation(self):
         try:
@@ -105,7 +107,11 @@ class CoreSimulation:
                     lifetime_seconds=self.lifetime_seconds,
                     lifecycle=self.lifecycle,
                 )
+                # olay dinleyici tetiği yapılandır
+                instance.trigger_event(self.instance_status)
+                # nesneyi havuza ekle
                 self.instances.append(instance)
+                # nesneyi başlat
                 instance.start()
                 if self.event_function:
                     self.event_function(self)  # Event işlevini çağır
