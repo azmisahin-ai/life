@@ -47,7 +47,7 @@ class Core(threading.Thread):
             Core.generation_map[parent_id] + 1 if parent_id else 1
         )  # Generation değeri
         Core.generation_map[self.id] = self.generation  # Generation değerini eşleştir
-
+        self.match_count = 0  # eşleşme toplamı
         #
         self.codes = (
             bytearray()
@@ -109,6 +109,7 @@ class Core(threading.Thread):
             "codes": list(self.codes),
             "replicas": self.replicas,
             "generation": self.generation,
+            "match_count": self.match_count,
             "fitness": self.fitness,
         }
 
@@ -378,7 +379,7 @@ class Core(threading.Thread):
 
     def replicate(self):
         """
-        Eşlenme işlemi gerçekleştiğinde çağrılır ve yeni programcıkların oluşturulmasını sağlar.
+        Eşlenme işlemi gerçekleştiğinde çağrılır ve yeni nesneyi oluşturulmasını sağlar.
         """
         self.replicas += 1
         if (
@@ -407,6 +408,8 @@ class Core(threading.Thread):
         seconds = self.replicas / 1000
         # Eşlenme işlemi gerçekleştirdikten sonra zamanı azalt
         self.decrease_lifespan(seconds=seconds)
+
+        return new_core
 
     def decrease_lifespan(self, seconds):
         """

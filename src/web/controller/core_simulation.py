@@ -87,14 +87,7 @@ class CoreSimulation:
         if self.event_function_instance:
             self.event_function_instance(instance)  # Event işlevini çağır
 
-    def create_instance(
-        self,
-        name,
-        lifetime_seconds,
-        lifecycle,
-        parent_id: int = 0,
-        parent_id_2: int = None,
-    ):
+    def create_instance(self, name, lifetime_seconds, lifecycle, parent_id: int = 0):
         """
         Yeni bir çekirdek örneği oluşturur ve döndürür.
 
@@ -102,7 +95,6 @@ class CoreSimulation:
         :param lifetime_seconds: Örnek yaşam süresi (saniye cinsinden).
         :param lifecycle: Örnek yaşam döngüsü (saniyedeki adım sayısı).
         :param parent_id: örneklenen üst id ( default 0).
-        :param parent_id_2: crossover id ( default None).
         :return: Oluşturulan çekirdek örneği.
         """
         instance = Core(
@@ -252,8 +244,6 @@ class CoreSimulation:
             core for core in self.instances if core.id in self.fitness_values.keys()
         ]
 
-        # print("compatible_cores", len(compatible_cores))
-
         compatible_cores.sort(
             key=lambda x: self.fitness_values[x.id], reverse=True
         )  # Fitness değerlerine göre sırala
@@ -261,37 +251,41 @@ class CoreSimulation:
         # Çift sayısını hesapla
         number_of_pairs = len(compatible_cores) // 2
 
-        # print("number_of_pairs", number_of_pairs)
-
         # Çiftlerden yeni core'lar oluşturun
         for i in range(number_of_pairs):
-            parent1 = compatible_cores[i * 2]
-            parent2 = compatible_cores[i * 2 + 1]
+            # türler
+            female = compatible_cores[i * 2]
+            male = compatible_cores[i * 2 + 1]
 
+            # eşlenme sayaçlarını arttır
+            female.match_count += 1
+            male.match_count += 1
+
+            # cinsiyet tanımlaması yapılabilir?
+            # female.sex="f"
+            # male.sex="m"
+
+            # Eşlenmiş nesneden yeni nesne oluşturulmasını sağlar
+            new_core = female.replicate()
+
+            # logger
             message = "{:.7s}\t{}/{}\t{}\t{}".format(
                 "crossover",
                 self.number_of_instance_created,
                 self.number_of_instance,
-                parent1.id,
-                parent2.id,
+                female.id,
+                male.id,
             )
             self.logger.info(message)
-
-            # Yeni core oluştur ve ekleyin
-            new_core = self.create_instance(
-                name=self.name,
-                lifetime_seconds=self.lifetime_seconds,
-                lifecycle=self.lifecycle,
-                parent_id=parent1.id,
-                parent_id_2=parent2.id,
-            )
 
             # Olay dinleyici tetiği yapılandır
             new_core.trigger_event(self.instance_status)
 
             # Yeni core'ları instances listesine ekleyin
             self.instances.append(new_core)
-            new_core.start()
+            # başlatılır
+            # new_core.start()
+            new_core.run()
 
 
 # Example Usage
