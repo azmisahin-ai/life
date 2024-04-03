@@ -409,6 +409,10 @@ class Core(threading.Thread):
         # Eşlenme işlemi gerçekleştirdikten sonra zamanı azalt
         self.decrease_lifespan(seconds=seconds)
 
+        # replicasyon sinyali
+        if self.event_function:
+            self.event_function(self)
+
         return new_item
 
     def decrease_lifespan(self, seconds):
