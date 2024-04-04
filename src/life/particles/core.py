@@ -49,6 +49,7 @@ class Core(threading.Thread):
         Core.generation_map[self.id] = self.generation  # Generation değerini eşleştir
         self.match_count = 0  # eşleşme toplamı
         #
+        self.replicas = []  # kopyaları tutulacağı alan
         self.codes = (
             bytearray()
         )  # Bytearray'i saklamak için boş bir bytearray oluşturulur
@@ -428,6 +429,9 @@ class Core(threading.Thread):
         self.decrease_lifespan(seconds=seconds)
 
         self.number_of_copies += 1
+
+        # kopyaları sakla
+        self.replicas.append(new_item)
 
         # replicasyon sinyali
         if self.event_function:

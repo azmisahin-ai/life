@@ -267,6 +267,9 @@ class Particle(Core):
 
         self.number_of_copies += 1
 
+        # kopyaları sakla
+        self.replicas.append(new_item)
+
         # replicasyon sinyali
         if self.event_function:
             self.event_function(self)

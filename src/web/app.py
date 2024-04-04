@@ -66,15 +66,29 @@ def create_app():
                 and queue.get("id") is not None
                 and instance.id == queue["id"]
             ):
-                user_formula = queues["formula"]
-                instance.apply_formula(user_formula)
+                try:
+                    # örneğe formulu uygula
+                    user_formula = queues["formula"]
+                    instance.apply_formula(user_formula)
+                except Exception as e:
+                    print("Formul uygulanamadı:", e)
+                    return
                 queue = None  # İşlem tamamlandığında queue'yu temizle
 
         if queues is not None:  # ?
             # Çoğul güncelleme
             if state == "Running" and queues.get("formula") is not None:
-                user_formula = queues["formula"]
-                instance.apply_formula(user_formula)
+                try:
+                    user_formula = queues["formula"]
+                    # örneğe formulu uygula
+                    instance.apply_formula(user_formula)
+                    # Tüm kopyalara formülü uygula
+                    for replica in instance.replicas:
+                        replica.apply_formula(user_formula)
+                except Exception as e:
+                    print("Formul uygulanamadı:", e)
+                    return
+
                 queues = None  # İşlem tamamlandığında queues'yu temizle
 
     # Simulation Event Handler
