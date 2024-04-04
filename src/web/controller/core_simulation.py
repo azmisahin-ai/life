@@ -12,7 +12,7 @@ class CoreSimulation:
     """
 
     match_count = 0  # toplam eşleşme sayısı
-    total_replicas = 0  # toplam kopya sayısı
+    number_of_copies = 0  # toplam kopya sayısı
 
     def __init__(
         self,
@@ -71,7 +71,7 @@ class CoreSimulation:
             "lifecycle": self.lifecycle,
             "number_of_instance_created": self.number_of_instance_created,
             "number_of_instance_matched": CoreSimulation.match_count,
-            "number_of_instance_replicated": CoreSimulation.total_replicas,
+            "number_of_instance_replicated": CoreSimulation.number_of_copies,
         }
 
     def instance_status(self, instance):
@@ -315,7 +315,7 @@ class CoreSimulation:
                 instance = female.replicate()
                 if instance is not None:
                     # Yeni öğe başarıyla üretildiyse, işlemi devam ettirin
-                    CoreSimulation.total_replicas = instance.replicas
+                    CoreSimulation.number_of_copies = instance.number_of_copies
                     pass
                 else:
                     # Eşleme yapılmadıysa, işlemi sonlandırın veya bir hata işleyin
@@ -402,7 +402,7 @@ if __name__ == "__main__":
             #
             max_replicas=number_of_replicas,
             max_generation=number_of_generation,
-            max_match_limit=max_match_limit
+            max_match_limit=max_match_limit,
         )
         .trigger_event(simulation_sampler_status)
         .trigger_event_instance(simulation_instance_status)

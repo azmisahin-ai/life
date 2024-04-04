@@ -99,6 +99,7 @@ class Core(threading.Thread):
 
         # Hesaplanan formülü yaşam süresine uygula
         self.lifetime_seconds = evaluated_formula
+        return evaluated_formula
 
     def to_json(self):
         """

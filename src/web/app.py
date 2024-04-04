@@ -69,7 +69,14 @@ def create_app():
                 try:
                     # örneğe formulu uygula
                     user_formula = queues["formula"]
-                    instance.apply_formula(user_formula)
+                    evaluated_formula = instance.apply_formula(user_formula)
+                    message = "{}\t{}\t{}\t{}".format(
+                        "formula",
+                        instance.id,
+                        user_formula,
+                        evaluated_formula,
+                    )
+                    logger.info(message)
                 except Exception as e:
                     print("Formul uygulanamadı:", e)
                     return
@@ -81,10 +88,24 @@ def create_app():
                 try:
                     user_formula = queues["formula"]
                     # örneğe formulu uygula
-                    instance.apply_formula(user_formula)
+                    evaluated_formula = instance.apply_formula(user_formula)
+                    message = "{}\t{}\t{}\t{}".format(
+                        "formula",
+                        instance.id,
+                        user_formula,
+                        evaluated_formula,
+                    )
+                    logger.info(message)
                     # Tüm kopyalara formülü uygula
                     for replica in instance.replicas:
-                        replica.apply_formula(user_formula)
+                        evaluated_formula = replica.apply_formula(user_formula)
+                        message = "{}\t{}\t{}\t{}".format(
+                            "formula",
+                            replica.id,
+                            user_formula,
+                            evaluated_formula,
+                        )
+                        logger.info(message)
                 except Exception as e:
                     print("Formul uygulanamadı:", e)
                     return
