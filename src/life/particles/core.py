@@ -82,6 +82,23 @@ class Core(threading.Thread):
         # Created durumunu tetikle
         self.trigger_event(self)
 
+        self.formula = None  # Kullanıcı tarafından girilecek formül
+
+    def apply_formula(self, formula: str) -> float:
+        """
+        Kullanıcının girdiği formülü güvenli bir şekilde değerlendirir ve yaşam süresini günceller.
+        """
+        # Güvenli bir şekilde formülü değerlendirme
+        try:
+            # Kullanıcı tarafından girilen formülü belirli bir kapsamda değerlendirir
+            evaluated_formula = eval(formula, {"self": self})
+        except Exception as e:
+            print("Hata:", e)
+            return
+
+        # Hesaplanan formülü yaşam süresine uygula
+        self.lifetime_seconds = evaluated_formula
+
     def to_json(self):
         """
         Nesneyi JSON formatına dönüştürür.
@@ -444,6 +461,8 @@ if __name__ == "__main__":
     #
     number_of_replicas = 2  # oluşturulacak kopya sayısı
     number_of_generation = 2  # jenerasyon derinliği
+    #
+    user_formula = "5.5 * self.generation"
 
     def simulation_instance_status(instance):
         state = instance.status()
@@ -487,6 +506,11 @@ if __name__ == "__main__":
         # örneği çalıştır.
         instance.start()
         instances.append(instance)
+
+        # Formülü Core sınıfına uygula
+        instance.apply_formula(user_formula)
+        # Parçacığın yaşam süresini yazdır
+        print("Updated Lifetime Seconds:", instance.lifetime_seconds)
 
     # # örnekleri duraklatma
     # for instance in instances:
