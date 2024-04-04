@@ -23,6 +23,7 @@ class CoreSimulation:
         #
         max_replicas: int = 2,
         max_generation: int = 2,
+        max_match_limit: int = 2,
     ) -> None:
         """
         Çekirdek simulasyonunu oluştur.
@@ -39,6 +40,7 @@ class CoreSimulation:
         #
         self.max_replicas = max_replicas
         self.max_generation = max_generation
+        self.max_match_limit = max_match_limit
         #
         self.number_of_instance_created = 0
         self.instances = []  # örnek havuzu
@@ -89,7 +91,7 @@ class CoreSimulation:
         if state == "Stopped":
             # Çaprazlama işlemi daha önce yapılmadıysa ve tüm çekirdekler oluşturulduysa
             if self.number_of_instance_created == self.number_of_instance:
-                self.perform_crossover()
+                self.perform_crossover(max_match_limit=self.max_match_limit)
 
         if self.event_function_instance:
             self.event_function_instance(instance)  # Event işlevini çağır
@@ -260,7 +262,7 @@ class CoreSimulation:
 
         return state
 
-    def perform_crossover(self):
+    def perform_crossover(self, max_match_limit: int = 2):
         # Uyumlu core çiftlerini seçin
         compatible_cores = [
             core for core in self.instances if core.id in self.fitness_values.keys()
@@ -282,9 +284,16 @@ class CoreSimulation:
             female = compatible_cores[i * 2]
             male = compatible_cores[i * 2 + 1]
 
-            # Çekirdeklerden herhangi birinin zaten eşleştirilmiş olup olmadığını kontrol edin
-            if female.id in paired_core_ids or male.id in paired_core_ids:
-                # Çekirdeklerden herhangi biri daha önce eşleştirilmişse eşleştirmeyi atlayın
+            # Çekirdeklerden herhangi birinin zaten eşleştirilmiş olup olmadığını
+            # ve maksimum eşleşme sınırını kontrol edin
+            if (
+                female.id in paired_core_ids
+                or male.id in paired_core_ids
+                or female.match_count >= max_match_limit
+                or male.match_count >= max_match_limit
+            ):
+                # Çekirdeklerden herhangi biri daha önce eşleştirilmişse
+                # veya maksimum sınıra ulaşıldıysa eşleştirmeyi atlayın
                 continue
 
             # Eşleştirilmiş çekirdek kimliklerini listeye ekleyin
@@ -351,6 +360,7 @@ if __name__ == "__main__":
     #
     number_of_replicas = 2  # oluşturulacak kopya sayısı
     number_of_generation = 2  # jenerasyon derinliği
+    max_match_limit = 2  # maximum eşlenme sınırı
 
     def simulation_sampler_status(sampler):
         state = sampler.status()
@@ -392,6 +402,7 @@ if __name__ == "__main__":
             #
             max_replicas=number_of_replicas,
             max_generation=number_of_generation,
+            max_match_limit=max_match_limit
         )
         .trigger_event(simulation_sampler_status)
         .trigger_event_instance(simulation_instance_status)

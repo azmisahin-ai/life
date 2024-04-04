@@ -49,6 +49,7 @@ class Simulation:
         simulation_type,
         max_replicas,
         max_generation,
+        max_match_limit,
     ):
         """
         Belirtilen türe göre uygun simülasyon örneğini döndürür.
@@ -62,6 +63,7 @@ class Simulation:
                 #
                 max_replicas=max_replicas,
                 max_generation=max_generation,
+                max_match_limit=max_match_limit,
             )
         elif simulation_type == SimulationType.Particles:
             return ParticleSimulation(
@@ -72,6 +74,7 @@ class Simulation:
                 #
                 max_replicas=max_replicas,
                 max_generation=max_generation,
+                max_match_limit=max_match_limit,
             )
         else:
             return None
@@ -100,6 +103,7 @@ class Simulation:
         #
         max_replicas: int,
         max_generation: int,
+        max_match_limit: int,
     ):
         """
         Simülasyonu başlatır.
@@ -116,6 +120,7 @@ class Simulation:
         #
         self.max_replicas = max_replicas
         self.max_generation = max_generation
+        self.max_match_limit = max_match_limit
 
         # Geçersiz girişleri kontrol et
         if not isinstance(simulation_type, SimulationType):
@@ -132,6 +137,7 @@ class Simulation:
             #
             max_replicas=self.max_replicas,
             max_generation=self.max_generation,
+            max_match_limit=self.max_match_limit,
         )
 
         # state
@@ -364,6 +370,7 @@ if __name__ == "__main__":
     number_of_replicas = 2  # oluşturulacak kopya sayısı
     number_of_generation = 2  # jenerasyon derinliği
     simulation_type = SimulationType.Particles  # Simulaston türü
+    max_match_limit = 2  # maximum eşlenme sınırı
 
     # simulasyonu başlat
     simulation.start(
@@ -373,7 +380,8 @@ if __name__ == "__main__":
         simulation_type=simulation_type,
         #
         max_replicas=number_of_replicas,
-        max_generation=number_of_generation
+        max_generation=number_of_generation,
+        max_match_limit=max_match_limit,
     )
 
     # # simulasyonu duraklat

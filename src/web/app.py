@@ -170,6 +170,7 @@ def create_app():
         #
         number_of_replicas = data.get("number_of_replicas", 2)
         number_of_generation = data.get("number_of_generation", 2)
+        max_match_limit = data.get("max_match_limit", 2)
 
         # Check if lifetime_seconds is None and assign float('inf') instead
         if lifetime_seconds is None:
@@ -186,6 +187,7 @@ def create_app():
             #
             max_replicas=number_of_replicas,
             max_generation=number_of_generation,
+            max_match_limit=max_match_limit,
         )
 
         # default response

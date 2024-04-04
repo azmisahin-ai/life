@@ -19,6 +19,7 @@ class ParticleSimulation(CoreSimulation):
         #
         max_replicas: int = 2,
         max_generation: int = 2,
+        max_match_limit: int = 2,
     ) -> None:
         """
         Particle simulasyonunu oluştur.
@@ -36,6 +37,7 @@ class ParticleSimulation(CoreSimulation):
             #
             max_replicas=max_replicas,
             max_generation=max_generation,
+            max_match_limit=max_match_limit,
         )
 
     def force_function(self, t):
@@ -93,6 +95,7 @@ if __name__ == "__main__":
     #
     number_of_replicas = 2  # oluşturulacak kopya sayısı
     number_of_generation = 2  # jenerasyon derinliği
+    max_match_limit = 2  # maximum eşlenme sınırı
 
     def simulation_sampler_status(sampler):
         state = sampler.status()
@@ -134,6 +137,7 @@ if __name__ == "__main__":
             #
             max_replicas=number_of_replicas,
             max_generation=number_of_generation,
+            max_match_limit=max_match_limit,
         )
         .trigger_event(simulation_sampler_status)
         .trigger_event_instance(simulation_instance_status)
