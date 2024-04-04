@@ -41,7 +41,7 @@ class Core(threading.Thread):
         self.id = Core.core_count  # Otomatik artan benzersiz kimlik
         self.parent_id = parent_id if parent_id else 0  # Üst çekirdek kimliği
         self.max_replicas = max_replicas  # Maksimum kopya sayısı
-        self.replicas = 0
+        self.number_of_copies = 0
         self.max_generation = max_generation  # Maksimum jenerasyon sayısı
         self.generation = (
             Core.generation_map[parent_id] + 1 if parent_id else 1
@@ -124,7 +124,7 @@ class Core(threading.Thread):
             # status information
             "life_status": self.status(),
             "codes": list(self.codes),
-            "replicas": self.replicas,
+            "number_of_copies": self.number_of_copies,
             "generation": self.generation,
             "match_count": self.match_count,
             "fitness": self.fitness,
@@ -401,7 +401,7 @@ class Core(threading.Thread):
 
         if (
             self.generation >= self.max_generation
-            or self.replicas >= self.max_replicas
+            or self.number_of_copies >= self.max_replicas
             or self.lifetime_seconds < 0
         ):
             # Maksimum jenerasyon sayısına ulaşıldıysa veya max_replicas değeri 0 ise, eşleme yapmayı durdur
@@ -423,11 +423,11 @@ class Core(threading.Thread):
         # Nesne oluşturma bilgisini güncelle
         self.logger.info(f"Replicated [{new_item.id}]")
         # kopya sayısına göre  zamanı (milisaniye ) belirle
-        seconds = self.replicas / 1000
+        seconds = self.number_of_copies / 1000
         # Eşlenme işlemi gerçekleştirdikten sonra zamanı azalt
         self.decrease_lifespan(seconds=seconds)
 
-        self.replicas += 1
+        self.number_of_copies += 1
 
         # replicasyon sinyali
         if self.event_function:

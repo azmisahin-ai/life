@@ -91,7 +91,7 @@ class Particle(Core):
             # status information
             "life_status": self.status(),
             "codes": list(self.codes),
-            "replicas": self.replicas,
+            "number_of_copies": self.number_of_copies,
             "generation": self.generation,
             "match_count": self.match_count,
             "fitness": self.fitness,
@@ -230,7 +230,7 @@ class Particle(Core):
 
         if (
             self.generation >= self.max_generation
-            or self.replicas >= self.max_replicas
+            or self.number_of_copies >= self.max_replicas
             or self.lifetime_seconds < 0
         ):
             # Maksimum jenerasyon sayısına ulaşıldıysa veya max_replicas değeri 0 ise, eşleme yapmayı durdur
@@ -261,11 +261,11 @@ class Particle(Core):
         # Nesne oluşturma bilgisini güncelle
         self.logger.info(f"Replicated [{new_item.id}]")
         # kopya sayısına göre  zamanı (milisaniye ) belirle
-        seconds = self.replicas / 1000
+        seconds = self.number_of_copies / 1000
         # Eşlenme işlemi gerçekleştirdikten sonra zamanı azalt
         self.decrease_lifespan(seconds=seconds)
 
-        self.replicas += 1
+        self.number_of_copies += 1
 
         # replicasyon sinyali
         if self.event_function:
