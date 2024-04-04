@@ -66,13 +66,15 @@ def create_app():
                 and queue.get("id") is not None
                 and instance.id == queue["id"]
             ):
-                instance.codes = bytearray(queue["codes"], "utf-8")
+                user_formula = queues["formula"]
+                instance.apply_formula(user_formula)
                 queue = None  # İşlem tamamlandığında queue'yu temizle
 
         if queues is not None:  # ?
             # Çoğul güncelleme
-            if state == "Running" and queues.get("codes") is not None:
-                instance.codes = bytearray(queues["codes"], "utf-8")
+            if state == "Running" and queues.get("formula") is not None:
+                user_formula = queues["formula"]
+                instance.apply_formula(user_formula)
                 queues = None  # İşlem tamamlandığında queues'yu temizle
 
     # Simulation Event Handler
@@ -122,11 +124,11 @@ def create_app():
         # get request
         queues = request.json
         # request
-        codes = queues.get("codes")
+        formula = queues.get("formula")
 
         # Check
-        if codes is None:
-            return jsonify({"error": "codes "}), 400
+        if formula is None:
+            return jsonify({"error": "formula "}), 400
 
         # proccess
 
