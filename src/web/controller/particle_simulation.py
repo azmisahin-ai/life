@@ -1,7 +1,5 @@
 # src/web/controller/particle_simulation.py
 
-import time
-
 from src.life.particles.vector import Vector
 from src.life.particles.particle import Particle
 from src.web.controller.core_simulation import CoreSimulation
@@ -18,6 +16,10 @@ class ParticleSimulation(CoreSimulation):
         number_of_instance: int,
         lifetime_seconds: float,
         lifecycle: float,
+        #
+        max_replicas: int = 2,
+        max_generation: int = 2,
+        max_match_limit: int = 2,
     ) -> None:
         """
         Particle simulasyonunu oluştur.
@@ -32,21 +34,42 @@ class ParticleSimulation(CoreSimulation):
             number_of_instance=number_of_instance,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
+            #
+            max_replicas=max_replicas,
+            max_generation=max_generation,
+            max_match_limit=max_match_limit,
         )
 
     def force_function(self, t):
         return Vector(t**0.1, t**0.1, t**0.1)
 
     def create_instance(
-        self, name, lifetime_seconds: float, lifecycle: float
+        self,
+        name,
+        lifetime_seconds: float,
+        lifecycle: float,
+        #
+        parent_id: int,
+        max_replicas: int,
+        max_generation: int,
     ) -> Particle:
-        self.number_of_instance_created += 1
-        instance_name = f"{name}_{self.number_of_instance_created}"
+        """
+        Yeni bir çekirdek örneği oluşturur ve döndürür.
 
-        return Particle(
-            name=instance_name,
+        :param name: Çekirdek örneği adı.
+        :param lifetime_seconds: Örnek yaşam süresi (saniye cinsinden).
+        :param lifecycle: Örnek yaşam döngüsü (saniyedeki adım sayısı).
+        :param parent_id: örneklenen üst id ( default 0).
+        :return: Oluşturulan çekirdek örneği.
+        """
+        instance = Particle(
+            name=name,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
+            #
+            parent_id=parent_id,
+            max_replicas=max_replicas,
+            max_generation=max_generation,
             #
             charge=-1.6e-19,
             mass=9.1e-31,
@@ -56,21 +79,54 @@ class ParticleSimulation(CoreSimulation):
             velocity=Vector(0, 0, 0),
             momentum=Vector(0, 0, 0),
             wave_function=self.force_function(0.1),
-        ).trigger_event(self.instance_status)
+        )
+        return instance
 
 
 # Example Usage
 if __name__ == "__main__":
     name = "particle"  # Parçacığın adı.
-    lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 3  # oluşturulacak örnek sayısı
+    lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
+    number_of_instance = 2  # oluşturulacak örnek sayısı
+    #
+    number_of_instance_created = 0  # oluşturulan örnek sayısı
+    instances = []  # örnek havuzu
+    #
+    number_of_replicas = 2  # oluşturulacak kopya sayısı
+    number_of_generation = 2  # jenerasyon derinliği
+    max_match_limit = 2  # maximum eşlenme sınırı
 
     def simulation_sampler_status(sampler):
-        sampler.status()
+        state = sampler.status()
+        if state == "Running":
+            pass
+
+        if state == "Paused":
+            pass
+
+        if state == "Resumed":
+            pass
+
+        if state == "Stopped":
+            pass
 
     def simulation_instance_status(instance):
-        instance.status()
+        state = instance.status()
+        if state == "Created":
+            pass
+
+        if state == "Running":
+            pass
+
+        if state == "Paused":
+            pass
+
+        if state == "Resumed":
+            pass
+
+        if state == "Stopped":
+            pass
 
     sampler = (
         CoreSimulation(
@@ -78,6 +134,10 @@ if __name__ == "__main__":
             number_of_instance=number_of_instance,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
+            #
+            max_replicas=number_of_replicas,
+            max_generation=number_of_generation,
+            max_match_limit=max_match_limit,
         )
         .trigger_event(simulation_sampler_status)
         .trigger_event_instance(simulation_instance_status)
@@ -86,14 +146,11 @@ if __name__ == "__main__":
     # örnekleyiciyi başlat
     sampler.start_simulation()
 
-    # örnekleyiciyi duraklat
-    time.sleep(2)
-    sampler.pause_simulation()
+    # # örnekleyiciyi duraklat
+    # sampler.pause_simulation()
 
-    # örnekleyiciyi devam ettir
-    time.sleep(2)
-    sampler.resume_simulation()
+    # # örnekleyiciyi devam ettir
+    # sampler.resume_simulation()
 
-    # örnekleyiciyi durdur
-    time.sleep(2)
-    sampler.stop_simulation()
+    # # örnekleyiciyi durdur
+    # sampler.stop_simulation()

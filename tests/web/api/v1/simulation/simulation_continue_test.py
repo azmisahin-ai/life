@@ -53,7 +53,7 @@ class SimulationContinueTest(unittest.TestCase):
         response_data = response.get_json()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_data["simulation_status"], "continues")
+        self.assertEqual(response_data["simulation_status"], "Resumed")
 
 
 if __name__ == "__main__":

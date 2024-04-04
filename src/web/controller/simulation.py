@@ -1,6 +1,5 @@
 # src/web/controller/simulation.py
 
-
 from src.package.logger import Logger, logger
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
@@ -9,40 +8,6 @@ from src.web.controller.particle_simulation import ParticleSimulation
 
 from src.life.particles.core import Core
 from src.life.particles.particle import Particle
-
-
-def simulation_status(simulation):
-    try:
-        if isinstance(simulation, Simulation):
-            simulation.status()
-        else:
-            raise RuntimeWarning("A new unknown simulation")
-    except Exception as e:
-        logger.exception("An error occurred: %s", e)
-
-
-def simulation_sampler_status(sampler):
-    try:
-        if isinstance(sampler, ParticleSimulation):
-            sampler.status()
-        elif isinstance(sampler, CoreSimulation):
-            sampler.status()
-        else:
-            raise RuntimeWarning("A new unknown sampler")
-    except Exception as e:
-        logger.exception("An error occurred: %s", e)
-
-
-def simulation_instance_status(instance):
-    try:
-        if isinstance(instance, Particle):
-            instance.status()
-        elif isinstance(instance, Core):
-            instance.status()
-        else:
-            raise RuntimeWarning("A new unknown instance")
-    except Exception as e:
-        logger.exception("An error occurred: %s", e)
 
 
 class Simulation:
@@ -56,7 +21,7 @@ class Simulation:
         """
         self.name = name
         # state
-        self.simulation_status = SimulationStatus.stopped
+        self.simulation_status = SimulationStatus.Stopped
         self.sampler = None
         # Log ayarlarını yapılandırma
         self.logger = Logger(
@@ -77,7 +42,14 @@ class Simulation:
         return simulation_data
 
     def switch_simulation(
-        self, number_of_instance, lifetime_seconds, lifecycle, simulation_type
+        self,
+        number_of_instance,
+        lifetime_seconds,
+        lifecycle,
+        simulation_type,
+        max_replicas,
+        max_generation,
+        max_match_limit,
     ):
         """
         Belirtilen türe göre uygun simülasyon örneğini döndürür.
@@ -88,6 +60,10 @@ class Simulation:
                 number_of_instance=number_of_instance,
                 lifetime_seconds=lifetime_seconds,
                 lifecycle=lifecycle,
+                #
+                max_replicas=max_replicas,
+                max_generation=max_generation,
+                max_match_limit=max_match_limit,
             )
         elif simulation_type == SimulationType.Particles:
             return ParticleSimulation(
@@ -95,22 +71,23 @@ class Simulation:
                 number_of_instance=number_of_instance,
                 lifetime_seconds=lifetime_seconds,
                 lifecycle=lifecycle,
+                #
+                max_replicas=max_replicas,
+                max_generation=max_generation,
+                max_match_limit=max_match_limit,
             )
         else:
             return None
 
     def status(self):
-        message = "{}\t{}\t{}\t{}".format(  # noqa: F524
-            self.simulation_status.value,
-            self.name,
-            self.simulation_type,
-            self.number_of_instance,
+        message = "{:.7s}\t{}".format(
+            self.simulation_status.value, self.simulation_type
         )
-        if self.simulation_status == SimulationStatus.paused:
+        if self.simulation_status == SimulationStatus.Paused:
             self.logger.warning(message)
-        elif self.simulation_status == SimulationStatus.continues:
+        elif self.simulation_status == SimulationStatus.Resumed:
             self.logger.info(message)
-        elif self.simulation_status == SimulationStatus.stopped:
+        elif self.simulation_status == SimulationStatus.Stopped:
             self.logger.warning(message)
         else:
             self.logger.info(message)
@@ -123,6 +100,10 @@ class Simulation:
         lifetime_seconds: float,
         lifecycle: float,
         simulation_type: SimulationType,
+        #
+        max_replicas: int,
+        max_generation: int,
+        max_match_limit: int,
     ):
         """
         Simülasyonu başlatır.
@@ -136,6 +117,10 @@ class Simulation:
         self.lifetime_seconds = lifetime_seconds
         self.lifecycle = lifecycle
         self.simulation_type = simulation_type
+        #
+        self.max_replicas = max_replicas
+        self.max_generation = max_generation
+        self.max_match_limit = max_match_limit
 
         # Geçersiz girişleri kontrol et
         if not isinstance(simulation_type, SimulationType):
@@ -149,10 +134,14 @@ class Simulation:
             lifetime_seconds=self.lifetime_seconds,
             lifecycle=self.lifecycle,
             simulation_type=self.simulation_type,
+            #
+            max_replicas=self.max_replicas,
+            max_generation=self.max_generation,
+            max_match_limit=self.max_match_limit,
         )
 
         # state
-        self.simulation_status = SimulationStatus.started
+        self.simulation_status = SimulationStatus.Running
         # trigger
         if self.simulation_event_function:
             self.simulation_event_function(self)
@@ -166,7 +155,7 @@ class Simulation:
 
     def pause(self):
         # state
-        self.simulation_status = SimulationStatus.paused
+        self.simulation_status = SimulationStatus.Paused
         # trigger
         if self.simulation_event_function:
             self.simulation_event_function(self)
@@ -175,9 +164,9 @@ class Simulation:
 
         return self
 
-    def continues(self):
+    def resume(self):
         # state
-        self.simulation_status = SimulationStatus.continues
+        self.simulation_status = SimulationStatus.Resumed
         # trigger
         if self.simulation_event_function:
             self.simulation_event_function(self)
@@ -188,7 +177,7 @@ class Simulation:
 
     def stop(self):
         # state
-        self.simulation_status = SimulationStatus.stopped
+        self.simulation_status = SimulationStatus.Stopped
         # trigger
         if self.simulation_event_function:
             self.simulation_event_function(self)
@@ -210,28 +199,196 @@ class Simulation:
         return self
 
 
+# Global değişkenlerin başlatılması
+
 # create simulation
 simulation = Simulation("life")
+
+
+# event
+io_simulation_status_function = None
+io_simulation_sampler_status_function = None
+io_simulation_instance_status_function = None
+
+
+def io_event(
+    status_function,
+    sampler_status_function,
+    instance_status_function,
+):
+    """
+    Bu fonksiyon, olay işleme işlevlerini (event functions) global değişkenlere atar.
+
+    Args:
+        status_function (function): Simülasyon durumunu işleyen fonksiyon.
+        sampler_status_function (function): Simülasyon örnekleyicisinin durumunu işleyen fonksiyon (varsa).
+        instance_status_function (function): Simülasyon örneğinin durumunu işleyen fonksiyon (varsa).
+    """
+
+    global \
+        io_simulation_status_function, \
+        io_simulation_sampler_status_function, \
+        io_simulation_instance_status_function
+    io_simulation_status_function = status_function
+    io_simulation_sampler_status_function = sampler_status_function
+    io_simulation_instance_status_function = instance_status_function
+
+
+def simulation_status(simulation):
+    # send simulation_status signal
+    if io_simulation_status_function is not None:
+        # Simülasyon durum sinyalini gönder
+        io_simulation_status_function(simulation)
+
+    try:
+        if isinstance(simulation, Simulation):
+            state = simulation.status()
+            if state == SimulationStatus.Running:
+                pass
+
+            if state == SimulationStatus.Paused:
+                pass
+
+            if state == SimulationStatus.Resumed:
+                pass
+
+            if state == SimulationStatus.Stopped:
+                pass
+
+        else:
+            raise RuntimeWarning("A new unknown simulation")
+    except Exception as e:
+        logger.exception("An error occurred: %s", e)
+
+
+def simulation_sampler_status(sampler):
+    # send simulation_sampler_status signal
+    if io_simulation_sampler_status_function is not None:
+        # sampler durum sinyalini gönder
+        io_simulation_sampler_status_function(sampler)
+    try:
+        if isinstance(sampler, ParticleSimulation):
+            state = sampler.status()
+
+            if state == "Running":
+                pass
+
+            if state == "Paused":
+                pass
+
+            if state == "Resumed":
+                pass
+
+            if state == "Stopped":
+                pass
+
+        elif isinstance(sampler, CoreSimulation):
+            state = sampler.status()
+            if state == "Running":
+                pass
+
+            if state == "Paused":
+                pass
+
+            if state == "Resumed":
+                pass
+
+            if state == "Stopped":
+                pass
+
+        else:
+            raise RuntimeWarning("A new unknown sampler")
+    except Exception as e:
+        logger.exception("An error occurred: %s", e)
+
+
+def simulation_instance_status(instance):
+    # send simulation_instance_status signal
+    if io_simulation_instance_status_function is not None:
+        # instance durum sinyalini gönder
+        io_simulation_instance_status_function(instance)
+
+    try:
+        if isinstance(instance, Particle):
+            state = instance.status()
+
+            if state == "Created":
+                pass
+
+            if state == "Running":
+                pass
+
+            if state == "Paused":
+                pass
+
+            if state == "Resumed":
+                pass
+
+            if state == "Stopped":
+                pass
+
+        elif isinstance(instance, Core):
+            state = instance.status()
+
+            if state == "Created":
+                pass
+
+            if state == "Running":
+                pass
+
+            if state == "Paused":
+                pass
+
+            if state == "Resumed":
+                pass
+
+            if state == "Stopped":
+                pass
+
+        else:
+            raise RuntimeWarning("A new unknown instance")
+    except Exception as e:
+        logger.exception("An error occurred: %s", e)
+
 
 # setup simulation
 simulation.trigger_simulation(simulation_status).trigger_sampler(
     simulation_sampler_status
 ).trigger_instance(simulation_instance_status)
 
+
 # Example usage
 if __name__ == "__main__":
-    lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 60 / 1  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 3  # oluşturulacak örnek sayısı
+    name = "particle"  # Parçacığın adı.
+    lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
+    number_of_instance = 2  # oluşturulacak örnek sayısı
+    #
+    number_of_instance_created = 0  # oluşturulan örnek sayısı
+    instances = []  # örnek havuzu
+    #
+    number_of_replicas = 2  # oluşturulacak kopya sayısı
+    number_of_generation = 2  # jenerasyon derinliği
     simulation_type = SimulationType.Particles  # Simulaston türü
+    max_match_limit = 2  # maximum eşlenme sınırı
 
-    # start simulation
+    # simulasyonu başlat
     simulation.start(
         number_of_instance=number_of_instance,
         lifetime_seconds=lifetime_seconds,
         lifecycle=lifecycle,
         simulation_type=simulation_type,
+        #
+        max_replicas=number_of_replicas,
+        max_generation=number_of_generation,
+        max_match_limit=max_match_limit,
     )
-    simulation.pause()
-    simulation.continues()
-    simulation.stop()
+
+    # # simulasyonu duraklat
+    # simulation.pause()
+
+    # # simulasyonu devam ettir
+    # simulation.resume()
+
+    # # simulasyonu durdur
+    # simulation.stop()

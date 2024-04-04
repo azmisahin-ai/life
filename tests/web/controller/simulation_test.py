@@ -34,7 +34,7 @@ class TestSimulation(unittest.TestCase):
             lifecycle=60 / 1,
             simulation_type=SimulationType.Particles,
         )
-        self.assertEqual(self.simulation.simulation_status, SimulationStatus.started)
+        self.assertEqual(self.simulation.simulation_status, SimulationStatus.Running)
 
     def test_pause_simulation(self):
         self.simulation.start(
@@ -44,9 +44,9 @@ class TestSimulation(unittest.TestCase):
             simulation_type=SimulationType.Particles,
         )
         self.simulation.pause()
-        self.assertEqual(self.simulation.simulation_status, SimulationStatus.paused)
+        self.assertEqual(self.simulation.simulation_status, SimulationStatus.Paused)
 
-    def test_continue_simulation(self):
+    def test_resume_simulation(self):
         self.simulation.start(
             number_of_instance=3,
             lifetime_seconds=float("inf"),
@@ -54,8 +54,8 @@ class TestSimulation(unittest.TestCase):
             simulation_type=SimulationType.Particles,
         )
         self.simulation.pause()
-        self.simulation.continues()
-        self.assertEqual(self.simulation.simulation_status, SimulationStatus.continues)
+        self.simulation.resume()
+        self.assertEqual(self.simulation.simulation_status, SimulationStatus.Resumed)
 
     def test_stop_simulation(self):
         self.simulation.start(
@@ -65,7 +65,7 @@ class TestSimulation(unittest.TestCase):
             simulation_type=SimulationType.Particles,
         )
         self.simulation.stop()
-        self.assertEqual(self.simulation.simulation_status, SimulationStatus.stopped)
+        self.assertEqual(self.simulation.simulation_status, SimulationStatus.Stopped)
 
     def test_invalid_simulation_type(self):
         with self.assertRaises(ValueError):

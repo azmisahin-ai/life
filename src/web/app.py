@@ -9,12 +9,12 @@ from src.web.socket import initialize
 from src.web.config import APP_ENV, APP_NAME, HOST_IP, httpPortNumber, DEBUG
 from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
-from src.web.controller.simulation import simulation, Simulation
-from src.life.particles.core import Core
-from src.life.particles.particle import Particle
-from src.web.controller.core_simulation import CoreSimulation
-from src.web.controller.particle_simulation import ParticleSimulation
+from src.web.controller.simulation import simulation, io_event
+
 from src.package.logger import logger
+
+queue = None  # tekil güncelleme işlemleri.
+queues = None  # toplu güncelleme işlemleri.
 
 
 def create_app():
@@ -39,57 +39,85 @@ def create_app():
 
     io = initialize(app, paths)  # Call initialize and assign the SocketIO instance
 
-    def simulation_status(simulation):
-        try:
-            if isinstance(simulation, Simulation):
-                simulation.status()
-                # send simulation_status signal
-                args = simulation.to_json()
-                io.emit("simulation_status", args)
+    def io_simulation_status(simulation):
+        # send simulation_status signal
+        args = simulation.to_json()
+        io.emit("simulation_status", args)
 
-            else:
-                raise RuntimeWarning("A new unknown simulation")
-        except Exception as e:
-            logger.exception("An error occurred: %s", e)
+    def io_simulation_sampler_status(sampler):
+        # send simulation_sampler_status signal
+        args = sampler.to_json()
+        io.emit("simulation_sampler_status", args)
 
-    def simulation_sampler_status(sampler):
-        try:
-            if isinstance(sampler, ParticleSimulation):
-                sampler.status()
-                # send simulation_sampler_status signal
-                args = sampler.to_json()
-                io.emit("simulation_sampler_status", args)
-            elif isinstance(sampler, CoreSimulation):
-                sampler.status()
-                # send simulation_sampler_status signal
-                args = sampler.to_json()
-                io.emit("simulation_sampler_status", args)
-            else:
-                raise RuntimeWarning("A new unknown sampler")
-        except Exception as e:
-            logger.exception("An error occurred: %s", e)
+    def io_simulation_instance_status(instance):
+        # send simulation_instance_status signal
+        args = instance.to_json()
+        io.emit("simulation_instance_status", args)
 
-    def simulation_instance_status(instance):
-        try:
-            if isinstance(instance, Particle):
-                instance.status()
-                # send simulation_instance_status signal
-                args = instance.to_json()
-                io.emit("simulation_instance_status", args)
-            elif isinstance(instance, Core):
-                instance.status()
-                # send simulation_instance_status signal
-                args = instance.to_json()
-                io.emit("simulation_instance_status", args)
-            else:
-                raise RuntimeWarning("A new unknown instance")
-        except Exception as e:
-            logger.exception("An error occurred: %s", e)
+        state = instance.status()
+        # update process
+        global queue
+        global queues
 
-    # setup simulation
-    simulation.trigger_simulation(simulation_status).trigger_sampler(
-        simulation_sampler_status
-    ).trigger_instance(simulation_instance_status)
+        if queue is not None:
+            # Tekil güncelleme
+            if (
+                state == "Running"
+                and queue.get("id") is not None
+                and instance.id == queue["id"]
+            ):
+                try:
+                    # örneğe formulu uygula
+                    user_formula = queues["formula"]
+                    evaluated_formula = instance.apply_formula(user_formula)
+                    message = "{}\t{}\t{}\t{}".format(
+                        "formula",
+                        instance.id,
+                        user_formula,
+                        evaluated_formula,
+                    )
+                    logger.info(message)
+                except Exception as e:
+                    print("Formul uygulanamadı:", e)
+                    return
+                queue = None  # İşlem tamamlandığında queue'yu temizle
+
+        if queues is not None:  # ?
+            # Çoğul güncelleme
+            if state == "Running" and queues.get("formula") is not None:
+                try:
+                    user_formula = queues["formula"]
+                    # örneğe formulu uygula
+                    evaluated_formula = instance.apply_formula(user_formula)
+                    message = "{}\t{}\t{}\t{}".format(
+                        "formula",
+                        instance.id,
+                        user_formula,
+                        evaluated_formula,
+                    )
+                    logger.info(message)
+                    # Tüm kopyalara formülü uygula
+                    for replica in instance.replicas:
+                        evaluated_formula = replica.apply_formula(user_formula)
+                        message = "{}\t{}\t{}\t{}".format(
+                            "formula",
+                            replica.id,
+                            user_formula,
+                            evaluated_formula,
+                        )
+                        logger.info(message)
+                except Exception as e:
+                    print("Formul uygulanamadı:", e)
+                    return
+
+                queues = None  # İşlem tamamlandığında queues'yu temizle
+
+    # Simulation Event Handler
+    io_event(
+        io_simulation_status,
+        io_simulation_sampler_status,
+        io_simulation_instance_status,
+    )
 
     @app.errorhandler(Exception)
     def handle_exception(e):
@@ -125,16 +153,61 @@ def create_app():
             # Hata yanıtı döndürelim
             return jsonify({"error": "Internal Server Error"}), 500
 
+    @app.route("/socket/v1/simulation/update/all", methods=["POST"])
+    def post_update_all():
+        global queues
+        # get request
+        queues = request.json
+        # request
+        formula = queues.get("formula")
+
+        # Check
+        if formula is None:
+            return jsonify({"error": "formula "}), 400
+
+        # proccess
+
+        # default response
+        response = queues
+
+        return jsonify(response)
+
+    @app.route("/socket/v1/simulation/update", methods=["POST"])
+    def post_update():
+        global queue
+        # get request
+        queue = request.json
+        # request
+        id = queue.get("id")
+        codes = queue.get("codes")
+
+        # Check
+        if codes is None:
+            return jsonify({"error": "codes "}), 400
+        if id is None:
+            return jsonify({"error": "id "}), 400
+
+        # proccess
+
+        # default response
+        response = queue
+
+        return jsonify(response)
+
     @app.route("/socket/v1/simulation/start", methods=["POST"])
     def post_start():
         # get request
         data = request.json
         # request
-        number_of_instance = data.get("number_of_instance", 1)
-        lifetime_seconds = data.get("lifetime_seconds", float("inf"))
-        lifecycle = data.get("lifecycle", 60 / 1)
+        number_of_instance = data.get("number_of_instance", 2)
+        lifetime_seconds = data.get("lifetime_seconds", 1)
+        lifecycle = data.get("lifecycle", 60 / 60)
         simulation_type_string = data.get("simulation_type", "Core")
         simulation_type = SimulationType(simulation_type_string)
+        #
+        number_of_replicas = data.get("number_of_replicas", 2)
+        number_of_generation = data.get("number_of_generation", 2)
+        max_match_limit = data.get("max_match_limit", 2)
 
         # Check if lifetime_seconds is None and assign float('inf') instead
         if lifetime_seconds is None:
@@ -148,12 +221,16 @@ def create_app():
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
             simulation_type=simulation_type,
+            #
+            max_replicas=number_of_replicas,
+            max_generation=number_of_generation,
+            max_match_limit=max_match_limit,
         )
 
         # default response
         response = {
             "simulation_type": simulation_type.value,
-            "simulation_status": SimulationStatus.stopped.value,
+            "simulation_status": SimulationStatus.Stopped.value,
         }
 
         if simulation.sampler:
@@ -174,7 +251,7 @@ def create_app():
     @app.route("/socket/v1/simulation/continue", methods=["GET"])
     def get_continue():
         # proccess
-        simulation.continues()
+        simulation.resume()
 
         if simulation.sampler:
             response = simulation.to_json()

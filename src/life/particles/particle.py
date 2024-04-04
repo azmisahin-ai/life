@@ -1,7 +1,6 @@
 # src/life/particles/particle.py
 
 import random
-import time
 from src.life.particles.vector import Vector
 from src.life.particles.core import Core
 
@@ -16,6 +15,7 @@ class Particle(Core):
         name: str,
         lifetime_seconds: float,
         lifecycle: float,
+        #
         charge: float,
         mass: float,
         spin: float,
@@ -24,6 +24,10 @@ class Particle(Core):
         velocity: Vector = Vector(),
         momentum: Vector = Vector(),
         wave_function: Vector = None,
+        #
+        parent_id: int = 0,
+        max_replicas: int = 2,
+        max_generation: int = 2,
     ) -> None:
         """
         Parçacık sınıfını başlatır.
@@ -43,7 +47,12 @@ class Particle(Core):
         :param wave_function: Parçacığın dalga fonksiyonu.
         """
         super().__init__(
-            name=name, lifetime_seconds=lifetime_seconds, lifecycle=lifecycle
+            name=name,
+            lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
+            parent_id=parent_id,
+            max_replicas=max_replicas,
+            max_generation=max_generation,
         )
         self.charge = charge  # Parçacığın yükü
         self.mass = mass  # Parçacığın kütlesi
@@ -70,6 +79,8 @@ class Particle(Core):
         )
         return {
             "name": self.name,
+            "id": self.id,
+            "parent_id": self.parent_id,
             "lifetime_seconds": lifetime_seconds,
             # created information
             "life_created_time": self.life_created_time,
@@ -79,6 +90,11 @@ class Particle(Core):
             "lifecycle": self.lifecycle,
             # status information
             "life_status": self.status(),
+            "codes": list(self.codes),
+            "number_of_copies": self.number_of_copies,
+            "generation": self.generation,
+            "match_count": self.match_count,
+            "fitness": self.fitness,
             # particle information
             "charge": self.charge,
             "mass": self.mass,
@@ -128,26 +144,16 @@ class Particle(Core):
         self.spin = self.calculate_new_spin(self.spin)
         self.calculate_new_position()
 
-    def ping(self, code: bytearray):
-        """
-        Parçacığın konumunu, hızını ve momentumunu belirli bir yörüngede hareket ettirir.
+    def evolve(self):
+        super().evolve()
 
-        :param code: Ping kodu.
-        """
-        super().ping(code=code)
         # Parçacığın özelliklerini güncelle
         self.update_properties()
 
-    def signal(self, time_step: float) -> None:
-        """
-        Parçacığın sinyalini gönderir.
-
-        :param time_step: Zaman adımı.
-        :type time_step: float
-        """
-        if time_step is None:
-            time_step = random.uniform(0.0001, 0.001)
-        self.update(force=self.wave_function, time_step=time_step)
+    def mesure(self):
+        base_mesure = super().mesure()
+        new_mesure = base_mesure
+        return new_mesure
 
     def update(self, force: Vector, time_step: float) -> None:
         """
@@ -217,46 +223,116 @@ class Particle(Core):
         """
         return electric_field * self.charge + magnetic_field * self.charge
 
+    def replicate(self):
+        """
+        Eşlenme işlemi gerçekleştiğinde çağrılır ve yeni nesneyi oluşturulmasını sağlar.
+        """
+
+        if (
+            self.generation >= self.max_generation
+            or self.number_of_copies >= self.max_replicas
+            or self.lifetime_seconds < 0
+        ):
+            # Maksimum jenerasyon sayısına ulaşıldıysa veya max_replicas değeri 0 ise, eşleme yapmayı durdur
+            return None
+
+        # Yeni bir nesne oluştur
+        new_item = Particle(
+            name=self.name,
+            lifetime_seconds=self.lifetime_seconds,
+            lifecycle=self.lifecycle,
+            parent_id=self.id,  # Yeni çekirdeğin üst çekirdek kimliği, mevcut çekirdeğin kimliği olacak
+            max_generation=self.max_generation,
+            max_replicas=self.max_replicas,
+            #
+            charge=self.charge,
+            mass=self.mass,
+            spin=self.spin,
+            energy=self.energy,
+            position=self.position,
+            velocity=self.velocity,
+            momentum=self.momentum,
+            wave_function=self.wave_function,
+        ).trigger_event(self.event_function)
+        # Yeni nesnenin kodlarını kopyala
+        new_item.codes = self.codes[:]
+        # Yeni programcığın nesnesini başlat
+        new_item.start()
+        # Nesne oluşturma bilgisini güncelle
+        self.logger.info(f"Replicated [{new_item.id}]")
+        # kopya sayısına göre  zamanı (milisaniye ) belirle
+        seconds = self.number_of_copies / 1000
+        # Eşlenme işlemi gerçekleştirdikten sonra zamanı azalt
+        self.decrease_lifespan(seconds=seconds)
+
+        self.number_of_copies += 1
+
+        # kopyaları sakla
+        self.replicas.append(new_item)
+
+        # replicasyon sinyali
+        if self.event_function:
+            self.event_function(self)
+
+        return self
+
 
 # Example Usage
 if __name__ == "__main__":
     name = "particle"  # Parçacığın adı.
-    lifetime_seconds = float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
-    lifecycle = 60 / 70  # Parçacığın saniyedeki yaşam döngüsü.
-    number_of_instance = 10  # oluşturulacak örnek sayısı
-
-    instance_created_counter = 0
+    lifetime_seconds = 1  # float("inf")  # Parçacığın yaşam süresi saniye cinsinden.
+    lifecycle = 60 / 60  # Parçacığın saniyedeki yaşam döngüsü.
+    number_of_instance = 2  # oluşturulacak örnek sayısı
+    #
+    number_of_instance_created = 0  # oluşturulan örnek sayısı
+    instances = []  # örnek havuzu
+    #
+    number_of_replicas = 2  # oluşturulacak kopya sayısı
+    number_of_generation = 2  # jenerasyon derinliği
 
     def create_instance(name, lifetime_seconds, lifecycle):
         def instance_signal(instance):
-            instance.status()
+            state = instance.status()
 
-        global instance_created_counter
-        instance_created_counter += 1
-        instance_name = f"{name}_{instance_created_counter}"
+            if state == "Created":
+                pass
+
+            if state == "Running":
+                pass
+
+            if state == "Paused":
+                pass
+
+            if state == "Resumed":
+                pass
+
+            if state == "Stopped":
+                pass
+
+        global number_of_instance_created
+        number_of_instance_created += 1
 
         def force_function(t):
             return Vector(t**0.1, t**0.1, t**0.1)
 
-        return (
-            Particle(
-                name=instance_name,
-                lifetime_seconds=lifetime_seconds,
-                lifecycle=lifecycle,
-                charge=-1.602176634e-19,
-                mass=9.10938356e-31,
-                spin=1 / 2,
-                energy=0,
-                position=Vector(0.2, 0.2, 0.2),
-                velocity=Vector(0.1, 0.1, 0.1),
-                momentum=Vector(0.1, 0.1, 0.1),
-                wave_function=force_function(0.01),
-            )
-            .trigger_event(instance_signal)
-            .start()
-        )
-
-    instances = []
+        return Particle(
+            name=name,
+            lifetime_seconds=lifetime_seconds,
+            lifecycle=lifecycle,
+            #
+            parent_id=0,
+            max_replicas=number_of_replicas,
+            max_generation=number_of_generation,
+            #
+            charge=-1.602176634e-19,
+            mass=9.10938356e-31,
+            spin=1 / 2,
+            energy=0,
+            position=Vector(0.2, 0.2, 0.2),
+            velocity=Vector(0.1, 0.1, 0.1),
+            momentum=Vector(0.1, 0.1, 0.1),
+            wave_function=force_function(0.01),
+        ).trigger_event(instance_signal)
 
     def main():
         # Örnek yönetimi
@@ -266,25 +342,23 @@ if __name__ == "__main__":
                 lifetime_seconds=lifetime_seconds,
                 lifecycle=lifecycle,
             )
+            # örneği çalıştır.
+            instance.start()
             instances.append(instance)
 
-        # Tüm işlemleri burada kontrol edebilirsiniz
-        time.sleep(2)  #
-        # örnekleri duraklatma
-        for instance in instances:
-            if instance.name == f"{name}_1":
-                instance.pause()
+        # # örnekleri duraklatma
+        # for instance in instances:
+        #     if instance.name == f"{name}_1":
+        #         instance.pause()
 
-        time.sleep(2)  #
-        # öernekleri devam ettirme
-        for instance in instances:
-            if instance.name == f"{name}_1":
-                instance.resume()
+        # # öernekleri devam ettirme
+        # for instance in instances:
+        #     if instance.name == f"{name}_1":
+        #         instance.resume()
 
-        time.sleep(2)  #
-        # Thread'leri durdurma
-        for instance in instances:
-            instance.stop()
-            instance.join()
+        # # Thread'leri durdurma
+        # for instance in instances:
+        #     instance.stop()
+        #     instance.join()
 
     main()

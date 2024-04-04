@@ -53,7 +53,7 @@ class SimulationPauseTest(unittest.TestCase):
         response_data = response.get_json()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_data["simulation_status"], "paused")
+        self.assertEqual(response_data["simulation_status"], "Paused")
 
 
 if __name__ == "__main__":
