@@ -306,7 +306,7 @@ class CoreSimulation:
                 instance = female.replicate()
                 if instance is not None:
                     # Yeni öğe başarıyla üretildiyse, işlemi devam ettirin
-                    CoreSimulation.total_replicas += instance.replicas
+                    CoreSimulation.total_replicas = instance.replicas
                     pass
                 else:
                     # Eşleme yapılmadıysa, işlemi sonlandırın veya bir hata işleyin
