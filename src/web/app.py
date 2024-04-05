@@ -11,7 +11,7 @@ from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
 from src.web.controller.simulation import simulation, io_event
 
-from src.package.logger import logger
+from src.package.logger import logger, logger_event
 
 queue = None  # tekil güncelleme işlemleri.
 queues = None  # toplu güncelleme işlemleri.
@@ -118,6 +118,12 @@ def create_app():
         io_simulation_sampler_status,
         io_simulation_instance_status,
     )
+
+    def application_log_function(type, message):
+        # uygulama log sinyalini gönder
+        io.emit("application_log", {"type": type, "message": message})
+
+    logger_event(application_log_function)
 
     @app.errorhandler(Exception)
     def handle_exception(e):
