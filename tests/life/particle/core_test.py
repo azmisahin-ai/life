@@ -7,9 +7,7 @@ from src.life.particles.core import Core
 class TestCore(unittest.TestCase):
     def setUp(self):
         # Core sınıfından bir örnek oluşturuluyor ve her test öncesinde kullanılıyor
-        self.core_instance = Core(
-            name="test", lifetime_seconds=10, lifecycle=60 / 70
-        )
+        self.core_instance = Core(name="test", lifetime_seconds=10, lifecycle=60 / 70)
 
     def test_initialization(self):
         # Core sınıfının başlangıç değerlerinin doğru ayarlandığını kontrol eder

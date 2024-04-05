@@ -102,7 +102,9 @@ class MainProgram:
 
         # Ana simülasyon döngüsü başlar
         for i in range(self.iterations):
-            new_programlets = []  # Her iterasyonda oluşturulan yeni programletler için boş bir liste oluşturulur
+            new_programlets = (
+                []
+            )  # Her iterasyonda oluşturulan yeni programletler için boş bir liste oluşturulur
             # Her bir programlet için çiftleşme işlemi yapılır
             for j in range(self.num_programlets):
                 partner_index = random.randint(
