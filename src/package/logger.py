@@ -17,8 +17,8 @@ class Logger:
     def __init__(
         self,
         name: str,
-        log_to_file: bool = True,
-        log_to_console: bool = True,
+        log_to_file: bool = False,
+        log_to_console: bool = False,
         log_to_event: bool = True,
     ):
         self.logger = logging.getLogger(name)
@@ -97,7 +97,7 @@ class Logger:
 
 
 # Log ayarlarını yapılandırma
-logger = Logger(name="application", log_to_file=True, log_to_console=True).get_logger()
+logger = Logger(name="application").get_logger()
 
 # Example Usage
 if __name__ == "__main__":
