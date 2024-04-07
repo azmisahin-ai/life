@@ -54,9 +54,7 @@ class CoreSimulation:
         self._exit_flag = False
         # self.perform_crossover_start = False  # perform_crossover_start özelliği eklendi
         # Log ayarlarını yapılandırma
-        self.logger = Logger(
-            name=f"/sampler/{name}", log_to_file=True, log_to_console=True
-        ).get_logger()
+        self.logger = Logger(name=f"/sampler/{name}").get_logger()
 
     def to_json(self) -> dict:
         lifetime_seconds = (

@@ -24,9 +24,7 @@ class Simulation:
         self.simulation_status = SimulationStatus.Stopped
         self.sampler = None
         # Log ayarlarını yapılandırma
-        self.logger = Logger(
-            name=f"/simulation/{name}", log_to_file=True, log_to_console=True
-        ).get_logger()
+        self.logger = Logger(name=f"/simulation/{name}").get_logger()
 
     def to_json(self):
         """

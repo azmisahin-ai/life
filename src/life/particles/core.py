@@ -77,9 +77,7 @@ class Core(threading.Thread):
         self._stop_event = threading.Event()
         self._resumed = False
         # Log ayarlarını yapılandırma
-        self.logger = Logger(
-            name=f"/{self.name}/{self.version}", log_to_file=True, log_to_console=True
-        ).get_logger()
+        self.logger = Logger(name=f"/{self.name}/{self.version}").get_logger()
         # Created durumunu tetikle
         self.trigger_event(self)
 

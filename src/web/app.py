@@ -11,7 +11,7 @@ from src.web.controller.simulation_status import SimulationStatus
 from src.web.controller.simulation_type import SimulationType
 from src.web.controller.simulation import simulation, io_event
 
-from src.package.logger import logger
+from src.package.logger import logger, logger_event
 
 queue = None  # tekil güncelleme işlemleri.
 queues = None  # toplu güncelleme işlemleri.
@@ -119,6 +119,12 @@ def create_app():
         io_simulation_instance_status,
     )
 
+    def application_log_function(type, message):
+        # uygulama log sinyalini gönder
+        io.emit("application_log", {"type": type, "message": message})
+
+    logger_event(application_log_function)
+
     @app.errorhandler(Exception)
     def handle_exception(e):
         logger.exception("An error occurred: %s", e)
@@ -146,6 +152,12 @@ def create_app():
             simulation.status()
             if simulation.sampler:
                 response = simulation.to_json()
+
+            # logger
+            message = "{}\t{}\t{}\t{}".format(
+                "start", request.origin, request.remote_addr, response
+            )
+            logger.info(message)
             return jsonify(response)
         except AttributeError as e:
             # Sadece 'AttributeError' hatasını loglayalım
@@ -161,6 +173,11 @@ def create_app():
         # request
         formula = queues.get("formula")
 
+        # logger
+        message = "{}\t{}\t{}\t{}".format(
+            "update/all", request.origin, request.remote_addr, formula
+        )
+        logger.info(message)
         # Check
         if formula is None:
             return jsonify({"error": "formula "}), 400
@@ -181,6 +198,12 @@ def create_app():
         id = queue.get("id")
         codes = queue.get("codes")
 
+        # logger
+        message = "{}\t{}\t{}\t{}".format(
+            "update", request.origin, request.remote_addr, queue
+        )
+        logger.info(message)
+
         # Check
         if codes is None:
             return jsonify({"error": "codes "}), 400
@@ -199,7 +222,7 @@ def create_app():
         # get request
         data = request.json
         # request
-        number_of_instance = data.get("number_of_instance", 2)
+        number_of_instances = data.get("number_of_instances", 2)
         lifetime_seconds = data.get("lifetime_seconds", 1)
         lifecycle = data.get("lifecycle", 60 / 60)
         simulation_type_string = data.get("simulation_type", "Core")
@@ -215,9 +238,16 @@ def create_app():
         # Check if lifetime_seconds is provided
         if lifetime_seconds < 0:
             return jsonify({"error": "Lifetime seconds cannot be negative"}), 400
+
+        # logger
+        message = "{}\t{}\t{}\t{}".format(
+            "start", request.origin, request.remote_addr, data
+        )
+        logger.info(message)
         # proccess
         simulation.start(
-            number_of_instance=number_of_instance,
+            # number_of_instances olarak değiştirilmeli
+            number_of_instance=number_of_instances,
             lifetime_seconds=lifetime_seconds,
             lifecycle=lifecycle,
             simulation_type=simulation_type,
@@ -246,6 +276,12 @@ def create_app():
         if simulation.sampler:
             response = simulation.to_json()
 
+        # logger
+        message = "{}\t{}\t{}\t{}".format(
+            "pause", request.origin, request.remote_addr, response
+        )
+        logger.info(message)
+
         return jsonify(response)
 
     @app.route("/socket/v1/simulation/continue", methods=["GET"])
@@ -256,6 +292,12 @@ def create_app():
         if simulation.sampler:
             response = simulation.to_json()
 
+        # logger
+        message = "{}\t{}\t{}\t{}".format(
+            "continue", request.origin, request.remote_addr, response
+        )
+        logger.info(message)
+
         return jsonify(response)
 
     @app.route("/socket/v1/simulation/stop", methods=["GET"])
@@ -265,6 +307,12 @@ def create_app():
 
         if simulation.sampler:
             response = simulation.to_json()
+
+        # logger
+        message = "{}\t{}\t{}\t{}".format(
+            "stop", request.origin, request.remote_addr, response
+        )
+        logger.info(message)
 
         return jsonify(response)
 
